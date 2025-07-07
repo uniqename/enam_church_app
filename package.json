@@ -10,10 +10,21 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
+  "homepage": "https://uniqename.github.io/enam_church_app",
   "browserslist": {
-    "production": [">0.2%", "not dead"],
-    "development": ["last 1 chrome version"]
+    "production": [
+      ">0.2%",
+      "not dead"
+    ],
+    "development": [
+      "last 1 chrome version"
+    ]
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }
