@@ -5,38 +5,88 @@ A comprehensive church management system for Faith Klinik Ministries, supporting
 ## Features
 
 ### 📊 Dashboard
-- Key statistics and metrics
-- Recent activity feed
-- Upcoming events overview
+- Key statistics and metrics (Total Members: 361, Active Departments: 16)
+- Recent activity feed with real-time updates
+- Church leadership overview
 - Ministry performance indicators
+- Quick navigation to all sections
+
+### 👑 Church Leadership Structure
+- **Executive Level**: Executive Pastor & Overseer
+- **2 Elders**: Spiritual guidance and teaching
+- **6 Deacons/Deaconess**: 3 Deacons & 3 Deaconess for church service
+- Complete leadership directory with contact information
+- Years of service tracking
+- Specialties and ministry focus areas
 
 ### 👥 Member Management
-- Complete member directory
-- Contact information tracking
+- Complete member directory with enhanced profiles
+- Contact information (email, phone, address)
+- Personal information (age, marital status, birth date)
 - Ministry involvement tracking
+- Emergency contact information
 - Membership status management
-- Search and filter capabilities
+- Advanced search and filter capabilities
+- Contribution tracking (tithes, missions, building fund)
 
-### 🏛️ Ministry Departments
-- Department/ministry organization
-- Budget tracking and expenses
-- Project management
-- Meeting scheduling
-- Leadership assignment
+### 🏛️ Ministry Departments (16 Active Ministries)
+1. **Missions Ministry** - World evangelism support
+2. **Worship Ministry** - Praise and worship leadership
+3. **Youth Ministry** - Discipling young people (13-25)
+4. **Prayer Warriors** - Intercession and prayer
+5. **Children's Ministry** - Faith nurturing (ages 0-12)
+6. **Women's Ministry** - Women's empowerment and support
+7. **Men's Ministry** - Building strong Christian men
+8. **Faith Klinik Dance Ministers** - Worship through dance
+9. **Cleaning Ministry** - Church maintenance and sanctity
+10. **Evangelism Ministry** - Gospel spreading and soul winning
+11. **Food Pantry Ministry** - Feeding the hungry
+12. **Building Committee** - Facility maintenance and improvements
+13. **Welfare Committee** - Member support and assistance
+14. **Ushering and Protocol** - Service coordination and hospitality
+15. **Administration Ministry** - Church operations management
+16. **Finance Ministry** - Financial stewardship and planning
+
+#### Department Structure (Each Department Has):
+- **Leader**: Primary department head
+- **Assistant**: Secondary leadership support
+- **Secretary**: Documentation and communication
+- **Treasurer**: Financial management
+- **Members**: Full member roster with ability to add more
+- **Budget & Expense Tracking**: Real-time financial monitoring
+- **Meeting Schedule**: Day, time, and location
+- **Current Projects**: Active initiatives and programs
 
 ### 📅 Meetings & Events
 - Event scheduling and management
-- Attendee tracking
+- Attendee tracking with expected numbers
 - Location and time management
-- Meeting type categorization (Worship, Ministry, Study, Prayer)
+- Meeting type categorization (Worship, Ministry, Study, Prayer, Conference)
+- Leader assignment for each event
+- Comprehensive event descriptions
 
 ### 💰 Financial Tracking
 - Tithe and offering management
-- Department budget oversight
-- Transaction history
-- Financial reporting
-- Missions fund tracking
-- Building fund management
+- Individual member contribution tracking
+- 16 department budget oversight with visual progress bars
+- Transaction history with categorization
+- Financial reporting with trend analysis
+- Missions fund tracking (supporting world evangelism)
+- Building fund management (facilities & expansion)
+- Color-coded budget status (green/yellow/red indicators)
+
+## Application Navigation
+
+The app features a comprehensive navigation system with 6 main sections:
+
+1. **📊 Dashboard** - Main overview with key statistics and recent activity
+2. **👑 Leadership** - Church leadership structure and directory
+3. **👥 Members** - Complete member management system
+4. **🏛️ Ministries** - All 16 department management
+5. **📅 Meetings** - Event scheduling and management
+6. **💰 Finances** - Financial tracking and reporting
+
+Each section is designed for easy navigation with responsive design for both desktop and mobile devices.
 
 ## Technology Stack
 
