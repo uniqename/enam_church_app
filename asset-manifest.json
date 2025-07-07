@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/enam_church_app/static/css/main.23e3a32c.css",
+    "main.js": "/enam_church_app/static/js/main.43fc46cc.js",
+    "index.html": "/enam_church_app/index.html",
+    "main.23e3a32c.css.map": "/enam_church_app/static/css/main.23e3a32c.css.map",
+    "main.43fc46cc.js.map": "/enam_church_app/static/js/main.43fc46cc.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.23e3a32c.css",
+    "static/js/main.43fc46cc.js"
+  ]
+}
