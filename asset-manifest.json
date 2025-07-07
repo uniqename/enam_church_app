@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/enam_church_app/static/css/main.23e3a32c.css",
-    "main.js": "/enam_church_app/static/js/main.7b64e792.js",
+    "main.js": "/enam_church_app/static/js/main.ca1f9661.js",
     "index.html": "/enam_church_app/index.html",
     "main.23e3a32c.css.map": "/enam_church_app/static/css/main.23e3a32c.css.map",
-    "main.7b64e792.js.map": "/enam_church_app/static/js/main.7b64e792.js.map"
+    "main.ca1f9661.js.map": "/enam_church_app/static/js/main.ca1f9661.js.map"
   },
   "entrypoints": [
     "static/css/main.23e3a32c.css",
-    "static/js/main.7b64e792.js"
+    "static/js/main.ca1f9661.js"
   ]
 }
