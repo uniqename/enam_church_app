@@ -4,12 +4,79 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
 }
 
 * {
   box-sizing: border-box;
 }
 
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .mobile-optimized {
+    padding: 0.5rem;
+  }
+}
+
+/* Touch-friendly button styles */
+button {
+  min-height: 44px;
+  min-width: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Input field improvements for mobile */
+input, select, textarea {
+  font-size: 16px; /* Prevents zoom on iOS */
+  -webkit-appearance: none;
+  border-radius: 8px;
+}
+
+/* Mobile scroll improvements */
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
 #root {
   min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* PWA display adjustments */
+@media all and (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Loading spinner for PWA */
+.pwa-loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
