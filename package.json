@@ -23,7 +23,7 @@
     "capacitor:sync": "npx cap sync",
     "serve": "npx http-server build -p 3000"
   },
-  "homepage": "https://uniqename.github.io/enam_church_app",
+  "homepage": ".",
   "browserslist": {
     "production": [
       ">0.2%",
