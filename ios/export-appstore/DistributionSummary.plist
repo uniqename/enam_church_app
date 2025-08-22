@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>App.ipa</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>buildNumber</key>
+			<string>14</string>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>952BCAFF0994FC2492E65C705675FB45169ED459</string>
+				<key>dateExpires</key>
+				<string>6/23/26</string>
+				<key>type</key>
+				<string>Cloud Managed Apple Distribution</string>
+			</dict>
+			<key>embeddedBinaries</key>
+			<array>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>arm64</string>
+					</array>
+					<key>buildNumber</key>
+					<string>1</string>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>952BCAFF0994FC2492E65C705675FB45169ED459</string>
+						<key>dateExpires</key>
+						<string>6/23/26</string>
+						<key>type</key>
+						<string>Cloud Managed Apple Distribution</string>
+					</dict>
+					<key>name</key>
+					<string>Capacitor.framework</string>
+					<key>symbols</key>
+					<true/>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>U5JG38RBYM</string>
+						<key>name</key>
+						<string>Enam Egyir</string>
+					</dict>
+					<key>versionNumber</key>
+					<string>7.4.1</string>
+				</dict>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>arm64</string>
+					</array>
+					<key>buildNumber</key>
+					<string>1</string>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>952BCAFF0994FC2492E65C705675FB45169ED459</string>
+						<key>dateExpires</key>
+						<string>6/23/26</string>
+						<key>type</key>
+						<string>Cloud Managed Apple Distribution</string>
+					</dict>
+					<key>name</key>
+					<string>Cordova.framework</string>
+					<key>symbols</key>
+					<true/>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>U5JG38RBYM</string>
+						<key>name</key>
+						<string>Enam Egyir</string>
+					</dict>
+					<key>versionNumber</key>
+					<string>7.4.1</string>
+				</dict>
+			</array>
+			<key>entitlements</key>
+			<dict>
+				<key>application-identifier</key>
+				<string>U5JG38RBYM.com.faithklinikministries.app</string>
+				<key>beta-reports-active</key>
+				<true/>
+				<key>com.apple.developer.team-identifier</key>
+				<string>U5JG38RBYM</string>
+				<key>get-task-allow</key>
+				<false/>
+			</dict>
+			<key>name</key>
+			<string>App.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>1abd9e59-0e91-496c-a541-e4f8dbe93072</string>
+				<key>dateExpires</key>
+				<string>6/23/26</string>
+				<key>name</key>
+				<string>iOS Team Store Provisioning Profile: com.faithklinikministries.app</string>
+			</dict>
+			<key>symbols</key>
+			<true/>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>U5JG38RBYM</string>
+				<key>name</key>
+				<string>Enam Egyir</string>
+			</dict>
+			<key>versionNumber</key>
+			<string>1.0</string>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,54 @@
+{
+	"appId": "com.faithklinikministries.app",
+	"appName": "Faith Klinik Ministries",
+	"webDir": "build",
+	"bundledWebRuntime": false,
+	"server": {
+		"hostname": "localhost",
+		"androidScheme": "https"
+	},
+	"plugins": {
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		},
+		"LocalNotifications": {
+			"smallIcon": "ic_stat_icon_config_sample",
+			"iconColor": "#2563eb",
+			"sound": "beep.wav"
+		},
+		"SplashScreen": {
+			"launchShowDuration": 2000,
+			"backgroundColor": "#2563eb",
+			"showSpinner": true,
+			"spinnerColor": "#ffffff",
+			"androidSpinnerStyle": "large",
+			"iosSpinnerStyle": "small"
+		},
+		"StatusBar": {
+			"style": "Dark",
+			"backgroundColor": "#ffffff",
+			"overlaysWebView": false
+		},
+		"Keyboard": {
+			"resize": "body",
+			"style": "dark",
+			"resizeOnFullScreen": true
+		}
+	},
+	"cordova": {
+		"preferences": {
+			"ScrollEnabled": "false",
+			"BackupWebStorage": "none",
+			"SplashMaintainAspectRatio": "true",
+			"FadeSplashScreenDuration": "300",
+			"SplashShowOnlyFirstTime": "false",
+			"SplashScreen": "screen",
+			"SplashScreenDelay": "3000"
+		}
+	},
+	"packageClassList": []
+}
