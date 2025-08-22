@@ -1,3 +1,14 @@
+import EnhancedFaithKlinikApp from './EnhancedFaithKlinikApp';
+
+const App = () => {
+  return <EnhancedFaithKlinikApp />;
+};
+
+export default App;
+
+/* 
+ORIGINAL APP CODE PRESERVED BELOW FOR REFERENCE
+
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
