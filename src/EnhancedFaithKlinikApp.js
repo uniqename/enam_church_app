@@ -151,10 +151,90 @@ const FaithKlinikApp = () => {
 
   // Data states
   const [prayerSchedule, setPrayerSchedule] = useState([
-    { id: 1, time: '6:00 AM', leader: 'Pastor Johnson', type: 'Morning Prayer' },
-    { id: 2, time: '12:00 PM', leader: 'Elder Sarah', type: 'Midday Prayer' },
-    { id: 3, time: '6:00 PM', leader: 'Deacon Mike', type: 'Evening Prayer' },
-    { id: 4, time: '9:00 PM', leader: 'Sister Grace', type: 'Night Prayer' }
+    { 
+      id: 1, 
+      day: 'Monday', 
+      time: '6:00 AM', 
+      leader: 'Pastor Johnson', 
+      type: 'Morning Prayer', 
+      platform: 'zoom',
+      zoomLink: 'https://zoom.us/j/123456789',
+      meetingId: '123 456 789',
+      passcode: 'pray123'
+    },
+    { 
+      id: 2, 
+      day: 'Tuesday', 
+      time: '6:00 AM', 
+      leader: 'Elder Sarah', 
+      type: 'Morning Prayer', 
+      platform: 'zoom',
+      zoomLink: 'https://zoom.us/j/123456789',
+      meetingId: '123 456 789',
+      passcode: 'pray123'
+    },
+    { 
+      id: 3, 
+      day: 'Wednesday', 
+      time: '6:00 AM', 
+      leader: 'Deacon Mike', 
+      type: 'Morning Prayer', 
+      platform: 'zoom',
+      zoomLink: 'https://zoom.us/j/123456789',
+      meetingId: '123 456 789',
+      passcode: 'pray123'
+    },
+    { 
+      id: 4, 
+      day: 'Thursday', 
+      time: '6:00 AM', 
+      leader: 'Sister Grace', 
+      type: 'Morning Prayer', 
+      platform: 'zoom',
+      zoomLink: 'https://zoom.us/j/123456789',
+      meetingId: '123 456 789',
+      passcode: 'pray123'
+    },
+    { 
+      id: 5, 
+      day: 'Friday', 
+      time: '6:00 AM', 
+      leader: 'Minister David', 
+      type: 'Morning Prayer', 
+      platform: 'zoom',
+      zoomLink: 'https://zoom.us/j/123456789',
+      meetingId: '123 456 789',
+      passcode: 'pray123'
+    },
+    { 
+      id: 6, 
+      day: 'Saturday', 
+      time: '6:00 AM', 
+      leader: 'Elder Mary', 
+      type: 'Morning Prayer', 
+      platform: 'zoom',
+      zoomLink: 'https://zoom.us/j/123456789',
+      meetingId: '123 456 789',
+      passcode: 'pray123'
+    },
+    { 
+      id: 7, 
+      day: 'Sunday', 
+      time: '5:00 AM', 
+      leader: 'Pastor Johnson', 
+      type: 'Pre-Service Prayer', 
+      platform: 'church',
+      location: 'Church Premises - Prayer Room'
+    },
+    { 
+      id: 8, 
+      day: 'Half Night (Various)', 
+      time: '10:00 PM - 2:00 AM', 
+      leader: 'Rotating Leadership', 
+      type: 'Half Night Prayer', 
+      platform: 'church',
+      location: 'Church Premises - Main Hall'
+    }
   ]);
 
   const [sermons, setSermons] = useState([
@@ -432,6 +512,7 @@ const FaithKlinikApp = () => {
       canViewAnalytics: true,
       canManageAnnouncements: true,
       canManagePrayerRequests: true,
+      canEditPrayerSchedule: true,
       canMessageDepartments: true
     },
     admin: {
@@ -529,32 +610,29 @@ const FaithKlinikApp = () => {
     
     const baseItems = [
       { id: 'dashboard', name: 'Home', icon: Home },
-      { id: 'services', name: 'Services', icon: Calendar },
-      { id: 'community', name: 'Community', icon: Users },
       { id: 'announcements', name: 'Announcements', icon: Megaphone },
-      { id: 'prayer', name: 'Prayer', icon: Heart }
+      { id: 'prayer', name: 'Prayer Ministry', icon: Heart },
+      { id: 'sermons', name: 'Sermons', icon: BookOpen },
+      { id: 'live-streams', name: 'Live Streams', icon: Activity },
     ];
 
     switch(currentUser.role) {
       case 'pastor':
         return [
           ...baseItems,
-          { id: 'sermons', name: 'Sermons', icon: BookOpen },
-          { id: 'live-streams', name: 'Live Streams', icon: Activity },
-          { id: 'pastoral-care', name: 'Pastoral Care', icon: Heart },
-          { id: 'analytics', name: 'Analytics', icon: BarChart3 },
+          { id: 'departments', name: 'Ministries', icon: Building },
           { id: 'members', name: 'Members', icon: Users },
           { id: 'leadership', name: 'Leadership', icon: Crown },
           { id: 'finances', name: 'Finances', icon: DollarSign },
-          { id: 'departments', name: 'Ministries', icon: Building },
+          { id: 'analytics', name: 'Analytics', icon: BarChart3 },
           { id: 'bible-apps', name: 'Bible Apps', icon: BookOpen }
         ];
       
       case 'admin':
         return [
           ...baseItems,
-          { id: 'members', name: 'Members', icon: Users },
           { id: 'departments', name: 'Ministries', icon: Building },
+          { id: 'members', name: 'Members', icon: Users },
           { id: 'finances', name: 'Finances', icon: DollarSign },
           { id: 'meetings', name: 'Meetings', icon: Calendar },
           { id: 'bible-apps', name: 'Bible Apps', icon: BookOpen },
@@ -573,17 +651,21 @@ const FaithKlinikApp = () => {
       
       case 'child':
         return [
-          { id: 'kids-home', name: 'Home', icon: Home },
-          { id: 'bible-stories', name: 'Stories', icon: BookOpen },
-          { id: 'games', name: 'Games', icon: Sparkles },
-          { id: 'friends', name: 'Friends', icon: Users },
-          { id: 'badges', name: 'Badges', icon: Crown },
-          { id: 'bible-apps', name: 'Bible Apps', icon: BookOpen }
+          { id: 'kids-home', name: '🏠 Home', icon: Home },
+          { id: 'announcements', name: '📢 News', icon: Megaphone },
+          { id: 'prayer', name: '🙏 Prayer', icon: Heart },
+          { id: 'bible-stories', name: '📖 Stories', icon: BookOpen },
+          { id: 'games', name: '🎮 Games', icon: Sparkles },
+          { id: 'badges', name: '⭐ Badges', icon: Crown },
+          { id: 'bible-apps', name: '📱 Bible Apps', icon: BookOpen },
+          { id: 'friends', name: '👫 Friends', icon: Users }
         ];
       
       case 'visitor':
         return [
           { id: 'welcome', name: 'Welcome', icon: Heart },
+          { id: 'announcements', name: 'Announcements', icon: Megaphone },
+          { id: 'sermons', name: 'Sermons', icon: BookOpen },
           { id: 'services', name: 'Services', icon: Calendar },
           { id: 'about', name: 'About Us', icon: Building },
           { id: 'connect', name: 'Connect', icon: Users }
@@ -592,9 +674,8 @@ const FaithKlinikApp = () => {
       default: // member
         return [
           ...baseItems,
-          { id: 'sermons', name: 'Sermons', icon: BookOpen },
-          { id: 'live-streams', name: 'Live Streams', icon: Activity },
-          { id: 'profile', name: 'Profile', icon: Users },
+          { id: 'community', name: 'Community', icon: Users },
+          { id: 'profile', name: 'My Profile', icon: Users },
           { id: 'giving', name: 'Giving', icon: DollarSign },
           { id: 'bible-apps', name: 'Bible Apps', icon: BookOpen }
         ];
@@ -1356,67 +1437,155 @@ const FaithKlinikApp = () => {
           </div>
         )}
 
-        {/* Prayer Requests Section */}
+        {/* Enhanced Prayer Section */}
         {activeTab === 'prayer' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h1 className="text-3xl font-bold text-gray-900">
-                {currentUser?.role === 'child' ? '🙏 Prayer Corner' : 'Prayer Requests'}
+                {currentUser?.role === 'child' ? '🙏 Prayer Corner' : 'Prayer Ministry'}
               </h1>
-              <button
-                onClick={() => setShowAddPrayerRequest(true)}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {currentUser?.role === 'child' ? 'Add Prayer' : 'Add Request'}
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowAddPrayerRequest(true)}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {currentUser?.role === 'child' ? 'Add Prayer' : 'Submit Request'}
+                </button>
+                {userPermissions[currentUser?.role]?.canEditPrayerSchedule && (
+                  <button
+                    onClick={() => setShowDepartmentChat(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Manage Schedule
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="grid gap-4">
-              {prayerRequests.map((request) => (
-                <div key={request.id} className={`${currentUser?.role === 'child' ? 'bg-green-50 border-green-200' : 'bg-white'} rounded-lg shadow-sm p-6 border`}>
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start space-x-3 flex-1">
-                      <div className={`p-2 ${request.urgent ? 'bg-red-100 text-red-600' : 'bg-purple-100 text-purple-600'} rounded-lg`}>
-                        <Heart className="w-4 h-4" />
-                      </div>
+            {/* Prayer Schedule Section */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+                Prayer Schedule
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {prayerSchedule.map((prayer) => (
+                  <div key={prayer.id} className={`p-4 rounded-lg border ${
+                    prayer.platform === 'zoom' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'
+                  }`}>
+                    <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {currentUser?.role === 'child' ? `❤️ ${request.title}` : request.title}
-                        </h3>
-                        <p className="text-gray-600 mb-2">{request.content}</p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>By {request.requester}</span>
-                          <span>{request.date}</span>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            request.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {request.status}
-                          </span>
+                        <h4 className="font-semibold text-gray-900 mb-1">
+                          {prayer.day} - {prayer.type}
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">{prayer.time}</p>
+                        <p className="text-sm text-gray-500">Led by {prayer.leader}</p>
+                        
+                        {prayer.platform === 'zoom' && (
+                          <div className="mt-3 p-3 bg-white rounded-lg">
+                            <div className="flex items-center space-x-4 text-sm">
+                              <span><strong>Meeting ID:</strong> {prayer.meetingId}</span>
+                              <span><strong>Passcode:</strong> {prayer.passcode}</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {prayer.platform === 'church' && (
+                          <div className="mt-3 p-3 bg-white rounded-lg">
+                            <p className="text-sm"><strong>Location:</strong> {prayer.location}</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col space-y-2 ml-4">
+                        {prayer.platform === 'zoom' && (
+                          <a
+                            href={prayer.zoomLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700 transition-colors text-center"
+                          >
+                            🎥 Join Zoom
+                          </a>
+                        )}
+                        {prayer.platform === 'church' && (
+                          <div className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm text-center">
+                            🏛️ In Person
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Prayer Requests Grid */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <Heart className="w-5 h-5 mr-2 text-purple-600" />
+                Prayer Requests
+              </h3>
+              <div className="grid gap-4">
+                {prayerRequests.map((request) => (
+                  <div key={request.id} className={`${currentUser?.role === 'child' ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'} rounded-lg p-4 border`}>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-start space-x-3 flex-1">
+                        <div className={`p-2 ${request.urgent ? 'bg-red-100 text-red-600' : 'bg-purple-100 text-purple-600'} rounded-lg`}>
+                          <Heart className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 mb-1">
+                            {currentUser?.role === 'child' ? `❤️ ${request.title}` : request.title}
+                          </h4>
+                          <p className="text-gray-600 text-sm mb-2">{request.content}</p>
+                          <div className="flex items-center space-x-4 text-xs text-gray-500">
+                            <span>By {request.requester}</span>
+                            <span>{request.date}</span>
+                            <span className={`px-2 py-1 rounded-full ${
+                              request.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {request.status}
+                            </span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        {request.urgent && (
+                          <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
+                            Urgent
+                          </span>
+                        )}
+                        {request.anonymous && (
+                          <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
+                            Anonymous
+                          </span>
+                        )}
+                        {userPermissions[currentUser?.role]?.canManagePrayerRequests && (
+                          <div className="flex space-x-1">
+                            <button className="p-1 text-blue-600 hover:bg-blue-100 rounded">
+                              <Edit className="w-3 h-3" />
+                            </button>
+                            <button className="p-1 text-red-600 hover:bg-red-100 rounded">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {request.urgent && (
-                        <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                          Urgent
-                        </span>
-                      )}
-                      {request.anonymous && (
-                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
-                          Anonymous
-                        </span>
-                      )}
+                    
+                    <div className="mt-3 flex space-x-2">
+                      <button className={`${currentUser?.role === 'child' ? 'bg-green-500 hover:bg-green-600' : 'bg-purple-500 hover:bg-purple-600'} text-white px-3 py-1 rounded-lg transition-colors text-sm`}>
+                        {currentUser?.role === 'child' ? '🙏 Pray' : '🙏 Pray for this'}
+                      </button>
+                      <button className="bg-gray-200 text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 transition-colors text-sm">
+                        Share
+                      </button>
                     </div>
                   </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <button className={`${currentUser?.role === 'child' ? 'bg-green-500 hover:bg-green-600' : 'bg-purple-500 hover:bg-purple-600'} text-white px-4 py-2 rounded-lg transition-colors text-sm`}>
-                      {currentUser?.role === 'child' ? '🙏 Say Prayer' : '🙏 Pray for this'}
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}
