@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faith Klinik - All Screenshots Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .canvas-container { margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        canvas { border: 1px solid #ddd; margin: 10px 0; max-width: 100%; height: auto; }
+        button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #45a049; }
+        .download-all { background: #2196F3; }
+        .download-all:hover { background: #1976D2; }
+        .screenshot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Faith Klinik Ministries - Complete Screenshot Collection</h1>
+    
+    <div style="margin: 20px 0;">
+        <button class="download-all" onclick="downloadAllScreenshots()">Download All Screenshots as ZIP</button>
+    </div>
+
+    <div class="screenshot-grid">
+        <!-- Phone Screenshots -->
+        <div class="canvas-container">
+            <h3>Phone - Login Screen</h3>
+            <canvas id="phone1" width="1080" height="1920"></canvas>
+            <button onclick="downloadCanvas('phone1', 'phone-01-login.png')">Download</button>
+        </div>
+
+        <div class="canvas-container">
+            <h3>Phone - Dashboard</h3>
+            <canvas id="phone2" width="1080" height="1920"></canvas>
+            <button onclick="downloadCanvas('phone2', 'phone-02-dashboard.png')">Download</button>
+        </div>
+
+        <div class="canvas-container">
+            <h3>Phone - Prayer Requests</h3>
+            <canvas id="phone3" width="1080" height="1920"></canvas>
+            <button onclick="downloadCanvas('phone3', 'phone-03-prayer.png')">Download</button>
+        </div>
+
+        <div class="canvas-container">
+            <h3>Phone - Live Streaming</h3>
+            <canvas id="phone4" width="1080" height="1920"></canvas>
+            <button onclick="downloadCanvas('phone4', 'phone-04-streaming.png')">Download</button>
+        </div>
+
+        <div class="canvas-container">
+            <h3>Phone - Children Portal</h3>
+            <canvas id="phone5" width="1080" height="1920"></canvas>
+            <button onclick="downloadCanvas('phone5', 'phone-05-children.png')">Download</button>
+        </div>
+
+        <!-- 7-inch Tablet Screenshots -->
+        <div class="canvas-container">
+            <h3>7" Tablet - Dashboard</h3>
+            <canvas id="tablet7_1" width="1200" height="1920"></canvas>
+            <button onclick="downloadCanvas('tablet7_1', 'tablet-7inch-01-dashboard.png')">Download</button>
+        </div>
+
+        <div class="canvas-container">
+            <h3>7" Tablet - Prayer Ministry</h3>
+            <canvas id="tablet7_2" width="1200" height="1920"></canvas>
+            <button onclick="downloadCanvas('tablet7_2', 'tablet-7inch-02-prayer.png')">Download</button>
+        </div>
+
+        <!-- 10-inch Tablet Screenshots -->
+        <div class="canvas-container">
+            <h3>10" Tablet - Full Interface</h3>
+            <canvas id="tablet10_1" width="1600" height="2560"></canvas>
+            <button onclick="downloadCanvas('tablet10_1', 'tablet-10inch-01-full.png')">Download</button>
+        </div>
+
+        <div class="canvas-container">
+            <h3>10" Tablet - Community Features</h3>
+            <canvas id="tablet10_2" width="1600" height="2560"></canvas>
+            <button onclick="downloadCanvas('tablet10_2', 'tablet-10inch-02-community.png')">Download</button>
+        </div>
+    </div>
+
+    <script>
+        // Phone Screenshot 1 - Login Screen
+        function createPhoneLogin() {
+            const canvas = document.getElementById('phone1');
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
+            gradient.addColorStop(0, '#4a90e2');
+            gradient.addColorStop(1, '#2c5aa0');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1080, 1920);
+            
+            // App logo area
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(540, 480, 120, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Cross in logo
+            ctx.strokeStyle = '#4a90e2';
+            ctx.lineWidth = 20;
+            ctx.beginPath();
+            ctx.moveTo(540, 420);
+            ctx.lineTo(540, 540);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(480, 480);
+            ctx.lineTo(600, 480);
+            ctx.stroke();
+            
+            // Title
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 64px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Faith Klinik', 540, 700);
+            ctx.font = 'bold 48px Arial';
+            ctx.fillText('Ministries', 540, 770);
+            
+            // Subtitle
+            ctx.font = '32px Arial';
+            ctx.fillText('Connect with your church family', 540, 850);
+            
+            // Login form
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.roundRect(80, 950, 920, 600, 20);
+            ctx.fill();
+            
+            // Form fields
+            ctx.fillStyle = '#f8f9fa';
+            ctx.beginPath();
+            ctx.roundRect(140, 1020, 800, 80, 10);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.roundRect(140, 1140, 800, 80, 10);
+            ctx.fill();
+            
+            // Form labels
+            ctx.fillStyle = '#333';
+            ctx.font = '36px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Email Address', 160, 1060);
+            ctx.fillText('Password', 160, 1180);
+            
+            // Login button
+            ctx.fillStyle = '#28a745';
+            ctx.beginPath();
+            ctx.roundRect(140, 1280, 800, 80, 10);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Sign In', 540, 1340);
+            
+            // Child login link
+            ctx.fillStyle = '#4a90e2';
+            ctx.font = '32px Arial';
+            ctx.fillText('Children\'s Safe Login', 540, 1440);
+        }
+
+        // Phone Screenshot 2 - Dashboard
+        function createPhoneDashboard() {
+            const canvas = document.getElementById('phone2');
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, 1080, 1920);
+            
+            // Header
+            ctx.fillStyle = '#4a90e2';
+            ctx.fillRect(0, 0, 1080, 200);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 44px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Welcome back, John!', 540, 130);
+            
+            // Quick actions grid
+            const actions = [
+                { icon: '🙏', title: 'Prayer\nRequests', color: '#28a745' },
+                { icon: '📺', title: 'Live\nStream', color: '#dc3545' },
+                { icon: '📢', title: 'Church\nNews', color: '#ffc107' },
+                { icon: '📖', title: 'Bible\nStudy', color: '#17a2b8' }
+            ];
+            
+            actions.forEach((action, index) => {
+                const x = (index % 2) * 500 + 90;
+                const y = Math.floor(index / 2) * 350 + 280;
+                
+                ctx.fillStyle = action.color;
+                ctx.beginPath();
+                ctx.roundRect(x, y, 400, 300, 20);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '80px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(action.icon, x + 200, y + 120);
+                
+                ctx.font = 'bold 32px Arial';
+                const lines = action.title.split('\n');
+                lines.forEach((line, lineIndex) => {
+                    ctx.fillText(line, x + 200, y + 200 + (lineIndex * 40));
+                });
+            });
+            
+            // Recent activity section
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(40, 1000, 1000, 800, 15);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#e1e5e9';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Recent Activity', 80, 1060);
+            
+            // Activity items
+            const activities = [
+                '• Prayer meeting tonight at 7 PM',
+                '• New sermon: "Walking in Faith"',
+                '• Children\'s ministry this Sunday',
+                '• Community outreach event planned'
+            ];
+            
+            ctx.font = '32px Arial';
+            activities.forEach((activity, index) => {
+                ctx.fillText(activity, 80, 1140 + (index * 80));
+            });
+        }
+
+        // Phone Screenshot 3 - Prayer Requests
+        function createPhonePrayer() {
+            const canvas = document.getElementById('phone3');
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, 1080, 1920);
+            
+            // Header
+            ctx.fillStyle = '#28a745';
+            ctx.fillRect(0, 0, 1080, 200);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 44px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Prayer Ministry', 540, 130);
+            
+            // Add prayer button
+            ctx.fillStyle = '#ffc107';
+            ctx.beginPath();
+            ctx.roundRect(40, 220, 1000, 80, 10);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 36px Arial';
+            ctx.fillText('+ Submit Prayer Request', 540, 275);
+            
+            // Prayer schedule
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(40, 340, 1000, 300, 15);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('This Week\'s Prayer Schedule', 80, 390);
+            
+            ctx.font = '28px Arial';
+            ctx.fillText('Monday-Saturday: Zoom Prayer (6:00 AM)', 80, 440);
+            ctx.fillText('Sunday: In-Person Prayer (Church)', 80, 480);
+            ctx.fillText('Half-Night Services: Church Building', 80, 520);
+            
+            ctx.fillStyle = '#4a90e2';
+            ctx.beginPath();
+            ctx.roundRect(80, 560, 200, 50, 8);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Join Zoom', 180, 590);
+            
+            // Recent prayer requests
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(40, 680, 1000, 1000, 15);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Recent Prayer Requests', 80, 730);
+            
+            const prayers = [
+                'Healing for Sarah\'s family member',
+                'Job opportunity for Michael',
+                'Safe travels for the mission team',
+                'Guidance in life decisions',
+                'Strength during difficult times'
+            ];
+            
+            prayers.forEach((prayer, index) => {
+                const y = 800 + (index * 160);
+                
+                ctx.fillStyle = '#f8f9fa';
+                ctx.beginPath();
+                ctx.roundRect(80, y, 920, 120, 10);
+                ctx.fill();
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '30px Arial';
+                ctx.fillText(prayer, 100, y + 50);
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '24px Arial';
+                ctx.fillText('23 people praying', 100, y + 85);
+                
+                ctx.fillStyle = '#28a745';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText('🙏 Pray', 980, y + 70);
+            });
+        }
+
+        // Phone Screenshot 4 - Live Streaming
+        function createPhoneStreaming() {
+            const canvas = document.getElementById('phone4');
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, 1080, 1920);
+            
+            // Video area
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, 1080, 600);
+            
+            // Play button
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            ctx.arc(540, 300, 80, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.moveTo(510, 270);
+            ctx.lineTo(510, 330);
+            ctx.lineTo(570, 300);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Live indicator
+            ctx.fillStyle = '#dc3545';
+            ctx.beginPath();
+            ctx.roundRect(40, 40, 120, 40, 20);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🔴 LIVE', 100, 65);
+            
+            // Video title area
+            ctx.fillStyle = '#2c2c2c';
+            ctx.fillRect(0, 600, 1080, 200);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Sunday Morning Service', 40, 650);
+            
+            ctx.font = '28px Arial';
+            ctx.fillStyle = '#ccc';
+            ctx.fillText('Pastor Johnson - "Walking by Faith"', 40, 690);
+            ctx.fillText('👥 247 watching now', 40, 730);
+            
+            // Platform options
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 800, 1080, 300);
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Watch on your favorite platform:', 540, 850);
+            
+            // Platform buttons
+            const platforms = [
+                { name: 'YouTube', color: '#ff0000', y: 920 },
+                { name: 'Facebook', color: '#1877f2', y: 1020 },
+                { name: 'Zoom', color: '#2d8cff', y: 1120 }
+            ];
+            
+            platforms.forEach(platform => {
+                ctx.fillStyle = platform.color;
+                ctx.beginPath();
+                ctx.roundRect(140, platform.y, 800, 70, 10);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 32px Arial';
+                ctx.fillText(`Watch on ${platform.name}`, 540, platform.y + 50);
+            });
+            
+            // Chat section
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 1200, 1080, 720);
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Live Chat', 40, 1250);
+            
+            // Chat messages
+            const messages = [
+                'Mary: Praying with you all! 🙏',
+                'John: Powerful message today',
+                'Sarah: God bless our church',
+                'David: Amen to that! 🙌',
+                'Lisa: See you all next week'
+            ];
+            
+            messages.forEach((message, index) => {
+                const y = 1300 + (index * 80);
+                ctx.fillStyle = index % 2 === 0 ? '#f8f9fa' : 'white';
+                ctx.fillRect(40, y, 1000, 60);
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '26px Arial';
+                ctx.fillText(message, 60, y + 40);
+            });
+        }
+
+        // Phone Screenshot 5 - Children Portal
+        function createPhoneChildren() {
+            const canvas = document.getElementById('phone5');
+            const ctx = canvas.getContext('2d');
+            
+            // Colorful background
+            const gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
+            gradient.addColorStop(0, '#ffeaa7');
+            gradient.addColorStop(0.5, '#fab1a0');
+            gradient.addColorStop(1, '#fd79a8');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1080, 1920);
+            
+            // Fun pattern
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            for (let i = 0; i < 1080; i += 100) {
+                for (let j = 0; j < 1920; j += 100) {
+                    ctx.beginPath();
+                    ctx.arc(i + 50, j + 50, 20, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Header
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.roundRect(40, 40, 1000, 160, 20);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🌟 Kids Corner 🌟', 540, 140);
+            
+            // Safe login indicator
+            ctx.fillStyle = '#28a745';
+            ctx.beginPath();
+            ctx.roundRect(340, 250, 400, 60, 30);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText('🛡️ Safe & Secure', 540, 290);
+            
+            // Activity cards
+            const activities = [
+                { icon: '📖', title: 'Bible Stories', desc: 'Fun stories for kids', color: '#3498db' },
+                { icon: '🎵', title: 'Worship Songs', desc: 'Sing along favorites', color: '#e74c3c' },
+                { icon: '🎨', title: 'Creative Arts', desc: 'Color and draw', color: '#f39c12' },
+                { icon: '🎮', title: 'Bible Games', desc: 'Learn while playing', color: '#9b59b6' },
+                { icon: '🙏', title: 'Prayer Time', desc: 'Talk to God', color: '#2ecc71' },
+                { icon: '👥', title: 'Friends', desc: 'Meet other kids', color: '#e67e22' }
+            ];
+            
+            activities.forEach((activity, index) => {
+                const x = (index % 2) * 500 + 90;
+                const y = Math.floor(index / 2) * 400 + 380;
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.beginPath();
+                ctx.roundRect(x, y, 400, 350, 20);
+                ctx.fill();
+                
+                // Activity icon background
+                ctx.fillStyle = activity.color;
+                ctx.beginPath();
+                ctx.arc(x + 200, y + 100, 60, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '60px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(activity.icon, x + 200, y + 120);
+                
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 36px Arial';
+                ctx.fillText(activity.title, x + 200, y + 220);
+                
+                ctx.font = '28px Arial';
+                ctx.fillStyle = '#666';
+                ctx.fillText(activity.desc, x + 200, y + 260);
+                
+                // Fun button
+                ctx.fillStyle = activity.color;
+                ctx.beginPath();
+                ctx.roundRect(x + 50, y + 290, 300, 50, 25);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 28px Arial';
+                ctx.fillText('Let\'s Go!', x + 200, y + 325);
+            });
+        }
+
+        // 7-inch Tablet Dashboard
+        function createTablet7Dashboard() {
+            const canvas = document.getElementById('tablet7_1');
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, 1200, 1920);
+            
+            // Header with navigation
+            ctx.fillStyle = '#4a90e2';
+            ctx.fillRect(0, 0, 1200, 200);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 44px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Faith Klinik Ministries', 600, 80);
+            
+            // Tab navigation
+            const tabs = ['Dashboard', 'Prayer', 'Stream', 'Community', 'Bible'];
+            tabs.forEach((tab, index) => {
+                const x = index * 240 + 120;
+                ctx.fillStyle = index === 0 ? 'white' : 'rgba(255,255,255,0.7)';
+                ctx.font = '28px Arial';
+                ctx.fillText(tab, x, 150);
+            });
+            
+            // Two-column layout
+            // Left column - Quick actions
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(40, 250, 560, 800, 15);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Quick Actions', 70, 310);
+            
+            const quickActions = [
+                { icon: '🙏', text: 'Submit Prayer Request', color: '#28a745' },
+                { icon: '📺', text: 'Join Live Stream', color: '#dc3545' },
+                { icon: '👥', text: 'Community Chat', color: '#17a2b8' },
+                { icon: '📖', text: 'Daily Devotional', color: '#6f42c1' }
+            ];
+            
+            quickActions.forEach((action, index) => {
+                const y = 380 + (index * 150);
+                
+                ctx.fillStyle = action.color;
+                ctx.beginPath();
+                ctx.roundRect(70, y, 500, 120, 10);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(action.icon, 100, y + 70);
+                
+                ctx.font = 'bold 32px Arial';
+                ctx.fillText(action.text, 180, y + 75);
+            });
+            
+            // Right column - Recent activity
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(640, 250, 520, 800, 15);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Recent Activity', 670, 310);
+            
+            // Activity feed
+            const activities = [
+                { type: 'prayer', text: 'New prayer request from Sarah', time: '2 min ago' },
+                { type: 'announcement', text: 'Sunday service at 10 AM', time: '1 hour ago' },
+                { type: 'stream', text: 'Morning prayer ended', time: '3 hours ago' },
+                { type: 'community', text: '5 new messages in Youth Group', time: '1 day ago' }
+            ];
+            
+            activities.forEach((activity, index) => {
+                const y = 370 + (index * 160);
+                
+                ctx.fillStyle = '#f8f9fa';
+                ctx.beginPath();
+                ctx.roundRect(670, y, 460, 130, 10);
+                ctx.fill();
+                
+                const typeColors = {
+                    prayer: '#28a745',
+                    announcement: '#ffc107',
+                    stream: '#dc3545',
+                    community: '#17a2b8'
+                };
+                
+                ctx.fillStyle = typeColors[activity.type];
+                ctx.beginPath();
+                ctx.arc(700, y + 40, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '26px Arial';
+                ctx.fillText(activity.text, 730, y + 50);
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '20px Arial';
+                ctx.fillText(activity.time, 730, y + 80);
+            });
+        }
+
+        // 7-inch Tablet Prayer
+        function createTablet7Prayer() {
+            const canvas = document.getElementById('tablet7_2');
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#f0f8ff';
+            ctx.fillRect(0, 0, 1200, 1920);
+            
+            // Header
+            ctx.fillStyle = '#28a745';
+            ctx.fillRect(0, 0, 1200, 180);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Prayer Ministry Center', 600, 110);
+            
+            // Prayer schedule section
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(40, 220, 1120, 400, 15);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Weekly Prayer Schedule', 80, 280);
+            
+            const schedule = [
+                'Monday - Saturday: Zoom Prayer Meetings at 6:00 AM',
+                'Sunday: In-Person Prayer at Church (9:00 AM)',
+                'Half-Night Services: Church Building (7:00 PM - 12:00 AM)',
+                'Special Prayer Events: Check announcements'
+            ];
+            
+            schedule.forEach((item, index) => {
+                ctx.font = '32px Arial';
+                ctx.fillText(`• ${item}`, 100, 340 + (index * 70));
+            });
+            
+            // Join buttons
+            ctx.fillStyle = '#4a90e2';
+            ctx.beginPath();
+            ctx.roundRect(80, 540, 200, 60, 10);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '28px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Join Zoom', 180, 580);
+            
+            // Prayer requests grid
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Current Prayer Requests', 40, 720);
+            
+            // Prayer cards in grid
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 2; col++) {
+                    const x = col * 580 + 40;
+                    const y = row * 300 + 760;
+                    
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, 540, 260, 15);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = '#e1e5e9';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#333';
+                    ctx.font = '28px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('Prayer for healing and comfort', x + 20, y + 50);
+                    ctx.fillText('during this difficult time...', x + 20, y + 85);
+                    
+                    ctx.fillStyle = '#666';
+                    ctx.font = '22px Arial';
+                    ctx.fillText('Submitted by: Church Member', x + 20, y + 130);
+                    ctx.fillText('🙏 15 people praying', x + 20, y + 160);
+                    
+                    ctx.fillStyle = '#28a745';
+                    ctx.beginPath();
+                    ctx.roundRect(x + 20, y + 190, 120, 40, 8);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = 'white';
+                    ctx.font = '20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Pray Now', x + 80, y + 215);
+                }
+            }
+        }
+
+        // 10-inch Tablet Full Interface
+        function createTablet10Full() {
+            const canvas = document.getElementById('tablet10_1');
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, 1600, 2560);
+            
+            // Header with full navigation
+            ctx.fillStyle = '#4a90e2';
+            ctx.fillRect(0, 0, 1600, 220);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 56px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Faith Klinik Ministries', 800, 90);
+            
+            // Full navigation menu
+            const navItems = ['Home', 'Prayer', 'Streaming', 'Community', 'Bible', 'Children', 'Events'];
+            navItems.forEach((item, index) => {
+                const x = index * 228 + 114;
+                ctx.fillStyle = index === 0 ? 'white' : 'rgba(255,255,255,0.8)';
+                ctx.font = '32px Arial';
+                ctx.fillText(item, x, 160);
+            });
+            
+            // Three-column layout
+            // Left sidebar - User info and quick links
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(40, 260, 480, 2200, 15);
+            ctx.fill();
+            
+            // User profile section
+            ctx.fillStyle = '#4a90e2';
+            ctx.beginPath();
+            ctx.roundRect(60, 300, 440, 200, 10);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('👤', 280, 360);
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText('Welcome, John!', 280, 410);
+            ctx.font = '24px Arial';
+            ctx.fillText('Member since 2020', 280, 440);
+            
+            // Quick stats
+            const stats = [
+                { label: 'Prayer Requests', value: '12' },
+                { label: 'Services Attended', value: '45' },
+                { label: 'Community Posts', value: '8' }
+            ];
+            
+            stats.forEach((stat, index) => {
+                const y = 580 + (index * 120);
+                
+                ctx.fillStyle = '#f8f9fa';
+                ctx.beginPath();
+                ctx.roundRect(80, y, 400, 100, 10);
+                ctx.fill();
+                
+                ctx.fillStyle = '#4a90e2';
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(stat.value, 280, y + 45);
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '24px Arial';
+                ctx.fillText(stat.label, 280, y + 75);
+            });
+            
+            // Center content - Main dashboard
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(560, 260, 640, 2200, 15);
+            ctx.fill();
+            
+            // Live service section
+            ctx.fillStyle = '#dc3545';
+            ctx.beginPath();
+            ctx.roundRect(580, 300, 600, 300, 10);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🔴 LIVE NOW', 880, 360);
+            ctx.font = '32px Arial';
+            ctx.fillText('Sunday Morning Service', 880, 410);
+            ctx.font = '24px Arial';
+            ctx.fillText('Pastor Johnson - 247 watching', 880, 450);
+            
+            // Join button
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(730, 480, 300, 80, 40);
+            ctx.fill();
+            
+            ctx.fillStyle = '#dc3545';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText('Join Stream', 880, 535);
+            
+            // Announcements section
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('📢 Church Announcements', 600, 680);
+            
+            const announcements = [
+                'Youth Group Meeting - Friday 7 PM',
+                'Community Outreach - Saturday 9 AM',
+                'Bible Study - Wednesday 6:30 PM',
+                'Choir Practice - Thursday 7 PM'
+            ];
+            
+            announcements.forEach((announcement, index) => {
+                const y = 730 + (index * 80);
+                
+                ctx.fillStyle = '#f8f9fa';
+                ctx.beginPath();
+                ctx.roundRect(600, y, 580, 60, 8);
+                ctx.fill();
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '26px Arial';
+                ctx.fillText(announcement, 620, y + 40);
+            });
+            
+            // Prayer focus section
+            ctx.fillStyle = '#28a745';
+            ctx.beginPath();
+            ctx.roundRect(580, 1100, 600, 200, 10);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🙏 Today\'s Prayer Focus', 880, 1150);
+            ctx.font = '24px Arial';
+            ctx.fillText('Praying for our missionaries around', 880, 1190);
+            ctx.fillText('the world and their safety', 880, 1220);
+            
+            // Right sidebar - Community activity
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(1240, 260, 320, 2200, 15);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 28px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Community Feed', 1400, 320);
+            
+            // Community posts
+            for (let i = 0; i < 8; i++) {
+                const y = 360 + (i * 250);
+                
+                ctx.fillStyle = '#f8f9fa';
+                ctx.beginPath();
+                ctx.roundRect(1260, y, 280, 220, 10);
+                ctx.fill();
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('Mary shared:', 1280, y + 30);
+                ctx.font = '18px Arial';
+                ctx.fillText('Thank you for all the', 1280, y + 60);
+                ctx.fillText('prayers. God is good!', 1280, y + 85);
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Arial';
+                ctx.fillText('2 hours ago', 1280, y + 120);
+                
+                // Like/pray buttons
+                ctx.fillStyle = '#4a90e2';
+                ctx.beginPath();
+                ctx.roundRect(1280, y + 150, 60, 40, 8);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Like', 1310, y + 175);
+                
+                ctx.fillStyle = '#28a745';
+                ctx.beginPath();
+                ctx.roundRect(1360, y + 150, 60, 40, 8);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.fillText('Pray', 1390, y + 175);
+            }
+        }
+
+        // 10-inch Tablet Community
+        function createTablet10Community() {
+            const canvas = document.getElementById('tablet10_2');
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#f0f8ff';
+            ctx.fillRect(0, 0, 1600, 2560);
+            
+            // Header
+            ctx.fillStyle = '#17a2b8';
+            ctx.fillRect(0, 0, 1600, 200);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 56px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Community & Communication Hub', 800, 120);
+            
+            // Department sections
+            const departments = [
+                { name: 'Youth Ministry', color: '#e74c3c', icon: '👨‍👩‍👧‍👦' },
+                { name: 'Worship Team', color: '#f39c12', icon: '🎵' },
+                { name: 'Prayer Warriors', color: '#28a745', icon: '🙏' },
+                { name: 'Outreach Team', color: '#9b59b6', icon: '🌍' }
+            ];
+            
+            departments.forEach((dept, index) => {
+                const x = (index % 2) * 780 + 50;
+                const y = Math.floor(index / 2) * 600 + 260;
+                
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.roundRect(x, y, 720, 560, 15);
+                ctx.fill();
+                
+                // Department header
+                ctx.fillStyle = dept.color;
+                ctx.beginPath();
+                ctx.roundRect(x, y, 720, 120, 15);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(dept.icon, x + 120, y + 80);
+                
+                ctx.font = 'bold 32px Arial';
+                ctx.fillText(dept.name, x + 360, y + 80);
+                
+                // Recent messages
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('Recent Messages:', x + 30, y + 170);
+                
+                const messages = [
+                    'Sarah: Meeting this Friday at 7 PM',
+                    'Mike: Great practice session today!',
+                    'Lisa: Need volunteers for outreach',
+                    'Tom: Prayer request for healing'
+                ];
+                
+                messages.slice(0, 3).forEach((message, msgIndex) => {
+                    const msgY = y + 210 + (msgIndex * 60);
+                    
+                    ctx.fillStyle = '#f8f9fa';
+                    ctx.beginPath();
+                    ctx.roundRect(x + 30, msgY, 660, 50, 8);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#333';
+                    ctx.font = '20px Arial';
+                    ctx.fillText(message, x + 50, msgY + 35);
+                });
+                
+                // Communication buttons
+                ctx.fillStyle = '#25d366';
+                ctx.beginPath();
+                ctx.roundRect(x + 30, y + 420, 200, 60, 10);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('WhatsApp', x + 130, y + 460);
+                
+                ctx.fillStyle = '#4a154b';
+                ctx.beginPath();
+                ctx.roundRect(x + 260, y + 420, 200, 60, 10);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.fillText('Slack', x + 360, y + 460);
+                
+                ctx.fillStyle = dept.color;
+                ctx.beginPath();
+                ctx.roundRect(x + 490, y + 420, 200, 60, 10);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.fillText('View All', x + 590, y + 460);
+            });
+            
+            // Community guidelines section
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(50, 1500, 1500, 400, 15);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('💖 Community Guidelines', 800, 1580);
+            
+            const guidelines = [
+                '• Respect all members and their beliefs',
+                '• Keep conversations appropriate and family-friendly',
+                '• Share prayer requests and encouragement',
+                '• Use appropriate channels for different topics',
+                '• Report any concerns to ministry leaders'
+            ];
+            
+            guidelines.forEach((guideline, index) => {
+                ctx.font = '28px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(guideline, 100, 1640 + (index * 50));
+            });
+        }
+
+        // Download function
+        function downloadCanvas(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Download all screenshots function
+        function downloadAllScreenshots() {
+            const canvases = [
+                { id: 'phone1', name: 'phone-01-login.png' },
+                { id: 'phone2', name: 'phone-02-dashboard.png' },
+                { id: 'phone3', name: 'phone-03-prayer.png' },
+                { id: 'phone4', name: 'phone-04-streaming.png' },
+                { id: 'phone5', name: 'phone-05-children.png' },
+                { id: 'tablet7_1', name: 'tablet-7inch-01-dashboard.png' },
+                { id: 'tablet7_2', name: 'tablet-7inch-02-prayer.png' },
+                { id: 'tablet10_1', name: 'tablet-10inch-01-full.png' },
+                { id: 'tablet10_2', name: 'tablet-10inch-02-community.png' }
+            ];
+            
+            canvases.forEach((canvas, index) => {
+                setTimeout(() => {
+                    downloadCanvas(canvas.id, canvas.name);
+                }, index * 1000); // Delay each download by 1 second
+            });
+            
+            alert('Downloading all screenshots! Each file will download with a 1-second delay.');
+        }
+
+        // Add roundRect support for older browsers
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.beginPath();
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                this.closePath();
+                return this;
+            };
+        }
+
+        // Initialize all screenshots
+        window.onload = function() {
+            createPhoneLogin();
+            createPhoneDashboard();
+            createPhonePrayer();
+            createPhoneStreaming();
+            createPhoneChildren();
+            createTablet7Dashboard();
+            createTablet7Prayer();
+            createTablet10Full();
+            createTablet10Community();
+        };
+    </script>
+</body>
+</html>

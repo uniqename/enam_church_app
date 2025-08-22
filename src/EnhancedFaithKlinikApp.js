@@ -55,7 +55,15 @@ import {
   Star,
   Award,
   Users2,
-  Share2
+  Share2,
+  Flag,
+  UserX,
+  Shield,
+  Eye,
+  EyeOff,
+  AlertTriangle,
+  Lock,
+  Unlock
 } from 'lucide-react';
 
 const FaithKlinikApp = () => {
@@ -98,6 +106,19 @@ const FaithKlinikApp = () => {
   
   // STREAMING & SERMON STATES
   const [showLiveStreams, setShowLiveStreams] = useState(false);
+  
+  // SAFETY & MODERATION FEATURES
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+  const [showModerationPanel, setShowModerationPanel] = useState(false);
+  const [selectedReportItem, setSelectedReportItem] = useState(null);
+  const [selectedBlockUser, setSelectedBlockUser] = useState(null);
+  const [reportForm, setReportForm] = useState({
+    type: 'inappropriate',
+    description: '',
+    severity: 'medium'
+  });
   const [showSermonLibrary, setShowSermonLibrary] = useState(false);
   const [showAddSermon, setShowAddSermon] = useState(false);
   const [showVideoPlayer, setShowVideoPlayer] = useState(false);
@@ -503,6 +524,19 @@ const FaithKlinikApp = () => {
     }
   ]);
 
+  // SAFETY & MODERATION DATA
+  const [blockedUsers, setBlockedUsers] = useState([]);
+  const [reportedContent, setReportedContent] = useState([]);
+  const [privacySettings, setPrivacySettings] = useState({
+    allowMessagesFrom: 'church-members', // 'everyone', 'church-members', 'friends-only'
+    allowPrayerRequestsFrom: 'everyone',
+    showOnlineStatus: true,
+    allowProfileViewing: 'church-members',
+    moderateChildrenContent: true,
+    requireApprovalForPosts: false
+  });
+  const [moderationQueue, setModerationQueue] = useState([]);
+
   // User permissions
   const userPermissions = {
     pastor: {
@@ -513,7 +547,11 @@ const FaithKlinikApp = () => {
       canManageAnnouncements: true,
       canManagePrayerRequests: true,
       canEditPrayerSchedule: true,
-      canMessageDepartments: true
+      canMessageDepartments: true,
+      canModerateContent: true,
+      canViewReports: true,
+      canBlockUsers: true,
+      canManagePrivacy: true
     },
     admin: {
       canManageMembers: true,
@@ -522,7 +560,11 @@ const FaithKlinikApp = () => {
       canViewAnalytics: true,
       canManageAnnouncements: true,
       canManagePrayerRequests: true,
-      canMessageDepartments: true
+      canMessageDepartments: true,
+      canModerateContent: true,
+      canViewReports: true,
+      canBlockUsers: true,
+      canManagePrivacy: false
     },
     leader: {
       canManageMembers: false,
@@ -531,7 +573,11 @@ const FaithKlinikApp = () => {
       canViewAnalytics: false,
       canManageAnnouncements: true,
       canManagePrayerRequests: true,
-      canMessageDepartments: true
+      canMessageDepartments: true,
+      canModerateContent: false,
+      canViewReports: false,
+      canBlockUsers: false,
+      canManagePrivacy: false
     },
     member: {
       canManageMembers: false,
@@ -540,7 +586,11 @@ const FaithKlinikApp = () => {
       canViewAnalytics: false,
       canManageAnnouncements: false,
       canManagePrayerRequests: false,
-      canMessageDepartments: false
+      canMessageDepartments: false,
+      canModerateContent: false,
+      canViewReports: false,
+      canBlockUsers: false,
+      canManagePrivacy: false
     },
     child: {
       canManageMembers: false,
@@ -549,7 +599,11 @@ const FaithKlinikApp = () => {
       canViewAnalytics: false,
       canManageAnnouncements: false,
       canManagePrayerRequests: false,
-      canMessageDepartments: false
+      canMessageDepartments: false,
+      canModerateContent: false,
+      canViewReports: false,
+      canBlockUsers: false,
+      canManagePrivacy: false
     }
   };
 
@@ -625,6 +679,7 @@ const FaithKlinikApp = () => {
           { id: 'leadership', name: 'Leadership', icon: Crown },
           { id: 'finances', name: 'Finances', icon: DollarSign },
           { id: 'analytics', name: 'Analytics', icon: BarChart3 },
+          { id: 'moderation', name: 'Moderation', icon: Shield },
           { id: 'bible-apps', name: 'Bible Apps', icon: BookOpen }
         ];
       
@@ -635,6 +690,7 @@ const FaithKlinikApp = () => {
           { id: 'members', name: 'Members', icon: Users },
           { id: 'finances', name: 'Finances', icon: DollarSign },
           { id: 'meetings', name: 'Meetings', icon: Calendar },
+          { id: 'moderation', name: 'Moderation', icon: Shield },
           { id: 'bible-apps', name: 'Bible Apps', icon: BookOpen },
           { id: 'settings', name: 'Settings', icon: Settings }
         ];
@@ -823,6 +879,85 @@ const FaithKlinikApp = () => {
       case 'zoom': return '🎥';
       default: return '📱';
     }
+  };
+
+  // SAFETY & MODERATION FUNCTIONS
+  const handleReportContent = (type, id, contentType) => {
+    setSelectedReportItem({ type, id, contentType });
+    setShowReportModal(true);
+  };
+
+  const handleBlockUser = (userId) => {
+    setSelectedBlockUser(userId);
+    setShowBlockModal(true);
+  };
+
+  const submitReport = (e) => {
+    e.preventDefault();
+    const newReport = {
+      id: Date.now(),
+      ...reportForm,
+      contentType: selectedReportItem.contentType,
+      contentId: selectedReportItem.id,
+      reportedBy: currentUser.username,
+      timestamp: new Date().toISOString(),
+      status: 'pending'
+    };
+    setReportedContent([...reportedContent, newReport]);
+    setModerationQueue([...moderationQueue, newReport]);
+    setShowReportModal(false);
+    setReportForm({ type: 'inappropriate', description: '', severity: 'medium' });
+    alert('Report submitted successfully. Our moderation team will review it.');
+  };
+
+  const confirmBlockUser = () => {
+    if (selectedBlockUser && !blockedUsers.includes(selectedBlockUser)) {
+      setBlockedUsers([...blockedUsers, selectedBlockUser]);
+      alert('User has been blocked. They will no longer be able to contact you.');
+    }
+    setShowBlockModal(false);
+    setSelectedBlockUser(null);
+  };
+
+  const unblockUser = (userId) => {
+    setBlockedUsers(blockedUsers.filter(id => id !== userId));
+    alert('User has been unblocked.');
+  };
+
+  const isUserBlocked = (userId) => {
+    return blockedUsers.includes(userId);
+  };
+
+  const canUserSendMessage = (fromUserId, toUserId) => {
+    if (blockedUsers.includes(fromUserId)) return false;
+    if (privacySettings.allowMessagesFrom === 'friends-only') return false; // Implement friend system later
+    if (privacySettings.allowMessagesFrom === 'church-members') {
+      const user = members.find(m => m.id === fromUserId);
+      return user && user.role !== 'visitor';
+    }
+    return true;
+  };
+
+  const moderateContent = (content) => {
+    // Simple content filtering - in production, use more sophisticated filtering
+    const inappropriate = ['badword1', 'badword2', 'spam'];
+    const lowercaseContent = content.toLowerCase();
+    return !inappropriate.some(word => lowercaseContent.includes(word));
+  };
+
+  const approveContent = (reportId) => {
+    setModerationQueue(moderationQueue.filter(item => item.id !== reportId));
+    setReportedContent(reportedContent.map(report => 
+      report.id === reportId ? { ...report, status: 'approved' } : report
+    ));
+  };
+
+  const removeContent = (reportId) => {
+    setModerationQueue(moderationQueue.filter(item => item.id !== reportId));
+    setReportedContent(reportedContent.map(report => 
+      report.id === reportId ? { ...report, status: 'removed' } : report
+    ));
+    // Here you would also remove the actual content from its original location
   };
 
   // Get platform color
@@ -1429,6 +1564,26 @@ const FaithKlinikApp = () => {
                           {announcement.department}
                         </span>
                       )}
+                      
+                      {/* Report & Block buttons */}
+                      {currentUser?.role !== 'child' && (
+                        <div className="flex space-x-1">
+                          <button 
+                            onClick={() => handleReportContent('announcement', announcement.id, 'announcement')}
+                            className="p-1 text-orange-600 hover:bg-orange-100 rounded"
+                            title="Report content"
+                          >
+                            <Flag className="w-3 h-3" />
+                          </button>
+                          <button 
+                            onClick={() => handleBlockUser(announcement.authorId)}
+                            className="p-1 text-red-600 hover:bg-red-100 rounded"
+                            title="Block user"
+                          >
+                            <UserX className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1562,16 +1717,39 @@ const FaithKlinikApp = () => {
                             Anonymous
                           </span>
                         )}
-                        {userPermissions[currentUser?.role]?.canManagePrayerRequests && (
-                          <div className="flex space-x-1">
-                            <button className="p-1 text-blue-600 hover:bg-blue-100 rounded">
-                              <Edit className="w-3 h-3" />
-                            </button>
-                            <button className="p-1 text-red-600 hover:bg-red-100 rounded">
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex space-x-1">
+                          {/* Report & Block buttons for all users */}
+                          {currentUser?.role !== 'child' && (
+                            <>
+                              <button 
+                                onClick={() => handleReportContent('prayer-request', request.id, 'prayer-request')}
+                                className="p-1 text-orange-600 hover:bg-orange-100 rounded"
+                                title="Report content"
+                              >
+                                <Flag className="w-3 h-3" />
+                              </button>
+                              <button 
+                                onClick={() => handleBlockUser(request.requesterId)}
+                                className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                title="Block user"
+                              >
+                                <UserX className="w-3 h-3" />
+                              </button>
+                            </>
+                          )}
+                          
+                          {/* Admin/Pastor management buttons */}
+                          {userPermissions[currentUser?.role]?.canManagePrayerRequests && (
+                            <>
+                              <button className="p-1 text-blue-600 hover:bg-blue-100 rounded">
+                                <Edit className="w-3 h-3" />
+                              </button>
+                              <button className="p-1 text-red-600 hover:bg-red-100 rounded">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                     
@@ -2211,6 +2389,136 @@ const FaithKlinikApp = () => {
             </div>
           </div>
         )}
+
+        {/* MODERATION PANEL */}
+        {activeTab === 'moderation' && (currentUser?.role === 'pastor' || currentUser?.role === 'admin') && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h1 className="text-3xl font-bold text-gray-900">🛡️ Content Moderation</h1>
+              <button
+                onClick={() => setShowPrivacySettings(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Privacy Settings
+              </button>
+            </div>
+
+            {/* Moderation Queue */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <AlertTriangle className="w-5 h-5 mr-2 text-orange-500" />
+                Reports Queue ({moderationQueue.length})
+              </h2>
+              
+              {moderationQueue.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No reports pending review</p>
+              ) : (
+                <div className="space-y-4">
+                  {moderationQueue.map((report) => (
+                    <div key={report.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Flag className="w-4 h-4 text-red-500" />
+                            <span className="font-medium text-red-700">
+                              {report.type.charAt(0).toUpperCase() + report.type.slice(1)} Content
+                            </span>
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              report.severity === 'high' ? 'bg-red-100 text-red-800' :
+                              report.severity === 'medium' ? 'bg-orange-100 text-orange-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {report.severity.toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-gray-700 mb-2">{report.description}</p>
+                          <div className="text-sm text-gray-500 space-y-1">
+                            <p>Reported by: {report.reportedBy}</p>
+                            <p>Content type: {report.contentType}</p>
+                            <p>Time: {new Date(report.timestamp).toLocaleString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2 ml-4">
+                          <button
+                            onClick={() => approveContent(report.id)}
+                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => removeContent(report.id)}
+                            className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Blocked Users Management */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <UserX className="w-5 h-5 mr-2 text-red-500" />
+                Blocked Users ({blockedUsers.length})
+              </h2>
+              
+              {blockedUsers.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No users blocked</p>
+              ) : (
+                <div className="space-y-2">
+                  {blockedUsers.map((userId) => {
+                    const user = members.find(m => m.id === userId);
+                    return (
+                      <div key={userId} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                        <div>
+                          <span className="font-medium">{user?.name || `User ${userId}`}</span>
+                          <span className="text-sm text-gray-500 ml-2">({user?.role || 'Unknown'})</span>
+                        </div>
+                        <button
+                          onClick={() => unblockUser(userId)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                        >
+                          Unblock
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Privacy Overview */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <Eye className="w-5 h-5 mr-2 text-blue-500" />
+                Current Privacy Settings
+              </h2>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Messages from:</span>
+                  <span className="ml-2 text-gray-600">{privacySettings.allowMessagesFrom}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Prayer requests from:</span>
+                  <span className="ml-2 text-gray-600">{privacySettings.allowPrayerRequestsFrom}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Profile viewing:</span>
+                  <span className="ml-2 text-gray-600">{privacySettings.allowProfileViewing}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Children's content moderation:</span>
+                  <span className="ml-2 text-gray-600">{privacySettings.moderateChildrenContent ? 'Enabled' : 'Disabled'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Add Announcement Modal */}
@@ -2772,6 +3080,254 @@ const FaithKlinikApp = () => {
                   <p className="text-gray-600">{selectedVideo.description}</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REPORT CONTENT MODAL */}
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold flex items-center">
+                <Flag className="w-5 h-5 mr-2 text-red-500" />
+                Report Content
+              </h3>
+              <button 
+                onClick={() => setShowReportModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={submitReport}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    value={reportForm.type}
+                    onChange={(e) => setReportForm(prev => ({...prev, type: e.target.value}))}
+                  >
+                    <option value="inappropriate">Inappropriate Content</option>
+                    <option value="harassment">Harassment</option>
+                    <option value="spam">Spam</option>
+                    <option value="hate-speech">Hate Speech</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    value={reportForm.severity}
+                    onChange={(e) => setReportForm(prev => ({...prev, severity: e.target.value}))}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    value={reportForm.description}
+                    onChange={(e) => setReportForm(prev => ({...prev, description: e.target.value}))}
+                    placeholder="Please describe the issue..."
+                    rows="3"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowReportModal(false)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Submit Report
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* BLOCK USER MODAL */}
+      {showBlockModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold flex items-center">
+                <UserX className="w-5 h-5 mr-2 text-red-500" />
+                Block User
+              </h3>
+              <button 
+                onClick={() => setShowBlockModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-700">
+                Are you sure you want to block this user? They will no longer be able to:
+              </p>
+              <ul className="mt-3 text-sm text-gray-600 space-y-1">
+                <li>• Send you messages</li>
+                <li>• View your prayer requests</li>
+                <li>• See your profile information</li>
+                <li>• Interact with your content</li>
+              </ul>
+              <p className="mt-3 text-sm text-gray-500">
+                You can unblock them later from your privacy settings.
+              </p>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowBlockModal(false)}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmBlockUser}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Block User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PRIVACY SETTINGS MODAL */}
+      {showPrivacySettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold flex items-center">
+                <Eye className="w-5 h-5 mr-2 text-blue-500" />
+                Privacy & Safety Settings
+              </h3>
+              <button 
+                onClick={() => setShowPrivacySettings(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Who can send you messages?</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={privacySettings.allowMessagesFrom}
+                  onChange={(e) => setPrivacySettings(prev => ({...prev, allowMessagesFrom: e.target.value}))}
+                >
+                  <option value="everyone">Everyone</option>
+                  <option value="church-members">Church Members Only</option>
+                  <option value="friends-only">Friends Only</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Who can submit prayer requests to you?</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={privacySettings.allowPrayerRequestsFrom}
+                  onChange={(e) => setPrivacySettings(prev => ({...prev, allowPrayerRequestsFrom: e.target.value}))}
+                >
+                  <option value="everyone">Everyone</option>
+                  <option value="church-members">Church Members Only</option>
+                  <option value="prayer-team">Prayer Team Only</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Who can view your profile?</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={privacySettings.allowProfileViewing}
+                  onChange={(e) => setPrivacySettings(prev => ({...prev, allowProfileViewing: e.target.value}))}
+                >
+                  <option value="everyone">Everyone</option>
+                  <option value="church-members">Church Members Only</option>
+                  <option value="friends-only">Friends Only</option>
+                </select>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="showOnlineStatus"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  checked={privacySettings.showOnlineStatus}
+                  onChange={(e) => setPrivacySettings(prev => ({...prev, showOnlineStatus: e.target.checked}))}
+                />
+                <label htmlFor="showOnlineStatus" className="ml-2 block text-sm text-gray-700">
+                  Show when you're online
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="moderateChildrenContent"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  checked={privacySettings.moderateChildrenContent}
+                  onChange={(e) => setPrivacySettings(prev => ({...prev, moderateChildrenContent: e.target.checked}))}
+                />
+                <label htmlFor="moderateChildrenContent" className="ml-2 block text-sm text-gray-700">
+                  Require approval for all children's content
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="requireApprovalForPosts"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  checked={privacySettings.requireApprovalForPosts}
+                  onChange={(e) => setPrivacySettings(prev => ({...prev, requireApprovalForPosts: e.target.checked}))}
+                />
+                <label htmlFor="requireApprovalForPosts" className="ml-2 block text-sm text-gray-700">
+                  Require approval for all public posts
+                </label>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowPrivacySettings(false)}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowPrivacySettings(false);
+                  alert('Privacy settings saved successfully!');
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Save Settings
+              </button>
             </div>
           </div>
         </div>

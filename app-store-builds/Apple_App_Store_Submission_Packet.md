@@ -12,8 +12,9 @@
 - **Device Support**: iPhone, iPad
 
 ## File Locations
-- **IPA File**: `faith-klinik-app.ipa`
-- **Archive Location**: `/Users/enamegyir/Documents/Projects/faith-klinik-app/ios/App.xcarchive`
+- **IPA File**: `faith-klinik-ministries-v2.0.0-signed.ipa` (App Store signed)
+- **Archive Location**: `/Users/enamegyir/Documents/Projects/faith-klinik-app/ios/export-appstore/App.ipa`
+- **Backup Archive**: `/Users/enamegyir/Documents/Projects/faith-klinik-app/ios/Faith_Klinik_Ministries_Distribution.xcarchive`
 
 ## App Store Connect Information
 
@@ -84,20 +85,79 @@ This inaugural release includes:
 
 Experience church community in a whole new way!
 
-## App Store Screenshots Required
+## Apple App Store Screenshots ✅
 
-### iPhone Screenshots (6.5" Display - 1284 x 2778 pixels)
-1. **Welcome/Login Screen** - Showcasing clean, welcoming design
-2. **Main Dashboard** - Highlighting key features and navigation
-3. **Prayer Requests** - Showing prayer submission and community features
-4. **Live Streaming** - Demonstrating video integration
-5. **Children's Portal** - Safe, colorful interface for kids
-6. **Bible Integration** - Scripture reading and study tools
-7. **Announcements** - Church updates and communication
-8. **Community Features** - Department communication tools
+### iPhone Screenshots Available
+**iPhone 15 Pro Max (6.7" Display - 1290 x 2796 pixels):**
+1. **Login Screen** - `iPhone-6.7inch-01-login.png`
+   - iOS-style gradient background with app logo
+   - Secure authentication with children's safe login option
+   - Native iOS form styling and buttons
 
-### iPad Screenshots (12.9" Display - 2048 x 2732 pixels)
-Create tablet-optimized versions of the above screenshots
+2. **Dashboard** - `iPhone-6.7inch-02-dashboard.png`  
+   - iOS card-based design with quick actions
+   - Recent activity feed with native list styling
+   - Tab bar navigation with SF Symbols
+
+3. **Prayer Ministry** - `iPhone-6.7inch-03-prayer.png`
+   - Prayer request submission with iOS styling
+   - Zoom integration schedule display
+   - Community prayer cards with native buttons
+
+4. **Live Streaming** - `iPhone-6.7inch-04-streaming.png`
+   - Full-screen video interface with native controls
+   - Multi-platform streaming options
+   - Live chat with iOS message styling
+
+5. **Children's Portal** - `iPhone-6.7inch-05-children.png`
+   - Colorful, safe interface with parental oversight indicators
+   - Age-appropriate content with iOS design patterns
+   - Fun activity cards with rounded corners
+
+6. **Bible Study** - `iPhone-6.7inch-06-bible.png`
+   - Daily verse display with sharing options
+   - Multiple Bible version selection
+   - Study tools with iOS icons and typography
+
+**iPhone 14 (6.1" Display - 1179 x 2556 pixels):**
+7. **Community Hub** - `iPhone-6.1inch-01-community.png`
+   - Department-based communication layout
+   - WhatsApp/Slack integration showcase
+   - iOS card design with ministry organization
+
+8. **Announcements** - `iPhone-6.1inch-02-announcements.png`
+   - Church updates with priority indicators
+   - Native iOS list design with action buttons
+   - Time-sensitive notifications display
+
+### iPad Screenshots Available
+**iPad Pro 12.9" (2048 x 2732 pixels):**
+1. **Dashboard** - `iPad-Pro-12.9inch-01-dashboard.png`
+   - Three-column layout optimized for iPad
+   - User profile, main content, and community feed
+   - Live service integration with full iPad interface
+
+2. **Prayer Ministry Center** - `iPad-Pro-12.9inch-02-prayer.png`
+   - Comprehensive prayer schedule with Zoom integration
+   - Prayer request grid layout
+   - Ministry insights and community prayer statistics
+
+3. **Community Hub** - `iPad-Pro-12.9inch-03-community.png`
+   - Department communication management
+   - Member activity tracking
+   - Community guidelines and statistics display
+
+**iPad Air 10.9" (1640 x 2360 pixels):**
+4. **Live Streaming** - `iPad-Air-10.9inch-01-streaming.png`
+   - Full-screen video player with iPad-optimized controls
+   - Multi-platform streaming options
+   - Enhanced chat interface for tablet viewing
+
+### Graphics Generation Tool ✅
+- **Tool**: `create_apple_screenshots.html` - iOS-native design generator
+- **Features**: One-click download of all Apple screenshots
+- **Design**: Authentic iOS design language with SF fonts and native styling
+- **Dimensions**: Proper Apple device screen sizes and resolutions
 
 ## App Review Information
 
@@ -140,6 +200,7 @@ This app is designed for Faith Klinik Ministries church community. All external 
 - **Rating**: 4+
 - **Content**: No objectionable material
 - **Religious Content**: Christian faith-based content
+- **Age Suitability URL**: `https://consulting.homelinkgh.com/faith-klinik-content-rating.html`
 
 ## Marketing Materials
 
@@ -189,10 +250,11 @@ Create 30-second preview showing:
 - [ ] Plan marketing campaign for app launch
 
 ## Support Information
-- **Support URL**: [To be provided]
-- **Marketing URL**: [To be provided]  
-- **Privacy Policy URL**: [Required - create before submission]
-- **Support Email**: [To be provided]
+- **Support URL**: `https://consulting.homelinkgh.com/faith-klinik-support.html`
+- **Marketing URL**: `https://consulting.homelinkgh.com`  
+- **Privacy Policy URL**: `https://consulting.homelinkgh.com/faith-klinik-privacy-policy.html`
+- **Terms of Service URL**: `https://consulting.homelinkgh.com/faith-klinik-terms.html`
+- **Support Email**: `support@faithklinik.org`
 
 ## Launch Strategy
 1. **Soft Launch**: Internal church testing

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faith Klinik - Google Play Feature Graphic</title>
+    <style>
+        body { 
+            font-family: 'Roboto', Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .canvas-container { 
+            margin: 20px 0; 
+            padding: 20px; 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            text-align: center;
+        }
+        canvas { 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            margin: 15px 0; 
+            max-width: 100%; 
+            height: auto; 
+        }
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            padding: 15px 30px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            margin: 10px; 
+            font-weight: 600;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        button:hover { 
+            background: #45a049; 
+        }
+        .download-feature { 
+            background: #2196F3; 
+            font-size: 18px;
+            padding: 20px 40px;
+        }
+        .download-feature:hover { 
+            background: #1976D2; 
+        }
+        .specs {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #1565C0;
+        }
+        .preview-note {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 Faith Klinik Ministries - Google Play Feature Graphic</h1>
+    
+    <div class="specs">
+        <strong>Google Play Requirements:</strong><br>
+        • Dimensions: 1024 x 500 pixels<br>
+        • Format: PNG or JPEG<br>
+        • Max Size: 15 MB<br>
+        • No text overlay on app screenshots
+    </div>
+
+    <div class="canvas-container">
+        <h2>Feature Graphic (1024 x 500 px)</h2>
+        <canvas id="featureGraphic" width="1024" height="500"></canvas>
+        <div class="preview-note">Preview scaled to fit - actual download will be 1024x500</div>
+        <button class="download-feature" onclick="downloadCanvas('featureGraphic', 'faith-klinik-feature-graphic-1024x500.png')">
+            📥 Download Feature Graphic
+        </button>
+    </div>
+
+    <div class="canvas-container">
+        <h3>Alternative Version - Minimalist</h3>
+        <canvas id="featureGraphicAlt" width="1024" height="500"></canvas>
+        <button onclick="downloadCanvas('featureGraphicAlt', 'faith-klinik-feature-graphic-minimalist-1024x500.png')">
+            📥 Download Minimalist Version
+        </button>
+    </div>
+
+    <script>
+        // Main Feature Graphic
+        function createFeatureGraphic() {
+            const canvas = document.getElementById('featureGraphic');
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient - faith-inspired colors
+            const gradient = ctx.createLinearGradient(0, 0, 1024, 500);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(0.5, '#764ba2');
+            gradient.addColorStop(1, '#f093fb');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1024, 500);
+            
+            // Subtle overlay pattern
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            for (let i = 0; i < 1024; i += 60) {
+                for (let j = 0; j < 500; j += 60) {
+                    if ((i + j) % 120 === 0) {
+                        ctx.beginPath();
+                        ctx.arc(i + 30, j + 30, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+            
+            // App icon area (left side)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.beginPath();
+            ctx.roundRect(40, 60, 200, 200, 25);
+            ctx.fill();
+            
+            // Cross in app icon
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 18;
+            ctx.lineCap = 'round';
+            
+            // Vertical line
+            ctx.beginPath();
+            ctx.moveTo(140, 100);
+            ctx.lineTo(140, 220);
+            ctx.stroke();
+            
+            // Horizontal line
+            ctx.beginPath();
+            ctx.moveTo(80, 160);
+            ctx.lineTo(200, 160);
+            ctx.stroke();
+            
+            // Hands/church symbol
+            ctx.fillStyle = '#667eea';
+            ctx.beginPath();
+            ctx.moveTo(110, 230);
+            ctx.lineTo(140, 200);
+            ctx.lineTo(170, 230);
+            ctx.lineTo(160, 250);
+            ctx.lineTo(120, 250);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Main title
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 72px Roboto, Arial, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Faith Klinik', 280, 120);
+            
+            ctx.font = 'bold 56px Roboto, Arial, sans-serif';
+            ctx.fillText('Ministries', 280, 180);
+            
+            // Tagline
+            ctx.font = '36px Roboto, Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillText('Connect • Pray • Grow Together', 280, 220);
+            
+            // Key features (right side)
+            const features = [
+                { icon: '🙏', text: 'Prayer Requests', color: '#4CAF50' },
+                { icon: '📺', text: 'Live Streaming', color: '#f44336' },
+                { icon: '👨‍👩‍👧‍👦', text: 'Family Safe', color: '#FF9800' },
+                { icon: '💬', text: 'Community', color: '#2196F3' }
+            ];
+            
+            features.forEach((feature, index) => {
+                const x = 280 + (index * 180);
+                const y = 280;
+                
+                // Feature background
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.beginPath();
+                ctx.roundRect(x, y, 160, 120, 15);
+                ctx.fill();
+                
+                // Feature icon
+                ctx.fillStyle = feature.color;
+                ctx.beginPath();
+                ctx.arc(x + 80, y + 40, 25, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '32px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(feature.icon, x + 80, y + 48);
+                
+                // Feature text
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 18px Roboto, Arial, sans-serif';
+                ctx.fillText(feature.text, x + 80, y + 85);
+            });
+            
+            // Download badge area (bottom right)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.beginPath();
+            ctx.roundRect(780, 350, 220, 120, 20);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Roboto, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Available on', 890, 380);
+            
+            ctx.font = 'bold 32px Roboto, Arial, sans-serif';
+            ctx.fillText('Google Play', 890, 410);
+            
+            // Google Play colors
+            const playGradient = ctx.createLinearGradient(820, 430, 960, 450);
+            playGradient.addColorStop(0, '#4285f4');
+            playGradient.addColorStop(0.33, '#ea4335');
+            playGradient.addColorStop(0.66, '#fbbc04');
+            playGradient.addColorStop(1, '#34a853');
+            
+            ctx.strokeStyle = playGradient;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(820, 440);
+            ctx.lineTo(960, 440);
+            ctx.stroke();
+        }
+
+        // Alternative Minimalist Version
+        function createFeatureGraphicAlt() {
+            const canvas = document.getElementById('featureGraphicAlt');
+            const ctx = canvas.getContext('2d');
+            
+            // Clean white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 1024, 500);
+            
+            // Subtle top gradient
+            const topGradient = ctx.createLinearGradient(0, 0, 1024, 200);
+            topGradient.addColorStop(0, '#f8f9fe');
+            topGradient.addColorStop(1, '#ffffff');
+            
+            ctx.fillStyle = topGradient;
+            ctx.fillRect(0, 0, 1024, 200);
+            
+            // App logo (centered-left)
+            ctx.fillStyle = '#667eea';
+            ctx.beginPath();
+            ctx.roundRect(80, 150, 180, 180, 30);
+            ctx.fill();
+            
+            // Cross symbol
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 16;
+            ctx.lineCap = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(170, 180);
+            ctx.lineTo(170, 300);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(120, 240);
+            ctx.lineTo(220, 240);
+            ctx.stroke();
+            
+            // Church symbol
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.moveTo(145, 310);
+            ctx.lineTo(170, 290);
+            ctx.lineTo(195, 310);
+            ctx.lineTo(185, 320);
+            ctx.lineTo(155, 320);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Main title (right side)
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 80px Roboto, Arial, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Faith Klinik', 320, 200);
+            
+            ctx.font = 'bold 60px Roboto, Arial, sans-serif';
+            ctx.fillStyle = '#667eea';
+            ctx.fillText('Ministries', 320, 260);
+            
+            // Clean tagline
+            ctx.fillStyle = '#7f8c8d';
+            ctx.font = '32px Roboto, Arial, sans-serif';
+            ctx.fillText('Your church community in your pocket', 320, 300);
+            
+            // Feature highlights (bottom)
+            const highlights = ['Prayer Ministry', 'Live Services', 'Family Safe', 'Bible Study'];
+            
+            highlights.forEach((highlight, index) => {
+                const x = 80 + (index * 220);
+                const y = 380;
+                
+                // Highlight box
+                ctx.fillStyle = '#f8f9fe';
+                ctx.beginPath();
+                ctx.roundRect(x, y, 200, 80, 10);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Text
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = 'bold 20px Roboto, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(highlight, x + 100, y + 50);
+            });
+            
+            // Google Play badge (bottom right)
+            ctx.fillStyle = '#34a853';
+            ctx.beginPath();
+            ctx.roundRect(820, 420, 180, 60, 30);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 18px Roboto, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('GET IT ON', 910, 440);
+            ctx.font = 'bold 24px Roboto, Arial, sans-serif';
+            ctx.fillText('Google Play', 910, 465);
+        }
+
+        // Download function
+        function downloadCanvas(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            // Show success message
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✅ Downloaded!';
+            button.style.background = '#4CAF50';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+            }, 2000);
+        }
+
+        // Add roundRect support for older browsers
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.beginPath();
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                this.closePath();
+                return this;
+            };
+        }
+
+        // Initialize graphics when page loads
+        window.onload = function() {
+            createFeatureGraphic();
+            createFeatureGraphicAlt();
+        };
+    </script>
+</body>
+</html>

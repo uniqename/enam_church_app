@@ -11,8 +11,9 @@
 - **Minimum SDK**: 21 (Android 5.0)
 
 ## File Locations
-- **AAB File**: `app-release.aab`
-- **APK File** (for testing): `app-release-unsigned.apk`
+- **AAB File**: `faith-klinik-ministries-v2.0.0.aab` (SIGNED ✅)
+- **APK File** (for testing): `faith-klinik-ministries-v2.0.0.apk`
+- **Keystore**: `android/faith-klinik-release.keystore` (for signing)
 
 ## App Description
 
@@ -62,21 +63,97 @@ Faith Klinik Ministries is a comprehensive church management app designed to con
 
 Download Faith Klinik Ministries today and strengthen your connection with your church family!
 
-## Screenshots Required
-Please capture and upload screenshots showing:
-1. Login screen
-2. Main dashboard/home screen
-3. Prayer requests section
-4. Announcements page
-5. Children's interface
-6. Live streaming interface
-7. Bible integration
-8. Department communication features
+## Screenshots & Graphics Available
+
+### App Icon (512x512 PNG) ✅
+- **File**: `faith-klinik-app-icon-512x512.png`
+- **Design**: Professional cross symbol with church elements
+- **Background**: Blue gradient with white cross and text
+- **Text**: "FAITH KLINIK" in clean, readable font
+
+### Feature Graphic (1024x500 PNG) ✅
+- **File**: `faith-klinik-feature-graphic-1024x500.png`
+- **Design**: Promotional banner highlighting key features
+- **Elements**: App name, feature icons, and compelling tagline
+- **Colors**: Consistent with app branding (blue theme)
+
+### Phone Screenshots (1080x1920 PNG) ✅
+Ready-to-upload screenshots showcasing:
+1. **Login Screen** - `phone-01-login.png`
+   - Welcoming design with app logo
+   - Login form and children's safe access link
+   
+2. **Dashboard** - `phone-02-dashboard.png`
+   - Main navigation and quick actions
+   - Recent activity feed
+   - Personalized welcome message
+   
+3. **Prayer Ministry** - `phone-03-prayer.png`
+   - Prayer request submission
+   - Weekly prayer schedule with Zoom integration
+   - Community prayer requests list
+   
+4. **Live Streaming** - `phone-04-streaming.png`
+   - Live service interface with play controls
+   - Multi-platform options (YouTube, Facebook, Zoom)
+   - Live chat functionality
+   
+5. **Children's Portal** - `phone-05-children.png`
+   - Colorful, safe interface for kids
+   - Age-appropriate activities and content
+   - Secure login indicators
+
+### 7-inch Tablet Screenshots (1200x1920 PNG) ✅
+Optimized for tablet viewing:
+1. **Dashboard** - `tablet-7inch-01-dashboard.png`
+   - Two-column layout with quick actions
+   - Enhanced navigation and activity feed
+   
+2. **Prayer Ministry** - `tablet-7inch-02-prayer.png`
+   - Comprehensive prayer schedule display
+   - Grid layout for prayer requests
+   - Enhanced community interaction
+
+### 10-inch Tablet Screenshots (1600x2560 PNG) ✅
+Full tablet experience:
+1. **Complete Interface** - `tablet-10inch-01-full.png`
+   - Three-column layout maximizing screen space
+   - User profile, main content, and community feed
+   - Live streaming integration
+   
+2. **Community Hub** - `tablet-10inch-02-community.png`
+   - Department-based communication layout
+   - WhatsApp/Slack integration showcase
+   - Community guidelines and engagement tools
+
+### Graphics Generation Tool ✅
+- **Tool**: `create_all_screenshots.html` - Interactive generator
+- **Features**: One-click download of all graphics
+- **Quality**: High-resolution, store-ready images
+- **Consistency**: Matching color scheme and branding
+
+## YouTube Video (Optional but Recommended)
+If you want to add a promotional video, you'll need to:
+1. Create a YouTube video showcasing the app
+2. Make it public or unlisted
+3. Turn off ads
+4. Ensure it's not age-restricted
+5. Use format: `https://www.youtube.com/watch?v=VIDEO_ID`
+
+**For now, you can skip the video field or leave it empty until you create one.**
+
+## URL Format Requirements
+For any URL fields in Google Play Console, ensure they follow this format:
+- ✅ `https://example.com` 
+- ✅ `http://example.com`
+- ❌ `www.example.com` (missing protocol)
+- ❌ `example.com` (missing protocol)
 
 ## App Store Listing Requirements
 
 ### Privacy Policy
 Required - Must provide privacy policy URL before submission
+**Format**: `https://your-website.com/privacy-policy`
 
 ### App Icon
 - High-resolution icon (512x512 pixels)
@@ -123,9 +200,11 @@ Secondary: community, streaming, family, worship, fellowship, sermons, devotion
 
 ## Support Information
 - **Developer**: Faith Klinik Ministries Development Team
-- **Website**: [To be provided]
-- **Support Email**: [To be provided]
-- **Privacy Policy URL**: [To be created and provided]
+- **Website**: `https://consulting.homelinkgh.com`
+- **Support Email**: `support@faithklinik.org`
+- **Privacy Policy URL**: `https://consulting.homelinkgh.com/faith-klinik-privacy-policy.html`
+- **Terms of Service URL**: `https://consulting.homelinkgh.com/faith-klinik-terms.html`
+- **Support URL**: `https://consulting.homelinkgh.com/faith-klinik-support.html`
 
 ## Pre-Launch Checklist
 - [ ] Test all authentication flows

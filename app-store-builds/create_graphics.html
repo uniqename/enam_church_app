@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faith Klinik Graphics Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .canvas-container { margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        canvas { border: 1px solid #ddd; margin: 10px 0; }
+        button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #45a049; }
+        .download-section { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Faith Klinik Ministries - Graphics Generator</h1>
+    
+    <!-- App Icon 512x512 -->
+    <div class="canvas-container">
+        <h2>App Icon (512x512)</h2>
+        <canvas id="appIcon" width="512" height="512"></canvas>
+        <div class="download-section">
+            <button onclick="downloadCanvas('appIcon', 'faith-klinik-app-icon-512x512.png')">Download App Icon</button>
+        </div>
+    </div>
+
+    <!-- Feature Graphic 1024x500 -->
+    <div class="canvas-container">
+        <h2>Feature Graphic (1024x500)</h2>
+        <canvas id="featureGraphic" width="1024" height="500"></canvas>
+        <div class="download-section">
+            <button onclick="downloadCanvas('featureGraphic', 'faith-klinik-feature-graphic-1024x500.png')">Download Feature Graphic</button>
+        </div>
+    </div>
+
+    <!-- Phone Screenshot Template -->
+    <div class="canvas-container">
+        <h2>Phone Screenshot Template (1080x1920)</h2>
+        <canvas id="phoneScreenshot" width="1080" height="1920"></canvas>
+        <div class="download-section">
+            <button onclick="downloadCanvas('phoneScreenshot', 'faith-klinik-phone-screenshot.png')">Download Phone Screenshot</button>
+        </div>
+    </div>
+
+    <script>
+        // App Icon Design
+        function createAppIcon() {
+            const canvas = document.getElementById('appIcon');
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 512, 512);
+            gradient.addColorStop(0, '#4a90e2');
+            gradient.addColorStop(1, '#2c5aa0');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 512, 512);
+            
+            // Border radius effect
+            ctx.beginPath();
+            ctx.roundRect(0, 0, 512, 512, 80);
+            ctx.clip();
+            ctx.fillRect(0, 0, 512, 512);
+            
+            // Cross symbol
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 40;
+            ctx.lineCap = 'round';
+            
+            // Vertical line of cross
+            ctx.beginPath();
+            ctx.moveTo(256, 100);
+            ctx.lineTo(256, 412);
+            ctx.stroke();
+            
+            // Horizontal line of cross
+            ctx.beginPath();
+            ctx.moveTo(150, 200);
+            ctx.lineTo(362, 200);
+            ctx.stroke();
+            
+            // Church/hands symbol below
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.moveTo(180, 320);
+            ctx.lineTo(256, 280);
+            ctx.lineTo(332, 320);
+            ctx.lineTo(320, 380);
+            ctx.lineTo(192, 380);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('FAITH', 256, 440);
+            ctx.font = 'bold 28px Arial';
+            ctx.fillText('KLINIK', 256, 470);
+        }
+
+        // Feature Graphic Design
+        function createFeatureGraphic() {
+            const canvas = document.getElementById('featureGraphic');
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 1024, 500);
+            gradient.addColorStop(0, '#4a90e2');
+            gradient.addColorStop(0.5, '#5ba3f5');
+            gradient.addColorStop(1, '#2c5aa0');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1024, 500);
+            
+            // Overlay pattern
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            for (let i = 0; i < 1024; i += 40) {
+                for (let j = 0; j < 500; j += 40) {
+                    if ((i + j) % 80 === 0) {
+                        ctx.fillRect(i, j, 20, 20);
+                    }
+                }
+            }
+            
+            // Main title
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 64px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Faith Klinik', 50, 120);
+            ctx.font = 'bold 48px Arial';
+            ctx.fillText('Ministries', 50, 180);
+            
+            // Subtitle
+            ctx.font = '32px Arial';
+            ctx.fillText('Connect • Pray • Grow Together', 50, 230);
+            
+            // Feature icons and text
+            const features = [
+                { icon: '🙏', text: 'Prayer Requests' },
+                { icon: '📺', text: 'Live Streaming' },
+                { icon: '👨‍👩‍👧‍👦', text: 'Family Safe' },
+                { icon: '💬', text: 'Community' }
+            ];
+            
+            ctx.font = '24px Arial';
+            features.forEach((feature, index) => {
+                const x = 50 + (index * 200);
+                const y = 320;
+                
+                // Icon background
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.beginPath();
+                ctx.roundRect(x, y, 160, 80, 10);
+                ctx.fill();
+                
+                // Feature text
+                ctx.fillStyle = '#2c5aa0';
+                ctx.font = '36px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(feature.icon, x + 80, y + 35);
+                ctx.font = '16px Arial';
+                ctx.fillText(feature.text, x + 80, y + 60);
+            });
+            
+            // App icon in corner
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.roundRect(850, 50, 120, 120, 20);
+            ctx.fill();
+            
+            // Mini cross in app icon
+            ctx.strokeStyle = '#4a90e2';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.moveTo(910, 70);
+            ctx.lineTo(910, 150);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(870, 110);
+            ctx.lineTo(950, 110);
+            ctx.stroke();
+        }
+
+        // Phone Screenshot Template
+        function createPhoneScreenshot() {
+            const canvas = document.getElementById('phoneScreenshot');
+            const ctx = canvas.getContext('2d');
+            
+            // Phone background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, 1080, 1920);
+            
+            // Header
+            ctx.fillStyle = '#4a90e2';
+            ctx.fillRect(0, 0, 1080, 200);
+            
+            // Header text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Faith Klinik Ministries', 540, 120);
+            
+            // Navigation tabs
+            const tabs = ['Home', 'Prayer', 'Stream', 'Community'];
+            tabs.forEach((tab, index) => {
+                const x = index * 270 + 135;
+                ctx.fillStyle = index === 0 ? 'white' : 'rgba(255,255,255,0.7)';
+                ctx.font = '36px Arial';
+                ctx.fillText(tab, x, 170);
+            });
+            
+            // Content sections
+            const sections = [
+                { title: '🙏 Today\'s Prayer Focus', desc: 'Join us in praying for our community' },
+                { title: '📢 Announcements', desc: 'Sunday Service at 10:00 AM' },
+                { title: '📺 Live Now', desc: 'Morning Prayer Meeting' },
+                { title: '👨‍👩‍👧‍👦 Children\'s Corner', desc: 'Safe access for young ones' },
+                { title: '📖 Daily Scripture', desc: 'Matthew 7:7 - Ask and it will be given' }
+            ];
+            
+            sections.forEach((section, index) => {
+                const y = 300 + (index * 280);
+                
+                // Section background
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.roundRect(40, y, 1000, 240, 15);
+                ctx.fill();
+                
+                // Section border
+                ctx.strokeStyle = '#e1e5e9';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Section content
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 42px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(section.title, 80, y + 80);
+                
+                ctx.font = '32px Arial';
+                ctx.fillStyle = '#666';
+                ctx.fillText(section.desc, 80, y + 130);
+                
+                // Action button
+                ctx.fillStyle = '#4a90e2';
+                ctx.beginPath();
+                ctx.roundRect(800, y + 160, 180, 60, 8);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '28px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('View', 890, y + 200);
+            });
+        }
+
+        // Download function
+        function downloadCanvas(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Add roundRect support for older browsers
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.beginPath();
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                this.closePath();
+                return this;
+            };
+        }
+
+        // Initialize graphics
+        window.onload = function() {
+            createAppIcon();
+            createFeatureGraphic();
+            createPhoneScreenshot();
+        };
+    </script>
+</body>
+</html>
