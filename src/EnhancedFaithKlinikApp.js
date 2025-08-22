@@ -95,6 +95,14 @@ const FaithKlinikApp = () => {
   const [showBibleApps, setShowBibleApps] = useState(false);
   const [showKidsLogin, setShowKidsLogin] = useState(false);
   const [showDepartmentMessages, setShowDepartmentMessages] = useState(false);
+  
+  // STREAMING & SERMON STATES
+  const [showLiveStreams, setShowLiveStreams] = useState(false);
+  const [showSermonLibrary, setShowSermonLibrary] = useState(false);
+  const [showAddSermon, setShowAddSermon] = useState(false);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [showAddLiveStream, setShowAddLiveStream] = useState(false);
 
   // Selected items
   const [selectedMeeting, setSelectedMeeting] = useState(null);
@@ -122,6 +130,24 @@ const FaithKlinikApp = () => {
     urgent: false
   });
   const [chatMessage, setChatMessage] = useState('');
+  const [sermonForm, setSermonForm] = useState({
+    title: '',
+    description: '',
+    pastor: '',
+    videoUrl: '',
+    platform: 'youtube',
+    tags: '',
+    category: 'sermon'
+  });
+  const [liveStreamForm, setLiveStreamForm] = useState({
+    title: '',
+    description: '',
+    platform: 'youtube',
+    startTime: '',
+    url: '',
+    meetingId: '',
+    passcode: ''
+  });
 
   // Data states
   const [prayerSchedule, setPrayerSchedule] = useState([
@@ -139,7 +165,12 @@ const FaithKlinikApp = () => {
       date: "2024-01-07",
       duration: "45 min",
       views: 234,
-      description: "Understanding what it means to truly walk by faith and not by sight."
+      description: "Understanding what it means to truly walk by faith and not by sight.",
+      type: "recorded",
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      thumbnailUrl: "/api/placeholder/320/180",
+      tags: ["faith", "christian living"],
+      saved: true
     },
     {
       id: 2,
@@ -148,7 +179,94 @@ const FaithKlinikApp = () => {
       date: "2024-01-14",
       duration: "38 min",
       views: 189,
-      description: "Discovering the transformative power of consistent prayer in our daily lives."
+      description: "Discovering the transformative power of consistent prayer in our daily lives.",
+      type: "recorded",
+      videoUrl: "https://www.facebook.com/video/sample",
+      thumbnailUrl: "/api/placeholder/320/180",
+      tags: ["prayer", "spiritual growth"],
+      saved: true
+    },
+    {
+      id: 3,
+      title: "Living in God's Grace",
+      pastor: "Pastor Johnson",
+      date: "2024-01-21",
+      duration: "52 min",
+      views: 156,
+      description: "Understanding and receiving God's amazing grace in our daily walk.",
+      type: "recorded",
+      videoUrl: "https://zoom.us/rec/share/samplerecording",
+      thumbnailUrl: "/api/placeholder/320/180",
+      tags: ["grace", "salvation"],
+      saved: true
+    }
+  ]);
+
+  // NEW DATA: Live Streaming
+  const [liveStreams, setLiveStreams] = useState([
+    {
+      id: 1,
+      title: "Sunday Morning Service",
+      isLive: true,
+      startTime: "2024-01-28 10:00",
+      platform: "youtube",
+      url: "https://www.youtube.com/watch?v=live_stream_id",
+      viewers: 45,
+      description: "Join us for our weekly Sunday morning worship service"
+    },
+    {
+      id: 2,
+      title: "Wednesday Bible Study",
+      isLive: false,
+      startTime: "2024-01-31 19:00",
+      platform: "zoom",
+      url: "https://zoom.us/j/123456789",
+      meetingId: "123 456 789",
+      passcode: "faith123",
+      description: "Mid-week Bible study and prayer meeting"
+    },
+    {
+      id: 3,
+      title: "Youth Service",
+      isLive: false,
+      startTime: "2024-02-02 18:00",
+      platform: "facebook",
+      url: "https://www.facebook.com/faithklinik/live",
+      description: "Special youth service with contemporary worship"
+    }
+  ]);
+
+  // NEW DATA: Saved/Archived Videos
+  const [archivedVideos, setArchivedVideos] = useState([
+    {
+      id: 1,
+      title: "Christmas Special Service 2023",
+      date: "2023-12-25",
+      platform: "youtube",
+      url: "https://www.youtube.com/watch?v=christmas2023",
+      duration: "1h 15m",
+      views: 892,
+      category: "special events"
+    },
+    {
+      id: 2,
+      title: "Baptism Service",
+      date: "2024-01-14",
+      platform: "facebook",
+      url: "https://www.facebook.com/video/baptism2024",
+      duration: "45m",
+      views: 234,
+      category: "baptisms"
+    },
+    {
+      id: 3,
+      title: "Prayer Meeting Recording",
+      date: "2024-01-17",
+      platform: "zoom",
+      url: "https://zoom.us/rec/share/prayer_meeting_jan17",
+      duration: "1h 30m",
+      views: 67,
+      category: "prayer meetings"
     }
   ]);
 
@@ -422,6 +540,7 @@ const FaithKlinikApp = () => {
         return [
           ...baseItems,
           { id: 'sermons', name: 'Sermons', icon: BookOpen },
+          { id: 'live-streams', name: 'Live Streams', icon: Activity },
           { id: 'pastoral-care', name: 'Pastoral Care', icon: Heart },
           { id: 'analytics', name: 'Analytics', icon: BarChart3 },
           { id: 'members', name: 'Members', icon: Users },
@@ -473,6 +592,8 @@ const FaithKlinikApp = () => {
       default: // member
         return [
           ...baseItems,
+          { id: 'sermons', name: 'Sermons', icon: BookOpen },
+          { id: 'live-streams', name: 'Live Streams', icon: Activity },
           { id: 'profile', name: 'Profile', icon: Users },
           { id: 'giving', name: 'Giving', icon: DollarSign },
           { id: 'bible-apps', name: 'Bible Apps', icon: BookOpen }
@@ -556,6 +677,81 @@ const FaithKlinikApp = () => {
       [department]: [...(prev[department] || []), newMessage]
     }));
     setChatMessage('');
+  };
+
+  // Handle sermon submission
+  const handleSermonSubmit = (e) => {
+    e.preventDefault();
+    const newSermon = {
+      id: sermons.length + 1,
+      ...sermonForm,
+      pastor: sermonForm.pastor || currentUser.name,
+      date: new Date().toISOString().split('T')[0],
+      views: 0,
+      type: 'recorded',
+      tags: sermonForm.tags.split(',').map(tag => tag.trim()),
+      saved: true,
+      thumbnailUrl: "/api/placeholder/320/180"
+    };
+    setSermons([newSermon, ...sermons]);
+    setSermonForm({
+      title: '',
+      description: '',
+      pastor: '',
+      videoUrl: '',
+      platform: 'youtube',
+      tags: '',
+      category: 'sermon'
+    });
+    setShowAddSermon(false);
+  };
+
+  // Handle live stream submission
+  const handleLiveStreamSubmit = (e) => {
+    e.preventDefault();
+    const newStream = {
+      id: liveStreams.length + 1,
+      ...liveStreamForm,
+      isLive: false,
+      viewers: 0
+    };
+    setLiveStreams([newStream, ...liveStreams]);
+    setLiveStreamForm({
+      title: '',
+      description: '',
+      platform: 'youtube',
+      startTime: '',
+      url: '',
+      meetingId: '',
+      passcode: ''
+    });
+    setShowAddLiveStream(false);
+  };
+
+  // Handle video play
+  const handlePlayVideo = (video) => {
+    setSelectedVideo(video);
+    setShowVideoPlayer(true);
+  };
+
+  // Get platform icon
+  const getPlatformIcon = (platform) => {
+    switch (platform) {
+      case 'youtube': return '📺';
+      case 'facebook': return '📘';
+      case 'zoom': return '🎥';
+      default: return '📱';
+    }
+  };
+
+  // Get platform color
+  const getPlatformColor = (platform) => {
+    switch (platform) {
+      case 'youtube': return 'bg-red-500';
+      case 'facebook': return 'bg-blue-600';
+      case 'zoom': return 'bg-blue-400';
+      default: return 'bg-gray-500';
+    }
   };
 
   // Bible Apps data
@@ -1479,6 +1675,269 @@ const FaithKlinikApp = () => {
           </div>
         )}
 
+        {/* Enhanced Sermons Section */}
+        {activeTab === 'sermons' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h1 className="text-3xl font-bold text-gray-900">
+                {currentUser?.role === 'child' ? '📖 Sermon Stories' : 'Sermon Library'}
+              </h1>
+              {userPermissions[currentUser?.role]?.canManageSermons && (
+                <button
+                  onClick={() => setShowAddSermon(true)}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Sermon
+                </button>
+              )}
+            </div>
+
+            {/* Filter/Search Bar */}
+            <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm">
+              <input
+                type="text"
+                placeholder="Search sermons..."
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <select className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="">All Categories</option>
+                <option value="sermon">Sermons</option>
+                <option value="bible-study">Bible Study</option>
+                <option value="special">Special Events</option>
+              </select>
+            </div>
+
+            {/* Sermons Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sermons.map((sermon) => (
+                <div key={sermon.id} className={`${currentUser?.role === 'child' ? 'bg-yellow-50 border-yellow-200' : 'bg-white'} rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow`}>
+                  {/* Video Thumbnail */}
+                  <div className="relative">
+                    <div className="aspect-video bg-gray-200 flex items-center justify-center">
+                      <div className="text-4xl">{getPlatformIcon(sermon.videoUrl?.includes('youtube') ? 'youtube' : sermon.videoUrl?.includes('facebook') ? 'facebook' : 'zoom')}</div>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <span className={`px-2 py-1 text-xs text-white rounded-full ${getPlatformColor(sermon.videoUrl?.includes('youtube') ? 'youtube' : sermon.videoUrl?.includes('facebook') ? 'facebook' : 'zoom')}`}>
+                        {sermon.videoUrl?.includes('youtube') ? 'YouTube' : sermon.videoUrl?.includes('facebook') ? 'Facebook' : 'Zoom'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handlePlayVideo(sermon)}
+                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-50 transition-opacity group"
+                    >
+                      <div className="w-12 h-12 bg-white bg-opacity-80 rounded-full flex items-center justify-center group-hover:bg-opacity-100 transition-opacity">
+                        <Activity className="w-6 h-6 text-gray-800 ml-1" />
+                      </div>
+                    </button>
+                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                      {sermon.duration}
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4">
+                    <h3 className={`text-lg font-semibold ${currentUser?.role === 'child' ? 'text-green-800' : 'text-gray-900'} mb-2 line-clamp-2`}>
+                      {currentUser?.role === 'child' ? `🙏 ${sermon.title}` : sermon.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">{sermon.description}</p>
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                      <span>By {sermon.pastor}</span>
+                      <span>{sermon.date}</span>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {sermon.tags?.map((tag, index) => (
+                        <span key={index} className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        <span className="flex items-center">
+                          <Eye className="w-4 h-4 mr-1" />
+                          {sermon.views}
+                        </span>
+                        {sermon.saved && (
+                          <span className="text-green-600 flex items-center">
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Saved
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handlePlayVideo(sermon)}
+                        className={`${currentUser?.role === 'child' ? 'bg-green-500 hover:bg-green-600' : 'bg-purple-500 hover:bg-purple-600'} text-white px-3 py-1 rounded-lg text-sm transition-colors`}
+                      >
+                        {currentUser?.role === 'child' ? '▶️ Watch' : 'Watch Now'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Archived Videos Section */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">📁 Archived Services</h3>
+              <div className="space-y-3">
+                {archivedVideos.map((video) => (
+                  <div key={video.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="text-2xl">{getPlatformIcon(video.platform)}</div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">{video.title}</h4>
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                          <span>{video.date}</span>
+                          <span>{video.duration}</span>
+                          <span>{video.views} views</span>
+                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                            {video.category}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handlePlayVideo(video)}
+                      className="bg-gray-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+                    >
+                      Watch
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Live Streams Section */}
+        {activeTab === 'live-streams' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h1 className="text-3xl font-bold text-gray-900">
+                {currentUser?.role === 'child' ? '📺 Church TV' : 'Live Streams & Meetings'}
+              </h1>
+              {userPermissions[currentUser?.role]?.canManageSermons && (
+                <button
+                  onClick={() => setShowAddLiveStream(true)}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Schedule Stream
+                </button>
+              )}
+            </div>
+
+            {/* Live Now Section */}
+            <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-6 border-2 border-red-200">
+              <h3 className="text-xl font-semibold text-red-800 mb-4 flex items-center">
+                <div className="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></div>
+                🔴 Live Now
+              </h3>
+              <div className="grid gap-4">
+                {liveStreams.filter(stream => stream.isLive).map((stream) => (
+                  <div key={stream.id} className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 mb-1">{stream.title}</h4>
+                        <p className="text-gray-600 text-sm mb-2">{stream.description}</p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                          <span className="flex items-center">
+                            <div className="text-lg mr-1">{getPlatformIcon(stream.platform)}</div>
+                            {stream.platform.toUpperCase()}
+                          </span>
+                          <span className="flex items-center text-red-600">
+                            <Users className="w-4 h-4 mr-1" />
+                            {stream.viewers} watching
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col space-y-2">
+                        <a
+                          href={stream.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${currentUser?.role === 'child' ? 'bg-red-500 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center`}
+                        >
+                          <Activity className="w-4 h-4 mr-2" />
+                          {currentUser?.role === 'child' ? '📺 Watch Live!' : 'Join Live'}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {liveStreams.filter(stream => stream.isLive).length === 0 && (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-4">📺</div>
+                    <p className="text-gray-600">No live streams at the moment</p>
+                    <p className="text-sm text-gray-500 mt-2">Check back during service times</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Upcoming Streams */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">📅 Upcoming Services</h3>
+              <div className="space-y-4">
+                {liveStreams.filter(stream => !stream.isLive).map((stream) => (
+                  <div key={stream.id} className={`p-4 rounded-lg border ${currentUser?.role === 'child' ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className={`font-semibold ${currentUser?.role === 'child' ? 'text-blue-800' : 'text-gray-900'} mb-1`}>
+                          {currentUser?.role === 'child' ? `📺 ${stream.title}` : stream.title}
+                        </h4>
+                        <p className="text-gray-600 text-sm mb-2">{stream.description}</p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                          <span className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {new Date(stream.startTime).toLocaleString()}
+                          </span>
+                          <span className="flex items-center">
+                            <div className="text-lg mr-1">{getPlatformIcon(stream.platform)}</div>
+                            {stream.platform.toUpperCase()}
+                          </span>
+                        </div>
+                        
+                        {/* Zoom Meeting Details */}
+                        {stream.platform === 'zoom' && stream.meetingId && (
+                          <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                            <div className="flex items-center space-x-4 text-sm">
+                              <span><strong>Meeting ID:</strong> {stream.meetingId}</span>
+                              {stream.passcode && (
+                                <span><strong>Passcode:</strong> {stream.passcode}</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col space-y-2">
+                        <a
+                          href={stream.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${currentUser?.role === 'child' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-600 hover:bg-gray-700'} text-white px-4 py-2 rounded-lg text-sm transition-colors text-center`}
+                        >
+                          {stream.platform === 'zoom' ? '💻 Join Meeting' : '📺 View Link'}
+                        </a>
+                        <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                          🔔 Remind Me
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Department Management (Admin/Pastor) */}
         {activeTab === 'departments' && (
           <div className="space-y-6">
@@ -1853,6 +2312,297 @@ const FaithKlinikApp = () => {
                   <Send className="w-4 h-4" />
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Sermon Modal */}
+      {showAddSermon && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Add New Sermon</h3>
+              <button 
+                onClick={() => setShowAddSermon(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSermonSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={sermonForm.title}
+                    onChange={(e) => setSermonForm(prev => ({...prev, title: e.target.value}))}
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={sermonForm.description}
+                    onChange={(e) => setSermonForm(prev => ({...prev, description: e.target.value}))}
+                    required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Pastor/Speaker</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={sermonForm.pastor}
+                      onChange={(e) => setSermonForm(prev => ({...prev, pastor: e.target.value}))}
+                      placeholder={currentUser?.name}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                    <select
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={sermonForm.platform}
+                      onChange={(e) => setSermonForm(prev => ({...prev, platform: e.target.value}))}
+                    >
+                      <option value="youtube">YouTube</option>
+                      <option value="facebook">Facebook</option>
+                      <option value="zoom">Zoom Recording</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Video URL</label>
+                  <input
+                    type="url"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={sermonForm.videoUrl}
+                    onChange={(e) => setSermonForm(prev => ({...prev, videoUrl: e.target.value}))}
+                    placeholder="https://..."
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={sermonForm.tags}
+                    onChange={(e) => setSermonForm(prev => ({...prev, tags: e.target.value}))}
+                    placeholder="faith, prayer, salvation"
+                  />
+                </div>
+              </div>
+              
+              <div className="mt-6 flex space-x-3">
+                <button
+                  type="submit"
+                  className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors"
+                >
+                  Save Sermon
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddSermon(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Live Stream Modal */}
+      {showAddLiveStream && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Schedule Live Stream</h3>
+              <button 
+                onClick={() => setShowAddLiveStream(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleLiveStreamSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Title</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={liveStreamForm.title}
+                    onChange={(e) => setLiveStreamForm(prev => ({...prev, title: e.target.value}))}
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={liveStreamForm.description}
+                    onChange={(e) => setLiveStreamForm(prev => ({...prev, description: e.target.value}))}
+                    required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                    <select
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={liveStreamForm.platform}
+                      onChange={(e) => setLiveStreamForm(prev => ({...prev, platform: e.target.value}))}
+                    >
+                      <option value="youtube">YouTube Live</option>
+                      <option value="facebook">Facebook Live</option>
+                      <option value="zoom">Zoom Meeting</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                    <input
+                      type="datetime-local"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={liveStreamForm.startTime}
+                      onChange={(e) => setLiveStreamForm(prev => ({...prev, startTime: e.target.value}))}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Stream URL</label>
+                  <input
+                    type="url"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={liveStreamForm.url}
+                    onChange={(e) => setLiveStreamForm(prev => ({...prev, url: e.target.value}))}
+                    placeholder="https://..."
+                    required
+                  />
+                </div>
+                
+                {liveStreamForm.platform === 'zoom' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Meeting ID</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          value={liveStreamForm.meetingId}
+                          onChange={(e) => setLiveStreamForm(prev => ({...prev, meetingId: e.target.value}))}
+                          placeholder="123 456 789"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Passcode (Optional)</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          value={liveStreamForm.passcode}
+                          onChange={(e) => setLiveStreamForm(prev => ({...prev, passcode: e.target.value}))}
+                          placeholder="faith123"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              
+              <div className="mt-6 flex space-x-3">
+                <button
+                  type="submit"
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Schedule Stream
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddLiveStream(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Video Player Modal */}
+      {showVideoPlayer && selectedVideo && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b">
+              <div>
+                <h3 className="text-lg font-semibold">{selectedVideo.title}</h3>
+                <p className="text-sm text-gray-500">
+                  {selectedVideo.pastor && `By ${selectedVideo.pastor} • `}
+                  {selectedVideo.date || new Date().toISOString().split('T')[0]}
+                </p>
+              </div>
+              <button 
+                onClick={() => {
+                  setShowVideoPlayer(false);
+                  setSelectedVideo(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-4">
+              <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center mb-4">
+                <div className="text-center text-white">
+                  <div className="text-6xl mb-4">{getPlatformIcon(
+                    selectedVideo.videoUrl?.includes('youtube') ? 'youtube' : 
+                    selectedVideo.videoUrl?.includes('facebook') ? 'facebook' : 
+                    selectedVideo.platform || 'youtube'
+                  )}</div>
+                  <p className="text-lg mb-4">Click below to open video</p>
+                  <a
+                    href={selectedVideo.videoUrl || selectedVideo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors inline-flex items-center"
+                  >
+                    <ExternalLink className="w-5 h-5 mr-2" />
+                    Open in {selectedVideo.videoUrl?.includes('youtube') ? 'YouTube' : 
+                             selectedVideo.videoUrl?.includes('facebook') ? 'Facebook' : 
+                             selectedVideo.platform === 'zoom' ? 'Zoom' : 'Browser'}
+                  </a>
+                </div>
+              </div>
+              
+              {selectedVideo.description && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">Description</h4>
+                  <p className="text-gray-600">{selectedVideo.description}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
