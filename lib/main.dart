@@ -24,15 +24,15 @@ class FaithKlinikApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.brown,
-          primary: AppColors.brown,
-          secondary: AppColors.gold,
+          seedColor: AppColors.purple,
+          primary: AppColors.purple,
+          secondary: AppColors.blue,
         ),
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,
-          backgroundColor: AppColors.brown,
+          backgroundColor: AppColors.purple,
           foregroundColor: Colors.white,
         ),
       ),
