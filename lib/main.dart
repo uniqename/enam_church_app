@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'providers/app_provider.dart';
 import 'utils/colors.dart';
 import 'models/member.dart';
+import 'models/event.dart';
 
 void main() {
   runApp(
@@ -1084,6 +1085,9 @@ class MembersScreen extends StatelessWidget {
               title: Text(member.name),
               subtitle: Text('${member.role} • ${member.department}'),
               trailing: Text(member.status, style: const TextStyle(color: AppColors.success)),
+              onTap: (provider.currentUser?.role == 'admin' || provider.currentUser?.role == 'pastor')
+                  ? () => _showEditMemberDialog(context, provider, member)
+                  : null,
             ),
           );
         },
@@ -1152,6 +1156,91 @@ class MembersScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.brown),
             child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditMemberDialog(BuildContext context, AppProvider provider, Member member) {
+    final nameController = TextEditingController(text: member.name);
+    final emailController = TextEditingController(text: member.email);
+    final phoneController = TextEditingController(text: member.phone);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Member'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(labelText: 'Phone', border: OutlineInputBorder()),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Delete Member'),
+                  content: Text('Are you sure you want to delete ${member.name}?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        provider.deleteMember(member.id);
+                        Navigator.pop(ctx);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      child: const Text('Delete'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final updatedMember = Member(
+                id: member.id,
+                name: nameController.text,
+                email: emailController.text,
+                phone: phoneController.text,
+                role: member.role,
+                department: member.department,
+                joinDate: member.joinDate,
+                status: member.status,
+              );
+              provider.updateMember(member.id, updatedMember);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.brown),
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -1241,11 +1330,82 @@ class EventsScreen extends StatelessWidget {
       ),
       floatingActionButton: (provider.currentUser?.role == 'admin' || provider.currentUser?.role == 'pastor')
           ? FloatingActionButton(
-              onPressed: () {},
+              onPressed: () => _showAddEventDialog(context, provider),
               backgroundColor: AppColors.brown,
               child: const Icon(Icons.add),
             )
           : null,
+    );
+  }
+
+  void _showAddEventDialog(BuildContext context, AppProvider provider) {
+    final titleController = TextEditingController();
+    final dateController = TextEditingController();
+    final timeController = TextEditingController();
+    final locationController = TextEditingController();
+    String selectedType = 'Service';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Event'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: dateController,
+                decoration: const InputDecoration(
+                  labelText: 'Date (e.g., 2025-12-25)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: timeController,
+                decoration: const InputDecoration(
+                  labelText: 'Time (e.g., 10:00 AM)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: locationController,
+                decoration: const InputDecoration(labelText: 'Location', border: OutlineInputBorder()),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (titleController.text.isEmpty) return;
+              final newEvent = Event(
+                id: DateTime.now().millisecondsSinceEpoch,
+                title: titleController.text,
+                date: dateController.text,
+                time: timeController.text,
+                location: locationController.text,
+                type: selectedType,
+                status: 'Upcoming',
+              );
+              provider.addEvent(newEvent);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.brown),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1383,49 +1543,85 @@ class StreamingScreen extends StatelessWidget {
         return Card(
           elevation: 4,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 120,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                ),
-                child: const Center(
-                  child: Icon(Icons.play_circle_outline, size: 48, color: Colors.white),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: stream.status == 'Live' ? Colors.red : Colors.grey,
-                        borderRadius: BorderRadius.circular(4),
+          child: InkWell(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Live Streaming Coming Soon!'),
+                  content: const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.live_tv, size: 48, color: AppColors.purple),
+                      SizedBox(height: 16),
+                      Text(
+                        'Live streaming is coming soon to the Faith Klinik app!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      child: Text(
-                        stream.status,
-                        style: const TextStyle(color: Colors.white, fontSize: 10),
+                      SizedBox(height: 8),
+                      Text(
+                        'In the meantime, join us in person at Faith Klinik Ministries for our services and events.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12),
                       ),
+                    ],
+                  ),
+                  actions: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.purple),
+                      child: const Text('OK'),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      stream.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text('${stream.date} • ${stream.time}', style: const TextStyle(fontSize: 12)),
-                    Text('${stream.viewers} viewers', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   ],
                 ),
-              ),
-            ],
+              );
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.play_circle_outline, size: 48, color: Colors.white),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: stream.status == 'Live' ? Colors.red : Colors.grey,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          stream.status,
+                          style: const TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        stream.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text('${stream.date} • ${stream.time}', style: const TextStyle(fontSize: 12)),
+                      Text('${stream.viewers} viewers', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -1535,7 +1731,42 @@ class DepartmentsScreen extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.phone, size: 20),
                           color: AppColors.kidsGreen,
-                          onPressed: () => _launchURL(dept.whatsappGroup),
+                          onPressed: () {
+                            if (dept.whatsappGroup.isEmpty) {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('WhatsApp Group'),
+                                  content: const Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.chat, size: 48, color: AppColors.kidsGreen),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'WhatsApp group links will be shared by department leaders.',
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Please contact your department head for the group invitation link.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () => Navigator.pop(ctx),
+                                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.kidsGreen),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } else {
+                              _launchURL(dept.whatsappGroup);
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -1781,8 +2012,45 @@ class GivingScreen extends StatelessWidget {
                       const Spacer(),
                       ElevatedButton(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('${option.type} giving - Amount: \$${option.suggested.first}')),
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Online Giving'),
+                              content: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.volunteer_activism, size: 48, color: AppColors.kidsGreen),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'Faith Klinik Ministries uses Givelify for secure online donations.',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Download the Givelify app or visit their website to give.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    final url = Uri.parse('https://www.givelify.com/');
+                                    if (await canLaunchUrl(url)) {
+                                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                                    }
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                  },
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.kidsGreen),
+                                  child: const Text('Open Givelify'),
+                                ),
+                              ],
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -2006,8 +2274,36 @@ class KidsGamesScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Starting ${game.title}...')),
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Coming Soon!'),
+                                content: const Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.games, size: 48, color: AppColors.kidsOrange),
+                                    SizedBox(height: 16),
+                                    Text(
+                                      'Interactive Bible games are coming soon!',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'We\'re working on exciting games to help kids learn about God\'s Word in fun ways. Stay tuned!',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.kidsOrange),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -2115,8 +2411,36 @@ class KidsLessonsScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       ElevatedButton(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Opening ${lesson.title}...')),
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Coming Soon!'),
+                              content: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.menu_book, size: 48, color: AppColors.kidsBlue),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'Interactive Bible lessons are coming soon!',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'We\'re creating engaging lessons to help children grow in their faith. Check back soon!',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.kidsBlue),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -2234,8 +2558,36 @@ class KidsSermonsScreen extends StatelessWidget {
                           const SizedBox(height: 8),
                           ElevatedButton(
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Playing ${sermon.title}...')),
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Coming Soon!'),
+                                  content: const Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.video_library, size: 48, color: AppColors.kidsOrange),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'Kids\' sermon videos are coming soon!',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'We\'re preparing child-friendly sermon content to inspire young hearts. Coming soon!',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () => Navigator.pop(ctx),
+                                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.kidsOrange),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
                               );
                             },
                             style: ElevatedButton.styleFrom(
