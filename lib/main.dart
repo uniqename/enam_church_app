@@ -255,6 +255,10 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
@@ -307,6 +311,10 @@ class WelcomeScreen extends StatelessWidget {
             ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
