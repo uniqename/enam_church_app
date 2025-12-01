@@ -1,4 +1,4 @@
-class KidsLesson {
+class ChildLesson {
   final int id;
   final String title;
   final String content;
@@ -6,7 +6,7 @@ class KidsLesson {
   final String age;
   bool completed;
 
-  KidsLesson({
+  ChildLesson({
     required this.id,
     required this.title,
     required this.content,

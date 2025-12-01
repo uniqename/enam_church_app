@@ -9,9 +9,9 @@ import '../models/stream.dart';
 import '../models/announcement.dart';
 import '../models/department.dart';
 import '../models/ministry.dart';
-import '../models/kids_game.dart';
-import '../models/kids_lesson.dart';
-import '../models/kids_sermon.dart';
+import '../models/child_game.dart';
+import '../models/child_lesson.dart';
+import '../models/child_sermon.dart';
 import '../models/giving_option.dart';
 import '../models/bible_app.dart';
 import '../models/notification.dart';
@@ -44,9 +44,28 @@ class AppProvider with ChangeNotifier {
   List<PrayerRequest> _prayerRequests = [];
   List<Message> _messages = [];
   List<LiveStream> _streams = [];
-  List<KidsGame> _kidsGames = [];
-  List<KidsLesson> _kidsLessons = [];
-  List<KidsSermon> _kidsSermons = [];
+  List<ChildGame> _childGames = [
+    ChildGame(id: 1, title: 'Bible Trivia Quiz', description: 'Answer fun questions about Bible stories!', difficulty: 'Easy'),
+    ChildGame(id: 2, title: 'Memory Verse Match', description: 'Match Bible verses with their references!', difficulty: 'Medium'),
+    ChildGame(id: 3, title: 'Bible Story Adventure', description: 'Choose your path in Bible stories!', difficulty: 'Medium'),
+    ChildGame(id: 4, title: 'Prayer Coloring', description: 'Color beautiful prayer-themed pictures!', difficulty: 'Easy'),
+  ];
+
+  List<ChildLesson> _childLessons = [
+    ChildLesson(id: 1, title: 'God\'s Love', content: 'God loves you so much! Just like your parents love you, God loves you even more. The Bible tells us in John 3:16 that "God so loved the world that he gave his one and only Son." This means God sent Jesus because He loves us so much!', duration: '5 min', age: '5-8'),
+    ChildLesson(id: 2, title: 'Jesus is My Friend', content: 'Jesus wants to be your best friend! He is always with you, even when you can\'t see Him. You can talk to Jesus anytime through prayer. He listens and cares about everything you say!', duration: '5 min', age: '5-8'),
+    ChildLesson(id: 3, title: 'The Good Shepherd', content: 'Jesus is like a good shepherd who takes care of His sheep. In John 10:11, Jesus said "I am the good shepherd. The good shepherd lays down his life for the sheep." Just like a shepherd protects and cares for sheep, Jesus protects and cares for us!', duration: '7 min', age: '6-10'),
+    ChildLesson(id: 4, title: 'Sharing and Caring', content: 'The Bible teaches us to share with others and care for people. In Acts 20:35, Jesus said "It is more blessed to give than to receive." When we share our toys, our time, and our love with others, we make Jesus happy!', duration: '6 min', age: '5-9'),
+  ];
+
+  List<ChildSermon> _childSermons = [
+    ChildSermon(id: 1, title: 'David and Goliath', speaker: 'Bible Stories for Kids', date: '2024', duration: '5:30', views: 1200000, videoUrl: 'https://www.youtube.com/watch?v=fQJthfFT6jE'),
+    ChildSermon(id: 2, title: 'Noah\'s Ark', speaker: 'Crossroads Kids Club', date: '2024', duration: '6:45', views: 2500000, videoUrl: 'https://www.youtube.com/watch?v=w0EZeJP1esc'),
+    ChildSermon(id: 3, title: 'Jesus Walks on Water', speaker: 'Saddleback Kids', date: '2024', duration: '4:20', views: 980000, videoUrl: 'https://www.youtube.com/watch?v=PjAOcVeVP3E'),
+    ChildSermon(id: 4, title: 'The Good Samaritan', speaker: 'Crossroads Kids Club', date: '2024', duration: '5:15', views: 1500000, videoUrl: 'https://www.youtube.com/watch?v=c2a0x1IYt0A'),
+    ChildSermon(id: 5, title: 'Jonah and the Whale', speaker: 'Bible Stories for Kids', date: '2024', duration: '6:00', views: 1800000, videoUrl: 'https://www.youtube.com/watch?v=G7_v22viqKg'),
+    ChildSermon(id: 6, title: 'Jesus Feeds 5000', speaker: 'Saddleback Kids', date: '2024', duration: '4:50', views: 1100000, videoUrl: 'https://www.youtube.com/watch?v=Y-4JD5KJoZk'),
+  ];
   List<Announcement> _announcements = [];
   List<AppNotification> _notifications = [];
 
@@ -86,7 +105,7 @@ class AppProvider with ChangeNotifier {
   // Bible apps - keep these as they're real resources
   List<BibleApp> _bibleApps = [
     BibleApp(id: 1, name: 'YouVersion Bible', description: 'Free Bible with multiple versions', url: 'https://www.bible.com/', category: 'All Ages'),
-    BibleApp(id: 2, name: 'Bible for Kids', description: 'Interactive Bible stories for children', url: 'https://www.bible.com/kids', category: 'Kids'),
+    BibleApp(id: 2, name: 'Bible for Children', description: 'Interactive Bible stories for children', url: 'https://www.bible.com/kids', category: 'Children'),
     BibleApp(id: 3, name: 'ESV Bible', description: 'English Standard Version Bible app', url: 'https://www.esv.org/', category: 'All Ages'),
     BibleApp(id: 4, name: 'KJV Bible', description: 'King James Version Bible app', url: 'https://play.google.com/store', category: 'All Ages'),
   ];
@@ -101,9 +120,9 @@ class AppProvider with ChangeNotifier {
   List<PrayerRequest> get prayerRequests => _prayerRequests;
   List<Message> get messages => _messages;
   List<LiveStream> get streams => _streams;
-  List<KidsGame> get kidsGames => _kidsGames;
-  List<KidsLesson> get kidsLessons => _kidsLessons;
-  List<KidsSermon> get kidsSermons => _kidsSermons;
+  List<ChildGame> get childGames => _childGames;
+  List<ChildLesson> get childLessons => _childLessons;
+  List<ChildSermon> get childSermons => _childSermons;
   List<GivingOption> get givingOptions => _givingOptions;
   List<Department> get departments => _departments;
   List<Ministry> get ministries => _ministries;
@@ -125,10 +144,10 @@ class AppProvider with ChangeNotifier {
     return false;
   }
 
-  bool kidsLogin(String code) {
+  bool childLogin(String code) {
     if (code == '1234') {
-      final kidsUser = _users.firstWhere((u) => u.role == 'child');
-      _currentUser = kidsUser;
+      final childUser = _users.firstWhere((u) => u.role == 'child');
+      _currentUser = childUser;
       _isLoggedIn = true;
       notifyListeners();
       return true;

@@ -17,13 +17,13 @@ class AppColors {
   static const Color warning = Color(0xFFFF9800);
   static const Color info = Color(0xFF2196F3);
 
-  // Kids colors
-  static const Color kidsGreen = Color(0xFF4CAF50);
-  static const Color kidsBlue = Color(0xFF2196F3);
-  static const Color kidsPurple = Color(0xFF9C27B0);
-  static const Color kidsOrange = Color(0xFFFF9800);
-  static const Color kidsYellow = Color(0xFFFFC107);
-  static const Color kidsPink = Color(0xFFE91E63);
+  // Children's colors
+  static const Color childGreen = Color(0xFF4CAF50);
+  static const Color childBlue = Color(0xFF2196F3);
+  static const Color childPurple = Color(0xFF9C27B0);
+  static const Color childOrange = Color(0xFFFF9800);
+  static const Color childYellow = Color(0xFFFFC107);
+  static const Color childPink = Color(0xFFE91E63);
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
@@ -32,8 +32,8 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  static const LinearGradient kidsGradient = LinearGradient(
-    colors: [kidsGreen, kidsBlue],
+  static const LinearGradient childGradient = LinearGradient(
+    colors: [childGreen, childBlue],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

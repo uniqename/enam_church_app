@@ -1,11 +1,11 @@
-class KidsGame {
+class ChildGame {
   final int id;
   final String title;
   final String description;
   final String difficulty;
   bool completed;
 
-  KidsGame({
+  ChildGame({
     required this.id,
     required this.title,
     required this.description,
