@@ -1795,38 +1795,70 @@ class StreamingScreen extends StatelessWidget {
           elevation: 4,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: InkWell(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Live Streaming Coming Soon!'),
-                  content: const Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.live_tv, size: 48, color: AppColors.purple),
-                      SizedBox(height: 16),
-                      Text(
-                        'Live streaming is coming soon to the Faith Klinik app!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'In the meantime, join us in person at Faith Klinik Ministries for our services and events.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12),
+            onTap: () async {
+              if (stream.streamUrl.isNotEmpty) {
+                final Uri streamUri = Uri.parse(stream.streamUrl);
+                if (await canLaunchUrl(streamUri)) {
+                  await launchUrl(streamUri, mode: LaunchMode.externalApplication);
+                } else {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Could not open stream. Please check your internet connection.')),
+                    );
+                  }
+                }
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: Row(
+                      children: const [
+                        Icon(Icons.info, color: AppColors.purple),
+                        SizedBox(width: 8),
+                        Text('Stream Information'),
+                      ],
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          stream.title,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Text(stream.date),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Text(stream.time),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Stream link will be available when the service goes live. Please check back at the scheduled time.',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.purple),
+                        child: const Text('OK'),
                       ),
                     ],
                   ),
-                  actions: [
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.purple),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                ),
-              );
+                );
+              }
             },
             borderRadius: BorderRadius.circular(12),
             child: Column(
@@ -2596,9 +2628,17 @@ class ChildGamesScreen extends StatelessWidget {
                   color: AppColors.childGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'Full interactive versions of these games are being developed. Keep playing and learning!',
-                  style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                child: Row(
+                  children: const [
+                    Icon(Icons.lightbulb, color: AppColors.childYellow, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Complete the activity and tap "Complete Game" when you\'re done!',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -2714,30 +2754,68 @@ class ChildLessonsScreen extends StatelessWidget {
                           showDialog(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: const Text('Coming Soon!'),
-                              content: const Column(
-                                mainAxisSize: MainAxisSize.min,
+                              title: Row(
                                 children: [
-                                  Icon(Icons.menu_book, size: 48, color: AppColors.childBlue),
-                                  SizedBox(height: 16),
-                                  Text(
-                                    'Interactive Bible lessons are coming soon!',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'We\'re creating engaging lessons to help children grow in their faith. Check back soon!',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12),
-                                  ),
+                                  const Icon(Icons.menu_book, color: AppColors.childBlue),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text(lesson.title)),
                                 ],
                               ),
+                              content: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      lesson.content,
+                                      style: const TextStyle(fontSize: 16, height: 1.5),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.childBlue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Row(
+                                            children: [
+                                              Icon(Icons.lightbulb, color: AppColors.childYellow, size: 20),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Think About It:',
+                                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'How can you show God\'s love to someone today?',
+                                            style: const TextStyle(fontSize: 13),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                               actions: [
-                                ElevatedButton(
+                                TextButton(
                                   onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Close'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    lesson.completed = true;
+                                    Navigator.pop(ctx);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Great job learning about ${lesson.title}!')),
+                                    );
+                                  },
                                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.childBlue),
-                                  child: const Text('OK'),
+                                  child: const Text('Complete Lesson'),
                                 ),
                               ],
                             ),
@@ -2857,38 +2935,17 @@ class ChildSermonsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           ElevatedButton(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: const Text('Coming Soon!'),
-                                  content: const Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.video_library, size: 48, color: AppColors.childOrange),
-                                      SizedBox(height: 16),
-                                      Text(
-                                        'Kids\' sermon videos are coming soon!',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        'We\'re preparing child-friendly sermon content to inspire young hearts. Coming soon!',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                  actions: [
-                                    ElevatedButton(
-                                      onPressed: () => Navigator.pop(ctx),
-                                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.childOrange),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              );
+                            onPressed: () async {
+                              final Uri videoUrl = Uri.parse(sermon.videoUrl);
+                              if (await canLaunchUrl(videoUrl)) {
+                                await launchUrl(videoUrl, mode: LaunchMode.externalApplication);
+                              } else {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Could not open video. Please check your internet connection.')),
+                                  );
+                                }
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.childOrange,

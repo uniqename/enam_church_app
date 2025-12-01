@@ -6,6 +6,7 @@ class LiveStream {
   final String status;
   final int viewers;
   final String category;
+  final String streamUrl;
 
   LiveStream({
     required this.id,
@@ -15,5 +16,6 @@ class LiveStream {
     required this.status,
     required this.viewers,
     required this.category,
+    this.streamUrl = '',
   });
 }

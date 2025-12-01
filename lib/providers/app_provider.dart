@@ -43,7 +43,11 @@ class AppProvider with ChangeNotifier {
   List<Finance> _finances = []; // NO DUMMY DATA - User hasn't added any money yet
   List<PrayerRequest> _prayerRequests = [];
   List<Message> _messages = [];
-  List<LiveStream> _streams = [];
+  List<LiveStream> _streams = [
+    LiveStream(id: 1, title: 'Sunday Worship Service', date: 'Every Sunday', time: '10:00 AM EST', status: 'Live', viewers: 0, category: 'Worship', streamUrl: 'https://www.youtube.com/@faithklinikministries/streams'),
+    LiveStream(id: 2, title: 'Midweek Bible Study', date: 'Wednesdays', time: '7:00 PM EST', status: 'Upcoming', viewers: 0, category: 'Bible Study', streamUrl: 'https://www.youtube.com/@faithklinikministries/streams'),
+    LiveStream(id: 3, title: 'Prayer Meeting', date: 'Fridays', time: '6:00 PM EST', status: 'Upcoming', viewers: 0, category: 'Prayer', streamUrl: 'https://www.youtube.com/@faithklinikministries/streams'),
+  ];
   List<ChildGame> _childGames = [
     ChildGame(id: 1, title: 'Bible Trivia Quiz', description: 'Answer fun questions about Bible stories!', difficulty: 'Easy'),
     ChildGame(id: 2, title: 'Memory Verse Match', description: 'Match Bible verses with their references!', difficulty: 'Medium'),
