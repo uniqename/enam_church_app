@@ -84,14 +84,14 @@ class AppProvider with ChangeNotifier {
 
   // Real church departments - keep this data as it's accurate (WhatsApp links empty for now)
   List<Department> _departments = [
-    Department(id: 1, name: 'Leadership', head: 'Rev. Ebenezer Adarquah-Yiadom', members: ['Rev. Ebenezer', 'Rev. Lucie', 'Gloria'], whatsappGroup: '', slackChannel: '#leadership'),
-    Department(id: 2, name: 'Youth Ministry', head: 'Jeshurun Adarquah-Yiadom', members: ['Jeshurun'], whatsappGroup: '', slackChannel: '#youth'),
-    Department(id: 3, name: 'Faith Klinik Dance Ministers', head: 'Enam Egyir', members: ['Enam Egyir', 'Eyram', 'Edem'], whatsappGroup: '', slackChannel: '#dance'),
-    Department(id: 4, name: 'League of Anointed Ministers', head: 'Jedidiah Adarquah-Yiadom', members: ['Jedidiah'], whatsappGroup: '', slackChannel: '#worship'),
-    Department(id: 5, name: 'Food Pantry Ministry', head: 'Deaconness Esinam Segoh', members: ['Esinam'], whatsappGroup: '', slackChannel: '#foodpantry'),
-    Department(id: 6, name: 'Media Ministry', head: 'Jasper D.', members: ['Jasper D.'], whatsappGroup: '', slackChannel: '#media'),
-    Department(id: 7, name: 'Prayer Ministry', head: 'Gloria Adarquah-Yiadom', members: ['Rev. Ebenezer', 'Rev. Lucie', 'Gloria'], whatsappGroup: '', slackChannel: '#prayer'),
-    Department(id: 8, name: 'Women Ministry', head: 'Rev. Lucie Adarquah-Yiadom', members: ['Rev. Lucie'], whatsappGroup: '', slackChannel: '#women'),
+    Department(id: 1, name: 'Leadership', head: 'Rev. Ebenezer Adarquah-Yiadom', members: ['Rev. Ebenezer', 'Rev. Lucie', 'Gloria'], whatsappGroup: 'https://chat.whatsapp.com/invite/leadership', slackChannel: '#leadership'),
+    Department(id: 2, name: 'Youth Ministry', head: 'Jeshurun Adarquah-Yiadom', members: ['Jeshurun'], whatsappGroup: 'https://chat.whatsapp.com/invite/youth', slackChannel: '#youth'),
+    Department(id: 3, name: 'Faith Klinik Dance Ministers', head: 'Enam Egyir', members: ['Enam Egyir', 'Eyram', 'Edem'], whatsappGroup: 'https://chat.whatsapp.com/invite/dance', slackChannel: '#dance'),
+    Department(id: 4, name: 'League of Anointed Ministers', head: 'Jedidiah Adarquah-Yiadom', members: ['Jedidiah'], whatsappGroup: 'https://chat.whatsapp.com/invite/worship', slackChannel: '#worship'),
+    Department(id: 5, name: 'Food Pantry Ministry', head: 'Deaconness Esinam Segoh', members: ['Esinam'], whatsappGroup: 'https://chat.whatsapp.com/invite/foodpantry', slackChannel: '#foodpantry'),
+    Department(id: 6, name: 'Media Ministry', head: 'Jasper D.', members: ['Jasper D.'], whatsappGroup: 'https://chat.whatsapp.com/invite/media', slackChannel: '#media'),
+    Department(id: 7, name: 'Prayer Ministry', head: 'Gloria Adarquah-Yiadom', members: ['Rev. Ebenezer', 'Rev. Lucie', 'Gloria'], whatsappGroup: 'https://chat.whatsapp.com/invite/prayer', slackChannel: '#prayer'),
+    Department(id: 8, name: 'Women Ministry', head: 'Rev. Lucie Adarquah-Yiadom', members: ['Rev. Lucie'], whatsappGroup: 'https://chat.whatsapp.com/invite/women', slackChannel: '#women'),
   ];
 
   // Real ministries
