@@ -8,6 +8,8 @@ class PrayerRequest {
   final DateTime date;
   final bool isPrivate;
   final int responses;
+  final String? userId;
+  final DateTime? answeredDate;
 
   const PrayerRequest({
     required this.id,
@@ -19,6 +21,8 @@ class PrayerRequest {
     required this.date,
     required this.isPrivate,
     required this.responses,
+    this.userId,
+    this.answeredDate,
   });
 
   factory PrayerRequest.fromSupabase(Map<String, dynamic> json) {
@@ -32,6 +36,8 @@ class PrayerRequest {
       date: DateTime.parse(json['date'] as String),
       isPrivate: json['private'] as bool? ?? false,
       responses: json['responses'] as int? ?? 0,
+      userId: json['user_id'] as String?,
+      answeredDate: json['answered_date'] != null ? DateTime.parse(json['answered_date'] as String) : null,
     );
   }
 

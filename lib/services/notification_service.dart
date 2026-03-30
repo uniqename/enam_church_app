@@ -42,4 +42,34 @@ class NotificationService {
       print('❌ Failed to mark notification as read: $e');
     }
   }
+
+  Future<List<AppNotification>> getAllNotifications() async {
+    try {
+      final data = await _supabase.getAll('notifications');
+      return data.map((json) => AppNotification.fromSupabase(json)).toList();
+    } catch (e) {
+      print('❌ Failed to fetch all notifications: $e');
+      return [];
+    }
+  }
+
+  Future<void> updateNotification(AppNotification notification) async {
+    try {
+      await _supabase.update('notifications', notification.id, {'read': notification.read});
+    } catch (e) {
+      print('❌ Failed to update notification: $e');
+    }
+  }
+
+  Future<void> markAllAsRead([String? userId]) async {
+    try {
+      if (userId == null) return;
+      final notifications = await getNotificationsForUser(userId);
+      for (final n in notifications.where((n) => !n.read)) {
+        await markAsRead(n.id);
+      }
+    } catch (e) {
+      print('❌ Failed to mark all as read: $e');
+    }
+  }
 }

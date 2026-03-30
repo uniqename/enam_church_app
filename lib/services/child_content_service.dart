@@ -81,4 +81,14 @@ class ChildContentService {
       print('❌ Failed to increment views: $e');
     }
   }
+
+  Future<void> updateLesson(ChildLesson lesson) async {
+    try {
+      await _supabase.update('child_lessons', lesson.id, lesson.toSupabase());
+      print('✅ Lesson updated');
+    } catch (e) {
+      print('❌ Failed to update lesson: $e');
+      rethrow;
+    }
+  }
 }

@@ -50,6 +50,7 @@ class ReadingPlanBadge {
     required this.description,
     required this.daysRequired,
   });
+
 }
 
 class ReadingPlan {
@@ -81,12 +82,12 @@ class ReadingPlan {
   bool get isCompleted => completedDays >= totalDays;
 
   List<ReadingPlanBadge> get earnedBadges {
-    final all = ReadingPlanBadge.allBadges;
+    final all = ReadingPlanBadgeAll.allBadges;
     return all.where((b) => completedDays >= b.daysRequired).toList();
   }
 
   ReadingPlanBadge? get nextBadge {
-    final all = ReadingPlanBadge.allBadges;
+    final all = ReadingPlanBadgeAll.allBadges;
     for (final b in all) {
       if (completedDays < b.daysRequired) return b;
     }

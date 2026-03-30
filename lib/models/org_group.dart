@@ -4,10 +4,15 @@ class OrgGroup {
   final String description;
   final List<String> leaders;
   final List<String> members;
+  final List<String> pendingMembers;
   final String meetingDay;
   final String meetingTime;
   final String location;
   final String whatsappGroup;
+  final String googleMeetLink;
+  final double dues;
+  final String duesPeriod; // monthly / quarterly / annual
+  final String bylaws;
 
   const OrgGroup({
     required this.id,
@@ -15,10 +20,15 @@ class OrgGroup {
     this.description = '',
     required this.leaders,
     this.members = const [],
+    this.pendingMembers = const [],
     this.meetingDay = '',
     this.meetingTime = '',
     this.location = '',
     this.whatsappGroup = '',
+    this.googleMeetLink = '',
+    this.dues = 0,
+    this.duesPeriod = 'monthly',
+    this.bylaws = '',
   });
 
   /// Convenience getter — returns the primary leader name
@@ -48,6 +58,11 @@ class OrgGroup {
       meetingTime: json['meeting_time'] as String? ?? '',
       location: json['location'] as String? ?? '',
       whatsappGroup: json['whatsapp_group'] as String? ?? '',
+      pendingMembers: (json['pending_members'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      googleMeetLink: json['google_meet_link'] as String? ?? '',
+      dues: (json['dues'] as num?)?.toDouble() ?? 0,
+      duesPeriod: json['dues_period'] as String? ?? 'monthly',
+      bylaws: json['bylaws'] as String? ?? '',
     );
   }
 
@@ -61,6 +76,11 @@ class OrgGroup {
         'meeting_time': meetingTime,
         'location': location,
         'whatsapp_group': whatsappGroup,
+      'pending_members': pendingMembers,
+      'google_meet_link': googleMeetLink,
+      'dues': dues,
+      'dues_period': duesPeriod,
+      'bylaws': bylaws,
       };
 
   OrgGroup copyWith({
@@ -68,10 +88,15 @@ class OrgGroup {
     String? description,
     List<String>? leaders,
     List<String>? members,
+    List<String>? pendingMembers,
     String? meetingDay,
     String? meetingTime,
     String? location,
     String? whatsappGroup,
+    String? googleMeetLink,
+    double? dues,
+    String? duesPeriod,
+    String? bylaws,
   }) =>
       OrgGroup(
         id: id,
@@ -79,9 +104,14 @@ class OrgGroup {
         description: description ?? this.description,
         leaders: leaders ?? this.leaders,
         members: members ?? this.members,
+        pendingMembers: pendingMembers ?? this.pendingMembers,
         meetingDay: meetingDay ?? this.meetingDay,
         meetingTime: meetingTime ?? this.meetingTime,
         location: location ?? this.location,
         whatsappGroup: whatsappGroup ?? this.whatsappGroup,
+        googleMeetLink: googleMeetLink ?? this.googleMeetLink,
+        dues: dues ?? this.dues,
+        duesPeriod: duesPeriod ?? this.duesPeriod,
+        bylaws: bylaws ?? this.bylaws,
       );
 }

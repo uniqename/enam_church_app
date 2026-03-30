@@ -59,4 +59,53 @@ class PrayerService {
       return [];
     }
   }
+
+  Future<List<PrayerRequest>> getMyPrayers(String userId) async {
+    try {
+      final data = await _supabase.query(
+        'prayer_requests', column: 'user_id', value: userId,
+        orderBy: 'date', ascending: false,
+      );
+      return data.map((json) => PrayerRequest.fromSupabase(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<PrayerRequest>> getAllPrayersForPrayerWarriors() async {
+    try {
+      final data = await _supabase.query(
+        'prayer_requests', column: 'is_private', value: false,
+        orderBy: 'date', ascending: false,
+      );
+      return data.map((json) => PrayerRequest.fromSupabase(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<PrayerRequest>> getTestimonies() async {
+    return await getPrayersByStatus('Answered');
+  }
+
+  Future<void> markAsAnswered(String id) async {
+    try {
+      await _supabase.update('prayer_requests', id, {
+        'status': 'Answered',
+        'answered_date': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      print('❌ Failed to mark as answered: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deletePrayer(String id) async {
+    try {
+      await _supabase.delete('prayer_requests', id);
+    } catch (e) {
+      print('❌ Failed to delete prayer: $e');
+      rethrow;
+    }
+  }
 }

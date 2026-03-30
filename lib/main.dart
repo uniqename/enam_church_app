@@ -22,6 +22,7 @@ import 'views/resources/bible_apps_screen.dart';
 import 'views/children/child_games_screen.dart';
 import 'views/children/child_lessons_screen.dart';
 import 'views/children/child_sermons_screen.dart';
+import 'views/children/child_devotionals_screen.dart';
 import 'views/notifications/notifications_screen.dart';
 import 'views/settings/privacy_policy_screen.dart';
 import 'views/settings/data_deletion_screen.dart';
@@ -44,17 +45,12 @@ import 'views/volunteer/volunteer_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Load environment variables
   await dotenv.load(fileName: ".env");
-
-  // Initialize Supabase
   try {
     await SupabaseService().initialize();
   } catch (e) {
-    print('⚠️  Supabase initialization skipped (configure .env file): $e');
+    print('⚠️ Supabase initialization skipped: $e');
   }
-
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),
@@ -74,38 +70,8 @@ class FaithKlinikApp extends StatelessWidget {
           title: 'Faith Klinik Ministries',
           debugShowCheckedModeBanner: false,
           themeMode: themeProvider.themeMode,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.purple,
-              primary: AppColors.purple,
-              secondary: AppColors.blue,
-              brightness: Brightness.light,
-            ),
-            useMaterial3: true,
-            appBarTheme: const AppBarTheme(
-              centerTitle: true,
-              elevation: 0,
-              backgroundColor: AppColors.purple,
-              foregroundColor: Colors.white,
-            ),
-          ),
-          darkTheme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.purple,
-              primary: AppColors.purple,
-              secondary: AppColors.blue,
-              brightness: Brightness.dark,
-            ),
-            useMaterial3: true,
-            appBarTheme: const AppBarTheme(
-              centerTitle: true,
-              elevation: 0,
-              backgroundColor: Color(0xFF1A0A24),
-              foregroundColor: Colors.white,
-            ),
-            scaffoldBackgroundColor: const Color(0xFF121212),
-            cardColor: const Color(0xFF1E1E1E),
-          ),
+          theme: _lightTheme(),
+          darkTheme: _darkTheme(),
           initialRoute: '/',
           routes: {
             '/': (context) => const SplashScreen(),
@@ -127,6 +93,7 @@ class FaithKlinikApp extends StatelessWidget {
             '/child_games': (context) => const ChildGamesScreen(),
             '/child_lessons': (context) => const ChildLessonsScreen(),
             '/child_sermons': (context) => const ChildSermonsScreen(),
+            '/child_devotionals': (context) => const ChildDevotionalsScreen(),
             '/notifications': (context) => const NotificationsScreen(),
             '/privacy_policy': (context) => const PrivacyPolicyScreen(),
             '/data_deletion': (context) => const DataDeletionScreen(),
@@ -149,6 +116,134 @@ class FaithKlinikApp extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  ThemeData _lightTheme() {
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.purple,
+        primary: AppColors.purple,
+        secondary: AppColors.accentPurple,
+        brightness: Brightness.light,
+      ),
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFFF5F5FA),
+      appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: AppColors.purple,
+        foregroundColor: Colors.white,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        color: Colors.white,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.accentPurple, width: 2),
+        ),
+      ),
+    );
+  }
+
+  ThemeData _darkTheme() {
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.accentPurple,
+        primary: AppColors.accentPurple,
+        secondary: AppColors.accentGold,
+        surface: AppColors.darkSurface,
+        brightness: Brightness.dark,
+      ),
+      useMaterial3: true,
+      scaffoldBackgroundColor: AppColors.darkBg,
+      appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: AppColors.darkSurface,
+        foregroundColor: Colors.white,
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3,
+        ),
+        iconTheme: IconThemeData(color: AppColors.accentPurple),
+      ),
+      cardTheme: CardThemeData(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: AppColors.darkBorder, width: 1),
+        ),
+        color: AppColors.darkSurface2,
+      ),
+      drawerTheme: const DrawerThemeData(backgroundColor: AppColors.darkSurface),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.darkSurface,
+        selectedItemColor: AppColors.accentPurple,
+        unselectedItemColor: Colors.grey,
+      ),
+      tabBarTheme: const TabBarThemeData(
+        indicatorColor: AppColors.accentPurple,
+        labelColor: AppColors.accentPurple,
+        unselectedLabelColor: Colors.grey,
+        dividerColor: AppColors.darkBorder,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.darkSurface2,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.darkBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.darkBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.accentPurple, width: 2),
+        ),
+        labelStyle: const TextStyle(color: Colors.grey),
+        hintStyle: TextStyle(color: Colors.grey.shade600),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.accentPurple,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          elevation: 0,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: AppColors.accentPurple),
+      ),
+      listTileTheme: const ListTileThemeData(
+        tileColor: AppColors.darkSurface2,
+        iconColor: AppColors.accentPurple,
+      ),
+      dividerTheme: const DividerThemeData(color: AppColors.darkBorder),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: AppColors.darkSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: AppColors.darkSurface2,
+        contentTextStyle: TextStyle(color: Colors.white),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.darkSurface2,
+        selectedColor: AppColors.accentPurple.withOpacity(0.3),
+        labelStyle: const TextStyle(color: Colors.white),
+        side: const BorderSide(color: AppColors.darkBorder),
+      ),
     );
   }
 }

@@ -34,7 +34,7 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final results = await Future.wait([
+      final results = await Future.wait<dynamic>([
         _groupService.getAllGroups(),
         _authService.getCurrentUserProfile(),
         _authService.getCurrentUserId(),

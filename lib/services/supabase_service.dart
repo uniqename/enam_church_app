@@ -6,136 +6,121 @@ class SupabaseService {
   factory SupabaseService() => _instance;
   SupabaseService._internal();
 
-  late final SupabaseClient _client;
-  SupabaseClient get client => _client;
+  SupabaseClient? _client;
+  SupabaseClient get client => _client!;
+
+  static bool isConfigured = false;
 
   Future<void> initialize() async {
-    await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL']!,
-      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-    );
-    _client = Supabase.instance.client;
-    print('✅ Supabase initialized');
+    final url = dotenv.env['SUPABASE_URL'] ?? '';
+    final anonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+
+    if (url.isEmpty || anonKey.isEmpty || url == 'https://placeholder.supabase.co') {
+      print('⚠️ Supabase not configured — running in demo/local mode');
+      isConfigured = false;
+      return;
+    }
+
+    try {
+      await Supabase.initialize(url: url, anonKey: anonKey);
+      _client = Supabase.instance.client;
+      isConfigured = true;
+      print('✅ Supabase initialized');
+    } catch (e) {
+      print('⚠️ Supabase init failed, running in demo mode: $e');
+      isConfigured = false;
+    }
   }
 
-  // Auth methods
   Future<AuthResponse> signUp({
     required String email,
     required String password,
     required String name,
     required String role,
   }) async {
-    try {
-      final response = await _client.auth.signUp(
-        email: email,
-        password: password,
-        data: {'name': name, 'role': role},
-      );
-
-      // Create user profile
-      if (response.user != null) {
-        await _client.from('users').insert({
-          'id': response.user!.id,
-          'email': email,
-          'name': name,
-          'role': role,
-          'status': 'active',
-        });
-      }
-
-      print('✅ User signed up: $email');
-      return response;
-    } catch (e) {
-      print('❌ Sign up failed: $e');
-      rethrow;
+    final response = await _client!.auth.signUp(
+      email: email,
+      password: password,
+      data: {'name': name, 'role': role},
+    );
+    if (response.user != null) {
+      await _client!.from('users').insert({
+        'id': response.user!.id,
+        'email': email,
+        'name': name,
+        'role': role,
+        'status': 'active',
+      });
     }
+    return response;
   }
 
-  Future<AuthResponse> signIn({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final response = await _client.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-      print('✅ User signed in: $email');
-      return response;
-    } catch (e) {
-      print('❌ Sign in failed: $e');
-      rethrow;
-    }
+  Future<AuthResponse> signIn({required String email, required String password}) async {
+    return await _client!.auth.signInWithPassword(email: email, password: password);
   }
 
   Future<void> signOut() async {
-    try {
-      await _client.auth.signOut();
-      print('✅ User signed out');
-    } catch (e) {
-      print('❌ Sign out failed: $e');
-      rethrow;
-    }
+    await _client?.auth.signOut();
   }
 
-  User? get currentUser => _client.auth.currentUser;
+  User? get currentUser => isConfigured ? _client?.auth.currentUser : null;
 
-  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+  Stream<AuthState> get authStateChanges =>
+      isConfigured ? _client!.auth.onAuthStateChange : const Stream.empty();
 
-  // Generic CRUD operations
   Future<List<Map<String, dynamic>>> getAll(String table) async {
+    if (!isConfigured) return [];
     try {
-      final response = await _client.from(table).select();
+      final response = await _client!.from(table).select();
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('❌ Failed to get all from $table: $e');
+      print('❌ getAll $table failed: $e');
       return [];
     }
   }
 
   Future<Map<String, dynamic>?> getById(String table, String id) async {
+    if (!isConfigured) return null;
     try {
-      final response =
-          await _client.from(table).select().eq('id', id).maybeSingle();
-      return response;
+      return await _client!.from(table).select().eq('id', id).maybeSingle();
     } catch (e) {
-      print('❌ Failed to get $table by id: $e');
+      print('❌ getById $table failed: $e');
       return null;
     }
   }
 
-  Future<void> insert(String table, Map<String, dynamic> data) async {
+  Future<void> create(String table, Map<String, dynamic> data) async {
+    if (!isConfigured) return;
     try {
-      await _client.from(table).insert(data);
-      print('✅ Inserted into $table');
+      await _client!.from(table).insert(data);
     } catch (e) {
-      print('❌ Failed to insert into $table: $e');
+      print('❌ create $table failed: $e');
       rethrow;
     }
   }
 
-  Future<void> update(
-      String table, String id, Map<String, dynamic> data) async {
+  Future<void> insert(String table, Map<String, dynamic> data) => create(table, data);
+
+  Future<void> update(String table, String id, Map<String, dynamic> data) async {
+    if (!isConfigured) return;
     try {
-      await _client.from(table).update(data).eq('id', id);
-      print('✅ Updated $table');
+      await _client!.from(table).update(data).eq('id', id);
     } catch (e) {
-      print('❌ Failed to update $table: $e');
+      print('❌ update $table failed: $e');
       rethrow;
     }
   }
 
   Future<void> delete(String table, String id) async {
+    if (!isConfigured) return;
     try {
-      await _client.from(table).delete().eq('id', id);
-      print('✅ Deleted from $table');
+      await _client!.from(table).delete().eq('id', id);
     } catch (e) {
-      print('❌ Failed to delete from $table: $e');
+      print('❌ delete $table failed: $e');
       rethrow;
     }
   }
 
-  // Query helper
   Future<List<Map<String, dynamic>>> query(
     String table, {
     String? column,
@@ -144,25 +129,16 @@ class SupabaseService {
     bool ascending = true,
     int? limit,
   }) async {
+    if (!isConfigured) return [];
     try {
-      var query = _client.from(table).select();
-
-      if (column != null && value != null) {
-        query = query.eq(column, value);
-      }
-
-      if (orderBy != null) {
-        query = query.order(orderBy, ascending: ascending);
-      }
-
-      if (limit != null) {
-        query = query.limit(limit);
-      }
-
-      final response = await query;
+      dynamic q = _client!.from(table).select();
+      if (column != null && value != null) q = (q as dynamic).eq(column, value);
+      if (orderBy != null) q = (q as dynamic).order(orderBy, ascending: ascending);
+      if (limit != null) q = (q as dynamic).limit(limit);
+      final response = await q;
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('❌ Query failed for $table: $e');
+      print('❌ query $table failed: $e');
       return [];
     }
   }

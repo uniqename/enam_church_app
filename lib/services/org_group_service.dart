@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import '../models/org_group.dart';
+import '../models/dues_entry.dart';
+import '../models/group_finance.dart';
 import 'supabase_service.dart';
 import 'local_data_service.dart';
 
@@ -11,30 +14,34 @@ class OrgGroupService {
 
   final _supabase = SupabaseService();
   final _local = LocalDataService();
+  final _uuid = const Uuid();
 
-  static const String _overridesKey = 'local_org_group_overrides';
-  static const String _deletedKey = 'local_org_group_deleted';
+  static const _overridesKey = 'local_org_group_overrides_v2';
+  static const _deletedKey   = 'local_org_group_deleted_v2';
+  static const _duesKey      = 'local_group_dues_v2';
+  static const _financeKey   = 'local_group_finance_v2';
 
+  // ── Helpers ────────────────────────────────────────────────────────────────
   Future<Map<String, Map<String, dynamic>>> _getOverrides() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_overridesKey);
     if (raw == null) return {};
-    final decoded = jsonDecode(raw) as Map<String, dynamic>;
-    return decoded.map((k, v) => MapEntry(k, v as Map<String, dynamic>));
+    return (jsonDecode(raw) as Map<String, dynamic>)
+        .map((k, v) => MapEntry(k, v as Map<String, dynamic>));
   }
 
   Future<void> _saveOverride(String id, Map<String, dynamic> data) async {
-    final overrides = await _getOverrides();
-    overrides[id] = data;
+    final ov = await _getOverrides();
+    ov[id] = data;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_overridesKey, jsonEncode(overrides));
+    await prefs.setString(_overridesKey, jsonEncode(ov));
   }
 
   Future<Set<String>> _getDeletedIds() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_deletedKey);
     if (raw == null) return {};
-    return Set<String>.from(jsonDecode(raw) as List<dynamic>);
+    return Set<String>.from(jsonDecode(raw) as List);
   }
 
   Future<void> _markDeleted(String id) async {
@@ -44,35 +51,32 @@ class OrgGroupService {
     await prefs.setString(_deletedKey, jsonEncode(deleted.toList()));
   }
 
+  // ── Groups CRUD ────────────────────────────────────────────────────────────
   Future<List<OrgGroup>> getAllGroups() async {
     if (SupabaseService.isConfigured) {
       try {
         final data = await _supabase.getAll('groups');
         if (data.isNotEmpty) {
-          return data.map((json) => OrgGroup.fromJson(json)).toList();
+          return data.map((j) => OrgGroup.fromJson(j)).toList();
         }
-      } catch (e) {
-        print('⚠️ Supabase unavailable, using local groups: $e');
-      }
+      } catch (_) {}
     }
 
-    final seed = _local.getGroups();
+    final seed = _local.getGroups().map((j) => OrgGroup.fromJson(j)).toList();
     final overrides = await _getOverrides();
     final deleted = await _getDeletedIds();
 
     final result = seed
         .where((g) => !deleted.contains(g.id))
-        .map((group) {
-          final ov = overrides[group.id];
-          if (ov == null) return group;
-          return OrgGroup.fromJson({...group.toJson(), ...ov});
+        .map((g) {
+          final ov = overrides[g.id];
+          return ov == null ? g : OrgGroup.fromJson({...g.toJson(), ...ov});
         })
         .toList();
 
-    // Append locally-created groups
-    for (final entry in overrides.entries) {
-      if (entry.key.startsWith('grp-local-') && !deleted.contains(entry.key)) {
-        result.add(OrgGroup.fromJson({'id': entry.key, ...entry.value}));
+    for (final e in overrides.entries) {
+      if (e.key.startsWith('grp-local-') && !deleted.contains(e.key)) {
+        result.add(OrgGroup.fromJson({'id': e.key, ...e.value}));
       }
     }
     return result;
@@ -86,86 +90,254 @@ class OrgGroupService {
     required String meetingTime,
     required String location,
     required String whatsappGroup,
+    String googleMeetLink = '',
+    double dues = 0,
+    String duesPeriod = 'monthly',
+    String bylaws = '',
   }) async {
     final payload = {
-      'name': name,
-      'description': description,
-      'leaders': leaders,
-      'members': <String>[],
-      'meeting_day': meetingDay,
-      'meeting_time': meetingTime,
-      'location': location,
-      'whatsapp_group': whatsappGroup,
+      'name': name, 'description': description, 'leaders': leaders,
+      'members': <String>[], 'pending_members': <String>[],
+      'meeting_day': meetingDay, 'meeting_time': meetingTime,
+      'location': location, 'whatsapp_group': whatsappGroup,
+      'google_meet_link': googleMeetLink, 'dues': dues,
+      'dues_period': duesPeriod, 'bylaws': bylaws,
     };
-
     if (SupabaseService.isConfigured) {
-      try {
-        await _supabase.insert('groups', payload);
-        print('✅ Group added: $name');
-        return;
-      } catch (e) {
-        print('⚠️ Supabase insert failed, saving locally: $e');
-      }
+      try { await _supabase.insert('groups', payload); return; } catch (_) {}
     }
-
-    final id = 'grp-local-${DateTime.now().millisecondsSinceEpoch}';
-    await _saveOverride(id, payload);
-    print('✅ Group added locally: $name');
+    await _saveOverride('grp-local-${DateTime.now().millisecondsSinceEpoch}', payload);
   }
 
-  Future<void> updateGroup(
-    String id, {
-    required String name,
-    required String description,
-    required List<String> leaders,
-    required List<String> members,
-    required String meetingDay,
-    required String meetingTime,
-    required String location,
-    required String whatsappGroup,
+  Future<void> updateGroup(String id, {
+    required String name, required String description,
+    required List<String> leaders, required List<String> members,
+    List<String>? pendingMembers,
+    required String meetingDay, required String meetingTime,
+    required String location, required String whatsappGroup,
+    String googleMeetLink = '', double dues = 0,
+    String duesPeriod = 'monthly', String bylaws = '',
   }) async {
     final payload = {
-      'name': name,
-      'description': description,
-      'leaders': leaders,
-      'members': members,
-      'meeting_day': meetingDay,
-      'meeting_time': meetingTime,
-      'location': location,
-      'whatsapp_group': whatsappGroup,
+      'name': name, 'description': description, 'leaders': leaders,
+      'members': members, 'pending_members': pendingMembers ?? [],
+      'meeting_day': meetingDay, 'meeting_time': meetingTime,
+      'location': location, 'whatsapp_group': whatsappGroup,
+      'google_meet_link': googleMeetLink, 'dues': dues,
+      'dues_period': duesPeriod, 'bylaws': bylaws,
     };
-
     if (SupabaseService.isConfigured) {
-      try {
-        await _supabase.update('groups', id, payload);
-        print('✅ Group updated: $name');
-        return;
-      } catch (e) {
-        print('⚠️ Supabase update failed, saving locally: $e');
-      }
+      try { await _supabase.update('groups', id, payload); return; } catch (_) {}
     }
-
     await _saveOverride(id, payload);
-    print('✅ Group updated locally: $name');
   }
 
   Future<void> deleteGroup(String id) async {
     if (SupabaseService.isConfigured) {
-      try {
-        await _supabase.delete('groups', id);
-        print('✅ Group deleted: $id');
-        return;
-      } catch (e) {
-        print('⚠️ Supabase delete failed, marking locally: $e');
-      }
-    }
-    final overrides = await _getOverrides();
-    if (overrides.containsKey(id)) {
-      overrides.remove(id);
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_overridesKey, jsonEncode(overrides));
+      try { await _supabase.delete('groups', id); return; } catch (_) {}
     }
     await _markDeleted(id);
-    print('✅ Group deleted locally: $id');
+  }
+
+  // ── Join Requests ──────────────────────────────────────────────────────────
+  Future<void> requestToJoin(String groupId, String userName) async {
+    final groups = await getAllGroups();
+    final g = groups.firstWhere((g) => g.id == groupId, orElse: () => throw Exception('Group not found'));
+    if (g.members.contains(userName) || g.pendingMembers.contains(userName)) return;
+    final pending = [...g.pendingMembers, userName];
+    await updateGroup(groupId,
+      name: g.name, description: g.description, leaders: g.leaders,
+      members: g.members, pendingMembers: pending,
+      meetingDay: g.meetingDay, meetingTime: g.meetingTime,
+      location: g.location, whatsappGroup: g.whatsappGroup,
+      googleMeetLink: g.googleMeetLink, dues: g.dues,
+      duesPeriod: g.duesPeriod, bylaws: g.bylaws,
+    );
+  }
+
+  Future<void> approveMember(String groupId, String userName) async {
+    final groups = await getAllGroups();
+    final g = groups.firstWhere((g) => g.id == groupId);
+    final pending = g.pendingMembers.where((m) => m != userName).toList();
+    final members = [...g.members, if (!g.members.contains(userName)) userName];
+    await updateGroup(groupId,
+      name: g.name, description: g.description, leaders: g.leaders,
+      members: members, pendingMembers: pending,
+      meetingDay: g.meetingDay, meetingTime: g.meetingTime,
+      location: g.location, whatsappGroup: g.whatsappGroup,
+      googleMeetLink: g.googleMeetLink, dues: g.dues,
+      duesPeriod: g.duesPeriod, bylaws: g.bylaws,
+    );
+  }
+
+  Future<void> rejectMember(String groupId, String userName) async {
+    final groups = await getAllGroups();
+    final g = groups.firstWhere((g) => g.id == groupId);
+    final pending = g.pendingMembers.where((m) => m != userName).toList();
+    await updateGroup(groupId,
+      name: g.name, description: g.description, leaders: g.leaders,
+      members: g.members, pendingMembers: pending,
+      meetingDay: g.meetingDay, meetingTime: g.meetingTime,
+      location: g.location, whatsappGroup: g.whatsappGroup,
+      googleMeetLink: g.googleMeetLink, dues: g.dues,
+      duesPeriod: g.duesPeriod, bylaws: g.bylaws,
+    );
+  }
+
+  Future<void> removeMember(String groupId, String userName) async {
+    final groups = await getAllGroups();
+    final g = groups.firstWhere((g) => g.id == groupId);
+    final members = g.members.where((m) => m != userName).toList();
+    await updateGroup(groupId,
+      name: g.name, description: g.description, leaders: g.leaders,
+      members: members, pendingMembers: g.pendingMembers,
+      meetingDay: g.meetingDay, meetingTime: g.meetingTime,
+      location: g.location, whatsappGroup: g.whatsappGroup,
+      googleMeetLink: g.googleMeetLink, dues: g.dues,
+      duesPeriod: g.duesPeriod, bylaws: g.bylaws,
+    );
+  }
+
+  // ── Dues Log ───────────────────────────────────────────────────────────────
+  Future<Map<String, List<Map<String, dynamic>>>> _allDues() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_duesKey);
+    if (raw == null) return {};
+    return (jsonDecode(raw) as Map<String, dynamic>)
+        .map((k, v) => MapEntry(k, List<Map<String, dynamic>>.from(v as List)));
+  }
+
+  Future<void> _saveDues(Map<String, List<Map<String, dynamic>>> all) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_duesKey, jsonEncode(all));
+  }
+
+  Future<List<DuesEntry>> getDuesLog(String groupId) async {
+    final all = await _allDues();
+    final list = all[groupId] ?? [];
+    return list.map((j) => DuesEntry.fromJson(j)).toList();
+  }
+
+  Future<void> addDuesEntry(DuesEntry entry) async {
+    final all = await _allDues();
+    final id = entry.id.isEmpty ? _uuid.v4() : entry.id;
+    final withId = DuesEntry(
+      id: id, groupId: entry.groupId, memberName: entry.memberName,
+      amount: entry.amount, date: entry.date, period: entry.period,
+      note: entry.note, postedBy: entry.postedBy,
+    );
+    all[entry.groupId] = [...(all[entry.groupId] ?? []), withId.toJson()];
+    await _saveDues(all);
+  }
+
+  Future<void> deleteDuesEntry(String groupId, String entryId) async {
+    final all = await _allDues();
+    all[groupId] = (all[groupId] ?? []).where((e) => e['id'] != entryId).toList();
+    await _saveDues(all);
+  }
+
+  // ── Group Finances ─────────────────────────────────────────────────────────
+  Future<Map<String, List<Map<String, dynamic>>>> _allFinances() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_financeKey);
+    if (raw == null) return _defaultFinances();
+    return (jsonDecode(raw) as Map<String, dynamic>)
+        .map((k, v) => MapEntry(k, List<Map<String, dynamic>>.from(v as List)));
+  }
+
+  Future<void> _saveFinances(Map<String, List<Map<String, dynamic>>> all) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_financeKey, jsonEncode(all));
+  }
+
+  Map<String, List<Map<String, dynamic>>> _defaultFinances() => {
+    'grp-10': [ // Ushering Department
+      {
+        'id': 'fin-ush-1', 'group_id': 'grp-10', 'category': 'plan',
+        'title': 'Ushering Department — 2025 Annual Plan & Budget',
+        'body': '''FAITH KLINIK MINISTRIES — USHERING DEPARTMENT
+2025 Annual Ministry Plan
+
+VISION: To welcome every person who enters Faith Klinik with the love of Christ, ensuring a dignified, orderly, and spirit-filled service experience.
+
+QUARTERLY GOALS:
+Q1 (Jan–Mar): New usher recruitment drive. Target: 5 new members. Orientation every 3rd Sunday.
+Q2 (Apr–Jun): Uniform upgrade program. Purchase 10 new usher uniforms (white top, dark bottom).
+Q3 (Jul–Sep): Training workshop with guest speaker on hospitality ministry excellence.
+Q4 (Oct–Dec): Annual appreciation dinner for all usher volunteers.
+
+BUDGET BREAKDOWN:
+- Uniforms (10 sets @ \$35): \$350
+- Training materials & manuals: \$150
+- Appreciation dinner: \$400
+- Miscellaneous supplies (offering bags, programs, etc.): \$200
+TOTAL PROJECTED BUDGET: \$1,100
+
+MEETING SCHEDULE: Every 3rd Sunday at 12:00 PM in the Main Sanctuary.
+
+Submitted by: Deaconess Esinam Segoh, Ushering Department Leader''',
+        'amount': 1100.0, 'date': '2025-01-15T00:00:00.000Z',
+        'posted_by': 'Deaconess Esinam Segoh',
+      },
+    ],
+    'grp-3': [ // Dance Ministers
+      {
+        'id': 'fin-dance-1', 'group_id': 'grp-3', 'category': 'plan',
+        'title': 'Faith Klinik Dance Ministers — 2025 Annual Plan & Budget',
+        'body': '''FAITH KLINIK MINISTRIES — DANCE MINISTERS
+2025 Annual Ministry Plan
+
+VISION: To use the art of dance as a powerful expression of worship, ministering to hearts and breaking chains through movement and the presence of the Holy Spirit.
+
+MINISTRY ACTIVITIES:
+- Sunday Morning Worship Dance: Rotating schedule, 2 Sundays/month
+- Special Services: Easter, Christmas, Anniversary Sunday, Harvest
+- Outreach Performances: Minimum 2 community events in 2025
+- Guest Church Ministrations: As invited
+
+TRAINING & DEVELOPMENT:
+- Weekly Saturday rehearsals (10 AM – 12 PM)
+- Annual intensive workshop (2 days, guest choreographer)
+- Members: Enam Egyir (Lead), Eyram Kwauvi, Edem Kwauvi
+
+BUDGET BREAKDOWN:
+- Costume materials & sewing (3 new sets): \$600
+- Shoes & accessories: \$180
+- Annual workshop (instructor + materials): \$500
+- Transportation for outreach events: \$200
+- Miscellaneous (props, décor): \$120
+TOTAL PROJECTED BUDGET: \$1,600
+
+DUES: \$10/month per active member (covers costume maintenance)
+
+Submitted by: Enam Egyir, Dance Ministry Leader''',
+        'amount': 1600.0, 'date': '2025-01-20T00:00:00.000Z',
+        'posted_by': 'Enam Egyir',
+      },
+    ],
+  };
+
+  Future<List<GroupFinance>> getGroupFinances(String groupId) async {
+    final all = await _allFinances();
+    final list = all[groupId] ?? [];
+    return list.map((j) => GroupFinance.fromJson(j)).toList();
+  }
+
+  Future<void> addFinanceEntry(GroupFinance entry) async {
+    final all = await _allFinances();
+    final id = entry.id.isEmpty ? _uuid.v4() : entry.id;
+    final withId = GroupFinance(
+      id: id, groupId: entry.groupId, title: entry.title,
+      body: entry.body, amount: entry.amount, date: entry.date,
+      postedBy: entry.postedBy, category: entry.category,
+    );
+    all[entry.groupId] = [...(all[entry.groupId] ?? []), withId.toJson()];
+    await _saveFinances(all);
+  }
+
+  Future<void> deleteFinanceEntry(String groupId, String entryId) async {
+    final all = await _allFinances();
+    all[groupId] = (all[groupId] ?? []).where((e) => e['id'] != entryId).toList();
+    await _saveFinances(all);
   }
 }

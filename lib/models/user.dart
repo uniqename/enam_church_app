@@ -1,4 +1,4 @@
-enum UserRole { pastor, admin, member, child }
+enum UserRole { pastor, admin, dept_head, member, child }
 
 class AppUser {
   final String id;
@@ -55,6 +55,8 @@ class AppUser {
         return UserRole.pastor;
       case 'admin':
         return UserRole.admin;
+      case 'dept_head':
+        return UserRole.dept_head;
       case 'child':
         return UserRole.child;
       default:
@@ -64,6 +66,13 @@ class AppUser {
 
   bool get isPastor => role == UserRole.pastor;
   bool get isAdmin => role == UserRole.admin || role == UserRole.pastor;
+  bool get isDeptHead => role == UserRole.dept_head || isAdmin;
   bool get isMember => role == UserRole.member;
   bool get isChild => role == UserRole.child;
+  bool get canManageContent => isAdmin; // can edit bulletins, devotionals, stories
+  bool get canManageFinances => isAdmin || role == UserRole.dept_head;
+
+  bool canEditDepartment(String departmentName) {
+    return isAdmin; // Pastors and admins can edit any department
+  }
 }

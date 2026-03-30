@@ -53,7 +53,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen>
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final results = await Future.wait([
+      final results = await Future.wait<dynamic>([
         _deptService.getAllDepartments(),
         _minService.getAllMinistries(),
         _authService.getCurrentUserProfile(),

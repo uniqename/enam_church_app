@@ -49,4 +49,22 @@ class StreamService {
       return [];
     }
   }
+
+  Future<void> updateStreamUrl(String id, String url) async {
+    try {
+      await _supabase.update('live_streams', id, {'stream_url': url});
+    } catch (e) {
+      print('❌ Failed to update stream url: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateStream(LiveStream stream) async {
+    try {
+      await _supabase.update('live_streams', stream.id, stream.toSupabase());
+    } catch (e) {
+      print('❌ Failed to update stream: $e');
+      rethrow;
+    }
+  }
 }

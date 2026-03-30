@@ -7,6 +7,9 @@ class LiveStream {
   final int viewers;
   final String category;
   final String streamUrl;
+  final String platform;   // youtube, instagram, facebook, zoom, google_meet, other
+  final String platformUrl;
+  final String description;
 
   const LiveStream({
     required this.id,
@@ -17,6 +20,9 @@ class LiveStream {
     required this.viewers,
     required this.category,
     required this.streamUrl,
+    this.platform = 'youtube',
+    this.platformUrl = '',
+    this.description = '',
   });
 
   factory LiveStream.fromSupabase(Map<String, dynamic> json) {
@@ -28,7 +34,10 @@ class LiveStream {
       status: json['status'] as String? ?? 'Upcoming',
       viewers: json['viewers'] as int? ?? 0,
       category: json['category'] as String? ?? 'Worship',
-      streamUrl: json['stream_url'] as String? ?? '',
+      streamUrl: json['stream_url'] as String? ?? json['platform_url'] as String? ?? '',
+      platform: json['platform'] as String? ?? 'youtube',
+      platformUrl: json['platform_url'] as String? ?? json['stream_url'] as String? ?? '',
+      description: json['description'] as String? ?? '',
     );
   }
 
@@ -42,6 +51,9 @@ class LiveStream {
       'viewers': viewers,
       'category': category,
       'stream_url': streamUrl,
+      'platform': platform,
+      'platform_url': platformUrl,
+      'description': description,
     };
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/auth_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/supabase_service.dart';
 import '../../utils/colors.dart';
 
@@ -67,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           await _supabase.client.storage
               .from('church-media')
               .upload(fileName, file,
-                  fileOptions: const FileOptions(upsert: true));
+                  fileOptions: FileOptions(upsert: true));
           uploadedUrl = _supabase.client.storage
               .from('church-media')
               .getPublicUrl(fileName);
