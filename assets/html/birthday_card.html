@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koinonia US – Birthday Card Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Cinzel:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lato:wght@300;400;700;900&family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600&family=Oswald:wght@700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --navy:#0d2a5e;--gold:#c9a227;--gold-l:#f0d060;--gold-s:#f7e88a;
+  --red:#c0282a;--white:#fff;--sky:#3a78c9;
+}
+
+body{
+  font-family:'Lato',sans-serif;
+  background:#07111f;
+  color:#fff;
+  min-height:100vh;
+  padding:24px 16px 60px;
+}
+
+/* ─── HEADER ─── */
+.app-header{text-align:center;margin-bottom:28px}
+.app-header h1{
+  font-family:'Cinzel',serif;font-size:1.5rem;letter-spacing:.2em;
+  color:var(--gold-l);margin-bottom:4px
+}
+.app-header p{font-size:.75rem;color:#5a7aaa;letter-spacing:.25em;text-transform:uppercase}
+
+/* ─── MAIN LAYOUT ─── */
+.app{display:flex;gap:28px;max-width:1200px;margin:0 auto;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+
+/* ─── SIDEBAR ─── */
+.sidebar{
+  width:290px;flex-shrink:0;
+  background:#0e1f3a;border:1px solid #1e3a66;border-radius:16px;
+  padding:22px 20px;
+}
+.sidebar-section{margin-bottom:20px}
+.sidebar-section h3{
+  font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);
+  letter-spacing:.18em;text-transform:uppercase;
+  padding-bottom:8px;border-bottom:1px solid #1e3a66;margin-bottom:14px
+}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.68rem;font-weight:700;color:#7a9ec8;
+  letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.field input,.field select,.field textarea{
+  width:100%;background:#081830;border:1px solid #2a4070;border-radius:7px;
+  color:#fff;font-size:.85rem;padding:8px 10px;font-family:'Lato',sans-serif;
+  outline:none;transition:border-color .2s
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.field textarea{resize:vertical;min-height:75px;line-height:1.55}
+.field select option{background:#081830}
+
+.inline-row{display:flex;gap:8px}
+.inline-row .field{flex:1}
+
+.verse-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.preset-btn{
+  background:#112044;border:1px solid #2a4070;border-radius:20px;
+  color:#7a9ec8;font-size:.65rem;padding:4px 10px;cursor:pointer;
+  transition:all .2s;font-family:'Lato',sans-serif
+}
+.preset-btn:hover{background:#1a3560;border-color:var(--gold);color:var(--gold-l)}
+
+.photo-box{
+  background:#081830;border:2px dashed #2a4070;border-radius:10px;
+  padding:16px 10px;text-align:center;cursor:pointer;position:relative;
+  transition:all .2s
+}
+.photo-box:hover{border-color:var(--gold);background:#102040}
+.photo-box input{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2}
+.photo-box .ico{font-size:1.6rem}
+.photo-box span{display:block;font-size:.7rem;color:#5a7aaa;margin-top:4px}
+
+.action-row{display:flex;gap:8px;margin-top:4px}
+.btn{
+  flex:1;padding:10px 0;border-radius:8px;border:none;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;letter-spacing:.08em;
+  transition:transform .15s,opacity .15s
+}
+.btn:hover{transform:translateY(-1px);opacity:.9}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-s));color:var(--navy)}
+.btn-clear{background:#1a3560;color:var(--gold-l);border:1px solid #2a4070}
+
+/* ─── TEMPLATE PICKER ─── */
+.tpl-picker{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.tpl-thumb{
+  border:2px solid #1e3a66;border-radius:10px;overflow:hidden;cursor:pointer;
+  transition:all .2s;position:relative
+}
+.tpl-thumb:hover{border-color:var(--gold);transform:scale(1.03)}
+.tpl-thumb.active{border-color:var(--gold-l);box-shadow:0 0 0 2px rgba(240,208,96,.3)}
+.tpl-thumb .label{
+  position:absolute;bottom:0;left:0;right:0;padding:4px 6px;
+  background:rgba(0,0,0,.65);font-size:.62rem;font-weight:700;
+  letter-spacing:.08em;color:var(--gold-l);text-align:center
+}
+.tpl-preview{width:100%;height:70px;display:block}
+
+/* ─── CARD STAGE ─── */
+.stage{display:flex;flex-direction:column;align-items:center;gap:14px}
+
+.card-wrap{
+  box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 2px rgba(201,162,39,.25);
+  border-radius:18px;overflow:hidden;position:relative
+}
+
+#card{
+  width:480px;height:680px;position:relative;overflow:hidden;display:none
+}
+#card.active{display:block}
+
+.dl-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-s));
+  color:var(--navy);font-family:'Cinzel',serif;font-weight:700;font-size:.8rem;
+  letter-spacing:.12em;padding:12px 32px;border-radius:30px;border:none;
+  cursor:pointer;box-shadow:0 6px 24px rgba(201,162,39,.35);
+  transition:transform .2s,box-shadow .2s
+}
+.dl-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(201,162,39,.5)}
+.tip{font-size:.7rem;color:#3a5a7a;text-align:center;max-width:480px;line-height:1.6}
+
+/* ════════════════════════════════════════
+   TEMPLATE 1 – Navy & Gold (Original)
+════════════════════════════════════════ */
+#tpl1{
+  background:radial-gradient(ellipse at 60% 30%,#1e5299 0%,#0d2a5e 45%,#081830 100%);
+  font-family:'Lato',sans-serif
+}
+#tpl1 .bg-overlay{
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 80% 80%,rgba(201,162,39,.08) 0%,transparent 50%),
+             radial-gradient(circle at 10% 50%,rgba(58,120,201,.15) 0%,transparent 40%)
+}
+#tpl1 .hb-happy{position:absolute;top:20px;right:30px;font-size:.85rem;font-weight:700;letter-spacing:.3em;color:var(--navy);text-transform:uppercase}
+#tpl1 .hb-bday{position:absolute;top:34px;right:14px;font-family:'Dancing Script',cursive;font-size:3.6rem;color:var(--navy);line-height:1}
+#tpl1 .photo-ring{
+  position:absolute;right:52px;top:125px;width:192px;height:192px;
+  border-radius:50%;border:5px solid var(--gold);
+  box-shadow:0 0 0 3px rgba(201,162,39,.3),0 12px 40px rgba(0,0,0,.4);
+  overflow:hidden;background:linear-gradient(135deg,#1a4080,#0d2a5e);
+  display:flex;align-items:center;justify-content:center
+}
+#tpl1 .name-plate{
+  position:absolute;right:52px;top:312px;width:192px;
+  background:linear-gradient(135deg,#c8971a,#f5e07a,#c8971a);
+  border-radius:30px;padding:6px 14px;text-align:center;
+  box-shadow:0 4px 16px rgba(0,0,0,.4),inset 0 1px 3px rgba(255,255,255,.5)
+}
+#tpl1 .name-plate span{font-size:.62rem;font-weight:700;letter-spacing:.1em;color:var(--navy);text-transform:uppercase}
+#tpl1 .date-badge{
+  position:absolute;left:40px;top:360px;
+  background:var(--red);border-radius:10px;padding:10px 14px;text-align:center;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);min-width:78px
+}
+#tpl1 .date-badge .day{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:#fff;line-height:1}
+#tpl1 .date-badge .mo{font-size:.68rem;font-weight:700;letter-spacing:.15em;color:#fff;text-transform:uppercase}
+#tpl1 .ribbon{position:absolute;left:92px;top:370px;width:88px;height:58px;border-bottom:3px solid var(--gold);border-left:3px solid var(--gold);border-radius:0 0 0 60px;opacity:.7}
+#tpl1 .first-name{position:absolute;left:24px;top:415px;font-family:'Dancing Script',cursive;font-size:2.7rem;color:#fff;max-width:265px;word-break:break-word;line-height:1.1}
+#tpl1 .last-name{position:absolute;left:24px;top:470px;font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--gold-l);max-width:280px;word-break:break-word}
+#tpl1 .scripture{position:absolute;left:22px;right:22px;top:525px;font-size:.73rem;color:rgba(255,255,255,.88);text-align:center;line-height:1.6;font-style:italic}
+#tpl1 .footer{position:absolute;bottom:0;left:0;right:0;padding:12px 22px 16px;background:linear-gradient(to top,rgba(8,18,40,.95),rgba(8,18,40,.5));text-align:center}
+#tpl1 .footer .church{font-family:'Cinzel',serif;font-size:1rem;font-weight:900;color:var(--gold-l);letter-spacing:.2em}
+#tpl1 .footer .dept{font-size:.68rem;color:rgba(255,255,255,.65);letter-spacing:.15em;text-transform:uppercase;margin:2px 0 3px}
+#tpl1 .footer .bless{font-family:'Dancing Script',cursive;font-size:1.25rem;color:#fff}
+
+/* ════════════════════════════════════════
+   TEMPLATE 2 – Royal Purple & Rose Gold
+════════════════════════════════════════ */
+#tpl2{
+  background:linear-gradient(160deg,#1a0a3a 0%,#2d0f5e 40%,#1a0a3a 100%);
+  font-family:'Lato',sans-serif
+}
+#tpl2 .geo{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#tpl2 .geo::before{
+  content:'';position:absolute;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(180,100,200,.15),transparent 70%);
+  top:-150px;right:-150px
+}
+#tpl2 .geo::after{
+  content:'';position:absolute;
+  width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle,rgba(212,160,60,.1),transparent 70%);
+  bottom:-100px;left:-100px
+}
+#tpl2 .arch{
+  position:absolute;top:0;left:0;right:0;height:300px;
+  background:linear-gradient(180deg,rgba(140,60,180,.35),transparent);
+  border-radius:0 0 50% 50% / 0 0 80px 80px
+}
+#tpl2 .hb-happy{position:absolute;top:22px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:.75rem;font-weight:700;letter-spacing:.35em;color:rgba(255,255,255,.5);text-transform:uppercase}
+#tpl2 .hb-bday{position:absolute;top:38px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:'Dancing Script',cursive;font-size:3.8rem;color:#e8c8f0;line-height:1;text-shadow:0 0 30px rgba(180,100,220,.8)}
+#tpl2 .photo-ring{
+  position:absolute;left:50%;transform:translateX(-50%);top:118px;
+  width:186px;height:186px;border-radius:50%;
+  border:4px solid transparent;
+  background:linear-gradient(#2d0f5e,#2d0f5e) padding-box,
+             linear-gradient(135deg,#d4a040,#f0c878,#a06020) border-box;
+  box-shadow:0 0 40px rgba(180,100,220,.4),0 12px 40px rgba(0,0,0,.5);
+  overflow:hidden;display:flex;align-items:center;justify-content:center
+}
+#tpl2 .photo-ring::before{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(212,160,60,.4),transparent,rgba(212,160,60,.4));
+  z-index:-1
+}
+#tpl2 .divider{
+  position:absolute;left:40px;right:40px;top:318px;height:1px;
+  background:linear-gradient(to right,transparent,rgba(212,160,60,.6),transparent)
+}
+#tpl2 .date-pill{
+  position:absolute;left:50%;transform:translateX(-50%);top:332px;
+  background:linear-gradient(135deg,#8a3ab0,#6020a0);
+  border:1px solid rgba(212,160,60,.4);border-radius:30px;
+  padding:6px 22px;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(100,0,180,.4)
+}
+#tpl2 .date-pill span{font-size:.8rem;font-weight:700;letter-spacing:.2em;color:#f0c878;text-transform:uppercase}
+#tpl2 .first-name{position:absolute;left:0;right:0;top:375px;text-align:center;font-family:'Playfair Display',serif;font-size:2.5rem;font-style:italic;color:#f0e0ff;line-height:1.1}
+#tpl2 .last-name{position:absolute;left:0;right:0;top:430px;text-align:center;font-family:'Oswald',sans-serif;font-size:1.9rem;color:#e8c050;letter-spacing:.12em}
+#tpl2 .scripture{position:absolute;left:30px;right:30px;top:490px;font-size:.73rem;color:rgba(255,255,255,.8);text-align:center;line-height:1.65;font-style:italic}
+#tpl2 .footer{position:absolute;bottom:0;left:0;right:0;padding:12px 22px 16px;background:linear-gradient(to top,rgba(15,5,30,.98),rgba(15,5,30,.4));text-align:center;border-top:1px solid rgba(212,160,60,.2)}
+#tpl2 .footer .church{font-family:'Cinzel',serif;font-size:.95rem;font-weight:900;color:#e8c050;letter-spacing:.22em}
+#tpl2 .footer .dept{font-size:.66rem;color:rgba(255,255,255,.55);letter-spacing:.15em;text-transform:uppercase;margin:2px 0 3px}
+#tpl2 .footer .bless{font-family:'Dancing Script',cursive;font-size:1.2rem;color:#d4a8f0}
+
+/* ════════════════════════════════════════
+   TEMPLATE 3 – Emerald & Champagne
+════════════════════════════════════════ */
+#tpl3{
+  background:linear-gradient(150deg,#052a18 0%,#0a4a28 40%,#052a18 100%);
+  font-family:'Lato',sans-serif
+}
+#tpl3 .pattern{
+  position:absolute;inset:0;opacity:.06;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(255,255,255,1) 28px,rgba(255,255,255,1) 29px),
+                   repeating-linear-gradient(90deg,transparent,transparent 28px,rgba(255,255,255,1) 28px,rgba(255,255,255,1) 29px)
+}
+#tpl3 .top-band{
+  position:absolute;top:0;left:0;right:0;height:200px;
+  background:linear-gradient(180deg,rgba(16,100,50,.7),transparent)
+}
+#tpl3 .corner-tl,.corner-tr,.corner-bl,.corner-br{
+  position:absolute;width:60px;height:60px;
+  border-color:#c9a227;border-style:solid;opacity:.5
+}
+#tpl3 .corner-tl{top:16px;left:16px;border-width:3px 0 0 3px}
+#tpl3 .corner-tr{top:16px;right:16px;border-width:3px 3px 0 0}
+#tpl3 .corner-bl{bottom:16px;left:16px;border-width:0 0 3px 3px}
+#tpl3 .corner-br{bottom:16px;right:16px;border-width:0 3px 3px 0}
+#tpl3 .hb-happy{position:absolute;top:24px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:.72rem;font-weight:700;letter-spacing:.4em;color:rgba(200,200,200,.6);text-transform:uppercase}
+#tpl3 .hb-bday{position:absolute;top:36px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:'Dancing Script',cursive;font-size:3.5rem;color:#c8e8b0;line-height:1;text-shadow:0 0 25px rgba(80,200,100,.5)}
+#tpl3 .photo-ring{
+  position:absolute;left:50%;transform:translateX(-50%);top:112px;
+  width:190px;height:190px;border-radius:50%;
+  border:5px solid #c9a227;
+  box-shadow:0 0 0 2px rgba(201,162,39,.25),0 0 30px rgba(80,200,100,.2),0 12px 40px rgba(0,0,0,.5);
+  overflow:hidden;background:#0a3a1a;
+  display:flex;align-items:center;justify-content:center
+}
+#tpl3 .laurel{
+  position:absolute;left:50%;transform:translateX(-50%);top:302px;
+  white-space:nowrap;font-size:1.4rem;color:rgba(201,162,39,.6);letter-spacing:.3em
+}
+#tpl3 .date-band{
+  position:absolute;left:0;right:0;top:330px;
+  background:linear-gradient(to right,transparent,rgba(201,162,39,.2),rgba(201,162,39,.35),rgba(201,162,39,.2),transparent);
+  padding:10px 0;text-align:center
+}
+#tpl3 .date-band span{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;letter-spacing:.3em;color:#e8c878}
+#tpl3 .first-name{position:absolute;left:0;right:0;top:378px;text-align:center;font-family:'Cormorant Garamond',serif;font-size:2.9rem;font-style:italic;color:#c8f0b0;line-height:1.05}
+#tpl3 .last-name{position:absolute;left:0;right:0;top:430px;text-align:center;font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:#e8c050;letter-spacing:.15em}
+#tpl3 .scripture{position:absolute;left:38px;right:38px;top:490px;font-size:.72rem;color:rgba(255,255,255,.82);text-align:center;line-height:1.65;font-style:italic}
+#tpl3 .footer{position:absolute;bottom:0;left:0;right:0;padding:12px 22px 16px;background:linear-gradient(to top,rgba(3,15,8,.98),rgba(3,15,8,.4));text-align:center;border-top:1px solid rgba(201,162,39,.2)}
+#tpl3 .footer .church{font-family:'Cinzel',serif;font-size:.95rem;font-weight:900;color:#d4b840;letter-spacing:.2em}
+#tpl3 .footer .dept{font-size:.66rem;color:rgba(255,255,255,.55);letter-spacing:.15em;text-transform:uppercase;margin:2px 0 3px}
+#tpl3 .footer .bless{font-family:'Dancing Script',cursive;font-size:1.2rem;color:#a0e890}
+
+/* ════════════════════════════════════════
+   TEMPLATE 4 – Crimson & Pearl
+════════════════════════════════════════ */
+#tpl4{
+  background:linear-gradient(160deg,#2a0608 0%,#580c10 40%,#2a0608 100%);
+  font-family:'Lato',sans-serif
+}
+#tpl4 .diamonds{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#tpl4 .diamonds::before{
+  content:'';position:absolute;inset:0;
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0px,rgba(255,255,255,.025) 1px,transparent 1px,transparent 30px);
+  background-size:30px 30px
+}
+#tpl4 .glow-top{
+  position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:400px;height:250px;border-radius:50%;
+  background:radial-gradient(circle,rgba(200,50,50,.25),transparent 70%)
+}
+#tpl4 .hb-happy{position:absolute;top:20px;right:28px;font-size:.78rem;font-weight:700;letter-spacing:.35em;color:rgba(255,200,200,.55);text-transform:uppercase}
+#tpl4 .hb-bday{position:absolute;top:34px;right:10px;font-family:'Dancing Script',cursive;font-size:3.7rem;color:#f0c8c8;line-height:1;text-shadow:0 0 25px rgba(220,60,60,.6)}
+#tpl4 .photo-ring{
+  position:absolute;right:50px;top:118px;
+  width:188px;height:188px;border-radius:50%;
+  border:5px solid;border-color:#e0a0a0;
+  box-shadow:0 0 0 2px rgba(220,160,160,.2),0 0 35px rgba(200,50,50,.3),0 12px 40px rgba(0,0,0,.5);
+  overflow:hidden;background:#3a0c0e;
+  display:flex;align-items:center;justify-content:center
+}
+#tpl4 .side-bar{
+  position:absolute;left:0;top:140px;width:6px;height:340px;
+  background:linear-gradient(to bottom,transparent,#c03030,#e0a030,#c03030,transparent)
+}
+#tpl4 .date-badge{
+  position:absolute;left:30px;top:355px;
+  background:linear-gradient(135deg,#8a1020,#c01828);
+  border:1px solid rgba(220,160,160,.3);border-radius:12px;
+  padding:10px 16px;text-align:center;min-width:80px;
+  box-shadow:0 4px 20px rgba(150,0,20,.5)
+}
+#tpl4 .date-badge .day{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:#fff;line-height:1}
+#tpl4 .date-badge .mo{font-size:.68rem;font-weight:700;letter-spacing:.15em;color:rgba(255,255,255,.8);text-transform:uppercase}
+#tpl4 .first-name{position:absolute;left:24px;top:408px;font-family:'Playfair Display',serif;font-size:2.6rem;font-style:italic;color:#ffe0e0;line-height:1.05;max-width:270px;word-break:break-word}
+#tpl4 .last-name{position:absolute;left:24px;top:462px;font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:#e8c050;letter-spacing:.1em;max-width:280px;word-break:break-word}
+#tpl4 .scripture{position:absolute;left:22px;right:22px;top:522px;font-size:.72rem;color:rgba(255,255,255,.82);text-align:center;line-height:1.65;font-style:italic}
+#tpl4 .footer{position:absolute;bottom:0;left:0;right:0;padding:12px 22px 16px;background:linear-gradient(to top,rgba(15,3,4,.98),rgba(15,3,4,.4));text-align:center;border-top:1px solid rgba(200,60,60,.25)}
+#tpl4 .footer .church{font-family:'Cinzel',serif;font-size:.95rem;font-weight:900;color:#f0c050;letter-spacing:.22em}
+#tpl4 .footer .dept{font-size:.66rem;color:rgba(255,255,255,.55);letter-spacing:.15em;text-transform:uppercase;margin:2px 0 3px}
+#tpl4 .footer .bless{font-family:'Dancing Script',cursive;font-size:1.2rem;color:#f0c8c8}
+
+.ph{font-size:2.5rem;text-align:center;color:rgba(255,255,255,.2)}
+.ph small{display:block;font-size:.65rem;font-family:'Lato',sans-serif;color:rgba(255,255,255,.3);margin-top:4px}
+
+.balloon{position:absolute;border-radius:50% 50% 50% 50%/55% 55% 45% 45%;box-shadow:inset -6px -6px 16px rgba(0,0,0,.25),inset 4px 4px 10px rgba(255,255,255,.2)}
+.balloon::after{content:'';position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);width:1px;height:20px;background:rgba(255,255,255,.35)}
+
+.spark{position:absolute;width:4px;height:4px;border-radius:50%;opacity:.6;animation:sp 2.5s ease-in-out infinite alternate}
+@keyframes sp{from{opacity:.2;transform:scale(.8)}to{opacity:.9;transform:scale(1.3)}}
+
+.floral{position:absolute;font-size:1.4rem;opacity:.18;pointer-events:none}
+.star5{position:absolute;font-size:.9rem;color:#e8c050;opacity:.5;animation:sp 3s ease-in-out infinite alternate}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>Birthday Card Studio</h1>
+  <p>4 Templates · Editable Bible Verse · One-Click Download</p>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <h3>Choose Template</h3>
+      <div class="tpl-picker">
+        <div class="tpl-thumb active" onclick="switchTpl(1)" id="thumb1">
+          <canvas class="tpl-preview" id="prev1"></canvas>
+          <div class="label">Navy & Gold</div>
+        </div>
+        <div class="tpl-thumb" onclick="switchTpl(2)" id="thumb2">
+          <canvas class="tpl-preview" id="prev2"></canvas>
+          <div class="label">Royal Purple</div>
+        </div>
+        <div class="tpl-thumb" onclick="switchTpl(3)" id="thumb3">
+          <canvas class="tpl-preview" id="prev3"></canvas>
+          <div class="label">Emerald Grace</div>
+        </div>
+        <div class="tpl-thumb" onclick="switchTpl(4)" id="thumb4">
+          <canvas class="tpl-preview" id="prev4"></canvas>
+          <div class="label">Crimson & Pearl</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Member Details</h3>
+      <div class="field"><label>First Name(s)</label>
+        <input id="firstName" value="Ujaranne Renee" oninput="render()"></div>
+      <div class="field"><label>Last Name</label>
+        <input id="lastName" value="ONUORAH" oninput="render()"></div>
+      <div class="inline-row">
+        <div class="field"><label>Day</label>
+          <input id="bday" value="31" oninput="render()" style="width:100%"></div>
+        <div class="field"><label>Suffix</label>
+          <select id="suffix" oninput="render()">
+            <option>ST</option><option>ND</option><option>RD</option><option selected>TH</option>
+          </select></div>
+        <div class="field"><label>Month</label>
+          <select id="month" oninput="render()">
+            <option>JANUARY</option><option>FEBRUARY</option><option>MARCH</option>
+            <option>APRIL</option><option>MAY</option><option>JUNE</option>
+            <option>JULY</option><option>AUGUST</option><option>SEPTEMBER</option>
+            <option>OCTOBER</option><option>NOVEMBER</option><option>DECEMBER</option>
+          </select></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Bible Verse</h3>
+      <div class="field">
+        <label>Verse Text</label>
+        <textarea id="scripture" oninput="render()">"The Lord bless you and keep you; the Lord make His face shine upon you and be gracious to you." — Numbers 6:24-25</textarea>
+      </div>
+      <div class="verse-presets">
+        <button class="preset-btn" onclick="setVerse(0)">Numbers 6:24</button>
+        <button class="preset-btn" onclick="setVerse(1)">Jer 29:11</button>
+        <button class="preset-btn" onclick="setVerse(2)">Psalm 23:1</button>
+        <button class="preset-btn" onclick="setVerse(3)">Phil 4:13</button>
+        <button class="preset-btn" onclick="setVerse(4)">Psalm 91:11</button>
+        <button class="preset-btn" onclick="setVerse(5)">Prov 3:5-6</button>
+        <button class="preset-btn" onclick="setVerse(6)">Isaiah 40:31</button>
+        <button class="preset-btn" onclick="setVerse(7)">Romans 8:28</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Church Info</h3>
+      <div class="field"><label>Church Name</label>
+        <input id="church" value="FAITH KLINIK MINISTRIES" oninput="render()"></div>
+      <div class="field"><label>Department</label>
+        <input id="dept" value="Ushering Department" oninput="render()"></div>
+      <div class="field"><label>Closing Blessing</label>
+        <input id="blessing" value="God bless you" oninput="render()"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Photo</h3>
+      <div class="photo-box" id="photoBox">
+        <div class="ico">📷</div>
+        <span id="photoLabel">Click to upload member photo</span>
+        <input type="file" accept="image/*" onchange="loadPhoto(event)">
+      </div>
+      <div class="action-row" style="margin-top:8px">
+        <button class="btn btn-clear" onclick="clearPhoto()">Clear Photo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="card-wrap">
+      <div id="card">
+        <!-- TPL 1 -->
+        <div id="tpl1" class="active" style="position:absolute;inset:0;display:none">
+          <div class="bg-overlay"></div>
+          <div id="t1-balloons"></div>
+          <div id="t1-sparks"></div>
+          <div class="hb-happy">· HAPPY ·</div>
+          <div class="hb-bday">Birthday</div>
+          <div class="photo-ring" id="t1-photo"><div class="ph">👤<small>Upload photo</small></div></div>
+          <div class="name-plate"><span id="t1-dept">Ushering Department</span></div>
+          <div class="date-badge"><div class="day" id="t1-day">31<sup id="t1-sfx">ST</sup></div><div class="mo" id="t1-mo">JANUARY</div></div>
+          <div class="ribbon"></div>
+          <div class="first-name" id="t1-first">Ujaranne Renee</div>
+          <div class="last-name" id="t1-last">ONUORAH</div>
+          <div class="scripture" id="t1-verse">"The Lord bless you and keep you; the Lord make His face shine upon you and be gracious to you." — Numbers 6:24-25</div>
+          <div class="footer">
+            <div class="church" id="t1-church">FAITH KLINIK MINISTRIES</div>
+            <div class="dept" id="t1-deptf">Ushering Department</div>
+            <div class="bless" id="t1-bless">God bless you</div>
+          </div>
+        </div>
+
+        <!-- TPL 2 -->
+        <div id="tpl2" style="position:absolute;inset:0;display:none">
+          <div class="geo"></div>
+          <div class="arch"></div>
+          <div id="t2-sparks"></div>
+          <div class="hb-happy">· HAPPY ·</div>
+          <div class="hb-bday">Birthday</div>
+          <div class="photo-ring" id="t2-photo"><div class="ph">👤<small>Upload photo</small></div></div>
+          <div class="divider"></div>
+          <div class="date-pill"><span id="t2-date">31ST JANUARY</span></div>
+          <div class="first-name" id="t2-first">Ujaranne Renee</div>
+          <div class="last-name" id="t2-last">ONUORAH</div>
+          <div class="scripture" id="t2-verse">"The Lord bless you and keep you; the Lord make His face shine upon you and be gracious to you." — Numbers 6:24-25</div>
+          <div class="footer">
+            <div class="church" id="t2-church">FAITH KLINIK MINISTRIES</div>
+            <div class="dept" id="t2-deptf">Ushering Department</div>
+            <div class="bless" id="t2-bless">God bless you</div>
+          </div>
+        </div>
+
+        <!-- TPL 3 -->
+        <div id="tpl3" style="position:absolute;inset:0;display:none">
+          <div class="pattern"></div>
+          <div class="top-band"></div>
+          <div id="t3-florals"></div>
+          <div class="corner-tl"></div><div class="corner-tr"></div>
+          <div class="corner-bl"></div><div class="corner-br"></div>
+          <div class="hb-happy">· HAPPY ·</div>
+          <div class="hb-bday">Birthday</div>
+          <div class="photo-ring" id="t3-photo"><div class="ph">👤<small>Upload photo</small></div></div>
+          <div class="laurel">✦ &nbsp; ✦ &nbsp; ✦</div>
+          <div class="date-band"><span id="t3-date">31ST JANUARY</span></div>
+          <div class="first-name" id="t3-first">Ujaranne Renee</div>
+          <div class="last-name" id="t3-last">ONUORAH</div>
+          <div class="scripture" id="t3-verse">"The Lord bless you and keep you; the Lord make His face shine upon you and be gracious to you." — Numbers 6:24-25</div>
+          <div class="footer">
+            <div class="church" id="t3-church">FAITH KLINIK MINISTRIES</div>
+            <div class="dept" id="t3-deptf">Ushering Department</div>
+            <div class="bless" id="t3-bless">God bless you</div>
+          </div>
+        </div>
+
+        <!-- TPL 4 -->
+        <div id="tpl4" style="position:absolute;inset:0;display:none">
+          <div class="diamonds"></div>
+          <div class="glow-top"></div>
+          <div class="side-bar"></div>
+          <div id="t4-sparks"></div>
+          <div class="hb-happy">· HAPPY ·</div>
+          <div class="hb-bday">Birthday</div>
+          <div class="photo-ring" id="t4-photo"><div class="ph">👤<small>Upload photo</small></div></div>
+          <div class="date-badge"><div class="day" id="t4-day">31<sup id="t4-sfx">ST</sup></div><div class="mo" id="t4-mo">JANUARY</div></div>
+          <div class="first-name" id="t4-first">Ujaranne Renee</div>
+          <div class="last-name" id="t4-last">ONUORAH</div>
+          <div class="scripture" id="t4-verse">"The Lord bless you and keep you; the Lord make His face shine upon you and be gracious to you." — Numbers 6:24-25</div>
+          <div class="footer">
+            <div class="church" id="t4-church">FAITH KLINIK MINISTRIES</div>
+            <div class="dept" id="t4-deptf">Ushering Department</div>
+            <div class="bless" id="t4-bless">God bless you</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="dl-btn" onclick="downloadCard()">⬇&nbsp; Download Card as PNG</button>
+    <p class="tip">Choose a template · fill in details · upload photo · download. Repeat for every member!</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const VERSES = [
+  '"The Lord bless you and keep you; the Lord make His face shine upon you and be gracious to you." — Numbers 6:24-25',
+  '"For I know the plans I have for you," declares the Lord, "plans to prosper you and not to harm you, plans to give you hope and a future." — Jeremiah 29:11',
+  '"The Lord is my shepherd; I shall not want." — Psalm 23:1',
+  '"I can do all things through Christ who strengthens me." — Philippians 4:13',
+  '"For He shall give His angels charge over you, to keep you in all your ways." — Psalm 91:11',
+  '"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to Him, and He will make your paths straight." — Proverbs 3:5-6',
+  '"But those who hope in the Lord will renew their strength. They will soar on wings like eagles." — Isaiah 40:31',
+  '"And we know that in all things God works for the good of those who love Him." — Romans 8:28',
+];
+
+let currentTpl = 1;
+let photoDataUrl = null;
+
+function setVerse(i){ document.getElementById('scripture').value = VERSES[i]; render(); }
+function g(id){ return document.getElementById(id); }
+function val(id){ return g(id).value; }
+
+function render(){
+  const fn=val('firstName'), ln=val('lastName');
+  const day=val('bday'), sfx=val('suffix'), mo=val('month');
+  const sc=val('scripture');
+  const ch=val('church'), dp=val('dept'), bl=val('blessing');
+  const dateStr = day+sfx+' '+mo;
+
+  g('t1-first').textContent=fn; g('t1-last').textContent=ln;
+  g('t1-day').innerHTML=day+'<sup>'+sfx+'</sup>'; g('t1-mo').textContent=mo;
+  g('t1-verse').textContent=sc; g('t1-church').textContent=ch;
+  g('t1-dept').textContent=dp; g('t1-deptf').textContent=dp; g('t1-bless').textContent=bl;
+
+  g('t2-first').textContent=fn; g('t2-last').textContent=ln;
+  g('t2-date').textContent=dateStr;
+  g('t2-verse').textContent=sc; g('t2-church').textContent=ch;
+  g('t2-deptf').textContent=dp; g('t2-bless').textContent=bl;
+
+  g('t3-first').textContent=fn; g('t3-last').textContent=ln;
+  g('t3-date').textContent=dateStr;
+  g('t3-verse').textContent=sc; g('t3-church').textContent=ch;
+  g('t3-deptf').textContent=dp; g('t3-bless').textContent=bl;
+
+  g('t4-first').textContent=fn; g('t4-last').textContent=ln;
+  g('t4-day').innerHTML=day+'<sup>'+sfx+'</sup>'; g('t4-mo').textContent=mo;
+  g('t4-verse').textContent=sc; g('t4-church').textContent=ch;
+  g('t4-deptf').textContent=dp; g('t4-bless').textContent=bl;
+}
+
+function switchTpl(n){
+  currentTpl=n;
+  [1,2,3,4].forEach(i=>{
+    g('tpl'+i).style.display = i===n ? 'block':'none';
+    g('thumb'+i).classList.toggle('active',i===n);
+  });
+  g('card').style.display='block';
+}
+
+function loadPhoto(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    photoDataUrl=ev.target.result;
+    [1,2,3,4].forEach(i=>{
+      const el=g('t'+i+'-photo');
+      el.innerHTML=`<img src="${photoDataUrl}" style="width:100%;height:100%;object-fit:cover">`;
+    });
+    g('photoLabel').textContent='Photo loaded ✓';
+  };
+  r.readAsDataURL(f);
+}
+
+function clearPhoto(){
+  photoDataUrl=null;
+  [1,2,3,4].forEach(i=>{
+    g('t'+i+'-photo').innerHTML='<div class="ph">👤<small>Upload photo</small></div>';
+  });
+  g('photoLabel').textContent='Click to upload member photo';
+}
+
+function downloadCard(){
+  const tplEl=g('tpl'+currentTpl);
+  html2canvas(tplEl,{scale:2,useCORS:true,backgroundColor:null,logging:false}).then(canvas=>{
+    const link=document.createElement('a');
+    link.download=`birthday-${val('lastName').toLowerCase()||'card'}-tpl${currentTpl}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+const bData=[
+  {x:8,y:15,w:58,h:72,c:'#1a4080',s:'rgba(100,160,255,.3)'},
+  {x:48,y:2,w:66,h:82,c:'#c9a227',s:'rgba(255,230,120,.3)'},
+  {x:96,y:28,w:52,h:66,c:'#3a78c9',s:'rgba(150,200,255,.3)'},
+  {x:22,y:92,w:70,h:88,c:'#c9a227',s:'rgba(255,220,100,.3)'},
+  {x:70,y:88,w:56,h:72,c:'#0d2a5e',s:'rgba(80,130,220,.3)'},
+  {x:132,y:48,w:48,h:62,c:'#87b5e8',s:'rgba(200,230,255,.3)'},
+  {x:152,y:118,w:60,h:76,c:'#c9a227',s:'rgba(255,230,120,.3)'},
+  {x:8,y:195,w:64,h:80,c:'#3a78c9',s:'rgba(150,200,255,.3)'},
+  {x:68,y:205,w:52,h:68,c:'#1a4080',s:'rgba(80,130,220,.3)'},
+  {x:128,y:225,w:58,h:72,c:'#87b5e8',s:'rgba(200,230,255,.3)'},
+  {x:32,y:285,w:62,h:80,c:'#c9a227',s:'rgba(255,220,100,.3)'},
+  {x:98,y:295,w:56,h:72,c:'#0d2a5e',s:'rgba(80,130,220,.3)'},
+];
+const bWrap=g('t1-balloons');
+bData.forEach(b=>{
+  const el=document.createElement('div');
+  el.className='balloon';
+  el.style.cssText=`position:absolute;left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;background:radial-gradient(circle at 35% 30%,${b.s},${b.c})`;
+  const dot=document.createElement('div');
+  dot.style.cssText='position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.28);left:27%;top:20%';
+  el.appendChild(dot);
+  bWrap.appendChild(el);
+});
+
+function addSparks(containerId, colors, count){
+  const wrap=g(containerId);
+  for(let i=0;i<count;i++){
+    const s=document.createElement('div');
+    s.className='spark';
+    const sz=3+Math.random()*7;
+    s.style.cssText=`width:${sz}px;height:${sz}px;border-radius:50%;left:${Math.random()*100}%;top:${Math.random()*60}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*2}s`;
+    wrap.appendChild(s);
+  }
+}
+addSparks('t1-sparks',['#c9a227','#f0d060','#3a78c9','#fff','#f7e88a'],20);
+addSparks('t2-sparks',['#d4a0e0','#e8c050','#c080e0','#fff','#f0c878'],22);
+addSparks('t4-sparks',['#f04040','#e8c050','#ffd0d0','#fff','#e09020'],20);
+
+const florals=['🌿','✦','🍃','✦','🌿','✦','🍃'];
+const fw=g('t3-florals');
+[[15,35],[420,50],[18,280],[430,290],[200,8],[200,620],[8,570],[445,570]].forEach((p,i)=>{
+  const el=document.createElement('div');
+  el.className='floral';
+  el.style.cssText=`left:${p[0]}px;top:${p[1]}px`;
+  el.textContent=florals[i%florals.length];
+  fw.appendChild(el);
+});
+
+const t2=g('tpl2');
+for(let i=0;i<14;i++){
+  const s=document.createElement('div');
+  s.className='star5';
+  s.textContent='✦';
+  s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*55}%;animation-delay:${Math.random()*3}s;font-size:${.5+Math.random()*.8}rem`;
+  t2.appendChild(s);
+}
+
+switchTpl(1);
+render();
+</script>
+</body>
+</html>
