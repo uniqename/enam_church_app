@@ -1,16 +1,173 @@
-import 'package:flutter/material.dart';
+class QuizQuestion {
+  final String question;
+  final List<String> options;
+  final int correctIndex;
 
-// TODO: Restore from claude.ai web conversation (March 27-28)
-class GameData extends StatelessWidget {
-  const GameData({super.key});
+  const QuizQuestion({
+    required this.question,
+    required this.options,
+    required this.correctIndex,
+  });
+}
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('GameData')),
-      body: const Center(
-        child: Text('Screen content to be restored'),
-      ),
-    );
+class GameData {
+  static List<QuizQuestion> getQuestionsForGame(String gameId) {
+    switch (gameId) {
+      case 'creation':
+        return _creationQuestions;
+      case 'noah':
+        return _noahQuestions;
+      case 'david':
+        return _davidQuestions;
+      case 'jesus':
+        return _jesusQuestions;
+      default:
+        return _generalQuestions;
+    }
   }
+
+  static const List<QuizQuestion> _creationQuestions = [
+    QuizQuestion(
+      question: 'On what day did God create light?',
+      options: ['Day 1', 'Day 2', 'Day 3', 'Day 4'],
+      correctIndex: 0,
+    ),
+    QuizQuestion(
+      question: 'What did God create on Day 2?',
+      options: ['The sea', 'The sky/firmament', 'The sun', 'Animals'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'On what day did God rest?',
+      options: ['Day 5', 'Day 6', 'Day 7', 'Day 8'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'What were the first people God created?',
+      options: ['Moses and Mary', 'Adam and Eve', 'Peter and Paul', 'Abraham and Sarah'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'What did God use to create Adam?',
+      options: ['Water', 'Wood', 'Dust from the ground', 'Stone'],
+      correctIndex: 2,
+    ),
+  ];
+
+  static const List<QuizQuestion> _noahQuestions = [
+    QuizQuestion(
+      question: 'How many days did it rain during the flood?',
+      options: ['7 days', '20 days', '40 days', '100 days'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'What sign did God give Noah after the flood?',
+      options: ['A star', 'A rainbow', 'A dove', 'A cloud'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'What animal did Noah send out first from the ark?',
+      options: ['A dove', 'A sparrow', 'A raven', 'An eagle'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'How many of each "unclean" animal did Noah take on the ark?',
+      options: ['1', '2', '5', '7'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'What was Noah building that made people laugh at him?',
+      options: ['A temple', 'A boat/ark', 'A tower', 'A house'],
+      correctIndex: 1,
+    ),
+  ];
+
+  static const List<QuizQuestion> _davidQuestions = [
+    QuizQuestion(
+      question: 'Who was David\'s father?',
+      options: ['Saul', 'Jesse', 'Samuel', 'Jonathan'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'What instrument did David play?',
+      options: ['Flute', 'Trumpet', 'Harp/lyre', 'Drum'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'What giant did David defeat?',
+      options: ['Og', 'Goliath', 'Samson', 'Anak'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'What did David use to defeat Goliath?',
+      options: ['A sword', 'A spear', 'A sling and stone', 'An arrow'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'David was a shepherd boy. What does a shepherd do?',
+      options: ['Farms crops', 'Catches fish', 'Takes care of sheep', 'Builds houses'],
+      correctIndex: 2,
+    ),
+  ];
+
+  static const List<QuizQuestion> _jesusQuestions = [
+    QuizQuestion(
+      question: 'Where was Jesus born?',
+      options: ['Jerusalem', 'Nazareth', 'Bethlehem', 'Egypt'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'How many disciples did Jesus have?',
+      options: ['7', '10', '12', '14'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'What miracle did Jesus perform at the wedding in Cana?',
+      options: ['Healed the sick', 'Turned water into wine', 'Fed 5000 people', 'Walked on water'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'How many days was Jesus in the tomb before he rose?',
+      options: ['1 day', '2 days', '3 days', '7 days'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'What did Jesus say the greatest commandment is?',
+      options: [
+        'Do not steal',
+        'Honor your parents',
+        'Love God and love your neighbor',
+        'Do not lie'
+      ],
+      correctIndex: 2,
+    ),
+  ];
+
+  static const List<QuizQuestion> _generalQuestions = [
+    QuizQuestion(
+      question: 'How many books are in the Bible?',
+      options: ['60', '66', '72', '80'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'Who built the ark?',
+      options: ['Moses', 'Abraham', 'Noah', 'David'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'What is the first book of the Bible?',
+      options: ['Exodus', 'Genesis', 'Psalms', 'Matthew'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'Who parted the Red Sea?',
+      options: ['Abraham', 'David', 'Moses', 'Joshua'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'In what language was most of the New Testament written?',
+      options: ['Hebrew', 'Latin', 'Greek', 'Aramaic'],
+      correctIndex: 2,
+    ),
+  ];
 }

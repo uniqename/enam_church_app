@@ -1,15 +1,82 @@
 import 'package:flutter/material.dart';
+import '../../services/auth_service.dart';
+import '../../utils/colors.dart';
 
-// TODO: Restore from claude.ai web conversation (March 27-28)
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthStatus();
+  }
+
+  Future<void> _checkAuthStatus() async {
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    final authService = AuthService();
+    final isLoggedIn = await authService.isLoggedIn();
+
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SplashScreen')),
-      body: const Center(
-        child: Text('Screen content to be restored'),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.brown.withOpacity(0.1),
+              AppColors.gold.withOpacity(0.1)
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.church,
+                size: 100,
+                color: AppColors.brown,
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Faith Klinik',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.brown,
+                ),
+              ),
+              const Text(
+                'Ministries',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: AppColors.brown,
+                ),
+              ),
+              const SizedBox(height: 48),
+              const CircularProgressIndicator(
+                color: AppColors.purple,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
