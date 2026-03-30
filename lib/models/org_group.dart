@@ -13,6 +13,7 @@ class OrgGroup {
   final double dues;
   final String duesPeriod; // monthly / quarterly / annual
   final String bylaws;
+  final String imageEmoji;
 
   const OrgGroup({
     required this.id,
@@ -29,6 +30,7 @@ class OrgGroup {
     this.dues = 0,
     this.duesPeriod = 'monthly',
     this.bylaws = '',
+    this.imageEmoji = '🙏',
   });
 
   /// Convenience getter — returns the primary leader name
@@ -63,6 +65,7 @@ class OrgGroup {
       dues: (json['dues'] as num?)?.toDouble() ?? 0,
       duesPeriod: json['dues_period'] as String? ?? 'monthly',
       bylaws: json['bylaws'] as String? ?? '',
+      imageEmoji: json['image_emoji'] as String? ?? '🙏',
     );
   }
 
@@ -81,6 +84,7 @@ class OrgGroup {
       'dues': dues,
       'dues_period': duesPeriod,
       'bylaws': bylaws,
+      'image_emoji': imageEmoji,
       };
 
   OrgGroup copyWith({
@@ -97,6 +101,7 @@ class OrgGroup {
     double? dues,
     String? duesPeriod,
     String? bylaws,
+    String? imageEmoji,
   }) =>
       OrgGroup(
         id: id,
@@ -113,5 +118,6 @@ class OrgGroup {
         dues: dues ?? this.dues,
         duesPeriod: duesPeriod ?? this.duesPeriod,
         bylaws: bylaws ?? this.bylaws,
+        imageEmoji: imageEmoji ?? this.imageEmoji,
       );
 }

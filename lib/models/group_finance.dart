@@ -3,7 +3,7 @@ class GroupFinance {
   final String groupId;
   final String title;
   final String body;
-  final double amount;
+  final double? amount;
   final DateTime date;
   final String postedBy;
   final String category; // 'budget', 'expense', 'plan', 'report'
@@ -13,7 +13,7 @@ class GroupFinance {
     required this.groupId,
     required this.title,
     this.body = '',
-    this.amount = 0,
+    this.amount,
     required this.date,
     this.postedBy = '',
     this.category = 'budget',

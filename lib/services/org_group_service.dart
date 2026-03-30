@@ -82,54 +82,21 @@ class OrgGroupService {
     return result;
   }
 
-  Future<void> addGroup({
-    required String name,
-    required String description,
-    required List<String> leaders,
-    required String meetingDay,
-    required String meetingTime,
-    required String location,
-    required String whatsappGroup,
-    String googleMeetLink = '',
-    double dues = 0,
-    String duesPeriod = 'monthly',
-    String bylaws = '',
-  }) async {
-    final payload = {
-      'name': name, 'description': description, 'leaders': leaders,
-      'members': <String>[], 'pending_members': <String>[],
-      'meeting_day': meetingDay, 'meeting_time': meetingTime,
-      'location': location, 'whatsapp_group': whatsappGroup,
-      'google_meet_link': googleMeetLink, 'dues': dues,
-      'dues_period': duesPeriod, 'bylaws': bylaws,
-    };
+  Future<void> addGroup(OrgGroup group) async {
+    final payload = group.toJson();
+    payload['id'] = 'grp-local-${DateTime.now().millisecondsSinceEpoch}';
     if (SupabaseService.isConfigured) {
       try { await _supabase.insert('groups', payload); return; } catch (_) {}
     }
-    await _saveOverride('grp-local-${DateTime.now().millisecondsSinceEpoch}', payload);
+    await _saveOverride(payload['id'] as String, payload);
   }
 
-  Future<void> updateGroup(String id, {
-    required String name, required String description,
-    required List<String> leaders, required List<String> members,
-    List<String>? pendingMembers,
-    required String meetingDay, required String meetingTime,
-    required String location, required String whatsappGroup,
-    String googleMeetLink = '', double dues = 0,
-    String duesPeriod = 'monthly', String bylaws = '',
-  }) async {
-    final payload = {
-      'name': name, 'description': description, 'leaders': leaders,
-      'members': members, 'pending_members': pendingMembers ?? [],
-      'meeting_day': meetingDay, 'meeting_time': meetingTime,
-      'location': location, 'whatsapp_group': whatsappGroup,
-      'google_meet_link': googleMeetLink, 'dues': dues,
-      'dues_period': duesPeriod, 'bylaws': bylaws,
-    };
+  Future<void> updateGroup(OrgGroup group) async {
+    final payload = group.toJson();
     if (SupabaseService.isConfigured) {
-      try { await _supabase.update('groups', id, payload); return; } catch (_) {}
+      try { await _supabase.update('groups', group.id, payload); return; } catch (_) {}
     }
-    await _saveOverride(id, payload);
+    await _saveOverride(group.id, payload);
   }
 
   Future<void> deleteGroup(String id) async {
@@ -144,15 +111,7 @@ class OrgGroupService {
     final groups = await getAllGroups();
     final g = groups.firstWhere((g) => g.id == groupId, orElse: () => throw Exception('Group not found'));
     if (g.members.contains(userName) || g.pendingMembers.contains(userName)) return;
-    final pending = [...g.pendingMembers, userName];
-    await updateGroup(groupId,
-      name: g.name, description: g.description, leaders: g.leaders,
-      members: g.members, pendingMembers: pending,
-      meetingDay: g.meetingDay, meetingTime: g.meetingTime,
-      location: g.location, whatsappGroup: g.whatsappGroup,
-      googleMeetLink: g.googleMeetLink, dues: g.dues,
-      duesPeriod: g.duesPeriod, bylaws: g.bylaws,
-    );
+    await updateGroup(g.copyWith(pendingMembers: [...g.pendingMembers, userName]));
   }
 
   Future<void> approveMember(String groupId, String userName) async {
@@ -160,42 +119,21 @@ class OrgGroupService {
     final g = groups.firstWhere((g) => g.id == groupId);
     final pending = g.pendingMembers.where((m) => m != userName).toList();
     final members = [...g.members, if (!g.members.contains(userName)) userName];
-    await updateGroup(groupId,
-      name: g.name, description: g.description, leaders: g.leaders,
-      members: members, pendingMembers: pending,
-      meetingDay: g.meetingDay, meetingTime: g.meetingTime,
-      location: g.location, whatsappGroup: g.whatsappGroup,
-      googleMeetLink: g.googleMeetLink, dues: g.dues,
-      duesPeriod: g.duesPeriod, bylaws: g.bylaws,
-    );
+    await updateGroup(g.copyWith(members: members, pendingMembers: pending));
   }
 
   Future<void> rejectMember(String groupId, String userName) async {
     final groups = await getAllGroups();
     final g = groups.firstWhere((g) => g.id == groupId);
     final pending = g.pendingMembers.where((m) => m != userName).toList();
-    await updateGroup(groupId,
-      name: g.name, description: g.description, leaders: g.leaders,
-      members: g.members, pendingMembers: pending,
-      meetingDay: g.meetingDay, meetingTime: g.meetingTime,
-      location: g.location, whatsappGroup: g.whatsappGroup,
-      googleMeetLink: g.googleMeetLink, dues: g.dues,
-      duesPeriod: g.duesPeriod, bylaws: g.bylaws,
-    );
+    await updateGroup(g.copyWith(pendingMembers: pending));
   }
 
   Future<void> removeMember(String groupId, String userName) async {
     final groups = await getAllGroups();
     final g = groups.firstWhere((g) => g.id == groupId);
     final members = g.members.where((m) => m != userName).toList();
-    await updateGroup(groupId,
-      name: g.name, description: g.description, leaders: g.leaders,
-      members: members, pendingMembers: g.pendingMembers,
-      meetingDay: g.meetingDay, meetingTime: g.meetingTime,
-      location: g.location, whatsappGroup: g.whatsappGroup,
-      googleMeetLink: g.googleMeetLink, dues: g.dues,
-      duesPeriod: g.duesPeriod, bylaws: g.bylaws,
-    );
+    await updateGroup(g.copyWith(members: members));
   }
 
   // ── Dues Log ───────────────────────────────────────────────────────────────
@@ -230,9 +168,11 @@ class OrgGroupService {
     await _saveDues(all);
   }
 
-  Future<void> deleteDuesEntry(String groupId, String entryId) async {
+  Future<void> deleteDuesEntry(String entryId) async {
     final all = await _allDues();
-    all[groupId] = (all[groupId] ?? []).where((e) => e['id'] != entryId).toList();
+    for (final k in all.keys) {
+      all[k] = (all[k] ?? []).where((e) => e['id'] != entryId).toList();
+    }
     await _saveDues(all);
   }
 
@@ -328,16 +268,18 @@ Submitted by: Enam Egyir, Dance Ministry Leader''',
     final id = entry.id.isEmpty ? _uuid.v4() : entry.id;
     final withId = GroupFinance(
       id: id, groupId: entry.groupId, title: entry.title,
-      body: entry.body, amount: entry.amount, date: entry.date,
+      body: entry.body, amount: entry.amount ?? 0, date: entry.date,
       postedBy: entry.postedBy, category: entry.category,
     );
     all[entry.groupId] = [...(all[entry.groupId] ?? []), withId.toJson()];
     await _saveFinances(all);
   }
 
-  Future<void> deleteFinanceEntry(String groupId, String entryId) async {
+  Future<void> deleteFinanceEntry(String entryId) async {
     final all = await _allFinances();
-    all[groupId] = (all[groupId] ?? []).where((e) => e['id'] != entryId).toList();
+    for (final k in all.keys) {
+      all[k] = (all[k] ?? []).where((e) => e['id'] != entryId).toList();
+    }
     await _saveFinances(all);
   }
 }

@@ -843,7 +843,6 @@ class LocalDataService {
       ),
     ];
   }
-}
 
   // ─────────────────────────────────────────────────────
   // CHURCH GROUPS / MINISTRIES (all 13)
@@ -993,3 +992,4 @@ class LocalDataService {
       'bylaws': 'Welfare requests handled confidentially. Committee meets monthly to review needs. Members must maintain strict confidentiality.',
     },
   ];
+}
