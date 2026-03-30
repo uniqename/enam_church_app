@@ -190,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen>
                               children: [
                                 Icon(Icons.child_care, size: 18),
                                 SizedBox(width: 8),
-                                Text('Kids Login',
+                                Text('Children Login',
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold)),
                               ],
@@ -385,7 +385,7 @@ class _LoginScreenState extends State<LoginScreen>
                   Icon(Icons.child_care, size: 48, color: Colors.white),
                   SizedBox(height: 8),
                   Text(
-                    'Kids Church Login!',
+                    'Children Church Login!',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,

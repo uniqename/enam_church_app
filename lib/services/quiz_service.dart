@@ -180,7 +180,7 @@ class QuizService {
           timeLimitSeconds: 15,
         ),
         QuizQuestion(
-          question: 'Faith Klinik has a children\'s ministry for kids aged:',
+          question: 'Faith Klinik has a children\'s ministry for children aged:',
           options: ['0-1', '2-12', '13-17', '18+'],
           correctIndex: 1,
           timeLimitSeconds: 20,
@@ -194,8 +194,8 @@ class QuizService {
       ],
     ),
     QuizModel(
-      id: 'starter-kids-fun',
-      title: 'Kids Bible Fun',
+      id: 'starter-children-fun',
+      title: 'Children Bible Fun',
       description: 'Super easy Bible questions for young ones!',
       category: 'Children',
       createdBy: 'system',

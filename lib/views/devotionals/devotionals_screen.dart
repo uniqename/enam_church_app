@@ -78,7 +78,7 @@ class _DevotionalsScreenState extends State<DevotionalsScreen> {
       ageGroup: 'all',
     ),
     _Devotional(
-      id: 'dev-kids-001',
+      id: 'dev-children-001',
       title: 'Jesus Loves You!',
       date: DateTime.now().subtract(const Duration(days: 5)),
       scripture: 'John 3:16',
@@ -89,7 +89,7 @@ class _DevotionalsScreenState extends State<DevotionalsScreen> {
       ageGroup: 'little',
     ),
     _Devotional(
-      id: 'dev-kids-002',
+      id: 'dev-children-002',
       title: 'Be Kind Like Jesus',
       date: DateTime.now().subtract(const Duration(days: 6)),
       scripture: 'Ephesians 4:32',
@@ -97,7 +97,7 @@ class _DevotionalsScreenState extends State<DevotionalsScreen> {
       body: 'Jesus was always kind. He helped sick people, fed hungry people, and played with children! When someone is mean to us, we can still choose to be kind — because that\'s what Jesus would do.',
       reflection: 'Think of one person you can be extra kind to today. What will you do?',
       prayer: 'Jesus, help me to be kind even when it\'s hard. I want to be like You. Amen.',
-      ageGroup: 'kids',
+      ageGroup: 'children',
     ),
   ];
 
@@ -182,7 +182,7 @@ class _DevotionalsScreenState extends State<DevotionalsScreen> {
                       children: [
                         {'id': 'all', 'label': '🙏 All'},
                         {'id': 'little', 'label': '🌱 Little (5-8)'},
-                        {'id': 'kids', 'label': '⭐ Kids (9-12)'},
+                        {'id': 'children', 'label': '⭐ Children (9-12)'},
                         {'id': 'teen', 'label': '🔥 Teen (13+)'},
                       ].map((f) {
                         final sel = _ageFilter == f['id'];
@@ -343,7 +343,7 @@ class _DevotionalsScreenState extends State<DevotionalsScreen> {
                     enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.darkBorder)),
                     border: OutlineInputBorder(borderSide: BorderSide(color: AppColors.darkBorder)),
                   ),
-                  items: ['all', 'little', 'kids', 'teen']
+                  items: ['all', 'little', 'children', 'teen']
                       .map((a) => DropdownMenuItem(value: a, child: Text(a)))
                       .toList(),
                   onChanged: (v) => setSt(() => ageGroup = v ?? 'all'),
@@ -654,7 +654,7 @@ class _DevotionalCardState extends State<_DevotionalCard> {
   String? _ageLabel(String ag) {
     switch (ag) {
       case 'little': return '🌱 Ages 5–8';
-      case 'kids':   return '⭐ Ages 9–12';
+      case 'children':   return '⭐ Ages 9–12';
       case 'teen':   return '🔥 Teen';
       default:       return null;
     }
@@ -734,7 +734,7 @@ class _Devotional {
   final String body;
   final String reflection;
   final String prayer;
-  final String ageGroup; // all, little, kids, teen
+  final String ageGroup; // all, little, children, teen
 
   const _Devotional({
     required this.id,

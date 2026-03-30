@@ -16,7 +16,7 @@ class _ChildDevotionalsScreenState extends State<ChildDevotionalsScreen> {
 
   List<_ChildDev> _devs = [];
   Set<String> _completed = {};
-  String _ageGroup = 'kids';
+  String _ageGroup = 'children';
   bool _loading = true;
   int _selected = 0;
 
@@ -52,7 +52,7 @@ class _ChildDevotionalsScreenState extends State<ChildDevotionalsScreen> {
       reflection: 'Think of one person you can be extra kind to today. What will you do?',
       prayer: 'Jesus, help me to be kind even when it\'s hard. I want to be like You. Amen! 🌟',
       emoji: '🌈',
-      ageGroup: 'kids',
+      ageGroup: 'children',
     ),
     _ChildDev(
       id: 'cd-004',
@@ -74,7 +74,7 @@ class _ChildDevotionalsScreenState extends State<ChildDevotionalsScreen> {
       reflection: 'Write or draw three amazing things about yourself that God made.',
       prayer: 'God, thank You for making me exactly the way I am. Help me to love who You made me to be! Amen 🙌',
       emoji: '✨',
-      ageGroup: 'kids',
+      ageGroup: 'children',
     ),
     _ChildDev(
       id: 'cd-006',
@@ -85,7 +85,7 @@ class _ChildDevotionalsScreenState extends State<ChildDevotionalsScreen> {
       reflection: 'Make a list of 3 things you want to pray about this week.',
       prayer: 'God, thank You that I can talk to You anytime. Help me to pray every day and trust You with everything. Amen! 🙏',
       emoji: '⚡',
-      ageGroup: 'kids',
+      ageGroup: 'children',
     ),
     _ChildDev(
       id: 'cd-007',
@@ -179,7 +179,7 @@ class _ChildDevotionalsScreenState extends State<ChildDevotionalsScreen> {
         backgroundColor: const Color(0xFF13131A),
         title: Row(children: [
           const Text('✨ ', style: TextStyle(fontSize: 20)),
-          Text('Kids Devotionals',
+          Text('Children Devotionals',
               style: TextStyle(
                   color: _ageColor(),
                   fontWeight: FontWeight.bold,
@@ -200,7 +200,7 @@ class _ChildDevotionalsScreenState extends State<ChildDevotionalsScreen> {
             child: Row(
               children: [
                 {'id': 'little', 'label': '🌱 Little (5-8)', 'color': AppColors.childGreen},
-                {'id': 'kids', 'label': '⭐ Kids (9-12)', 'color': AppColors.childBlue},
+                {'id': 'children', 'label': '⭐ Children (9-12)', 'color': AppColors.childBlue},
                 {'id': 'teen', 'label': '🔥 Teen', 'color': AppColors.childPurple},
               ].map((tab) {
                 final sel = _ageGroup == tab['id'];
@@ -593,6 +593,6 @@ class _ChildDev {
     reflection: j['reflection'] as String? ?? '',
     prayer: j['prayer'] as String? ?? '',
     emoji: j['emoji'] as String? ?? '✨',
-    ageGroup: j['age_group'] as String? ?? 'kids',
+    ageGroup: j['age_group'] as String? ?? 'children',
   );
 }

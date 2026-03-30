@@ -95,7 +95,7 @@ class AuthService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_id',    'demo-child-001');
         await prefs.setString('user_email', 'child@faithklinik.org');
-        await prefs.setString('user_name',  'Kids User');
+        await prefs.setString('user_name',  'Children User');
         await prefs.setString('user_role',  'child');
         print('✅ Demo child PIN login');
       }

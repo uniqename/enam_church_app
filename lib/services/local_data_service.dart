@@ -249,7 +249,7 @@ class LocalDataService {
           name: 'Children Ministry',
           description:
               'Teaching children about Jesus in fun and engaging ways. '
-              'Sunday kids church, Bible lessons, games, and special events.',
+              'Sunday children church, Bible lessons, games, and special events.',
           leader: 'Rev. Lucie Adarquah-Yiadom',
           meetingDay: 'Sunday',
           meetingTime: '10:00 AM',
@@ -799,7 +799,7 @@ class LocalDataService {
       ChildSermon(
         id: 'sermon-1',
         title: "God's Love is Bigger Than...",
-        speaker: 'Pastor Kids – Faith Klinik',
+        speaker: 'Pastor Children – Faith Klinik',
         date: now.subtract(const Duration(days: 7)),
         duration: '15:00',
         views: 45,
@@ -816,8 +816,8 @@ class LocalDataService {
       ),
       ChildSermon(
         id: 'sermon-3',
-        title: 'Prayer Warriors for Kids',
-        speaker: 'Pastor Kids – Faith Klinik',
+        title: 'Prayer Warriors for Children',
+        speaker: 'Pastor Children – Faith Klinik',
         date: now.subtract(const Duration(days: 21)),
         duration: '14:45',
         views: 52,
@@ -960,11 +960,11 @@ class LocalDataService {
     },
     {
       'id': 'grp-11', 'name': 'Children\'s Ministry',
-      'description': 'Teaching children about Jesus in fun, engaging ways. Sunday kids church, Bible lessons, games, and special events.',
+      'description': 'Teaching children about Jesus in fun, engaging ways. Sunday children church, Bible lessons, games, and special events.',
       'leaders': ['Rev. Lucie Adarquah-Yiadom'],
       'members': ['Rev. Lucie Adarquah-Yiadom'],
       'pending_members': <String>[],
-      'meeting_day': 'Sunday', 'meeting_time': '10:00 AM', 'location': 'Kids Church Room',
+      'meeting_day': 'Sunday', 'meeting_time': '10:00 AM', 'location': 'Children Church Room',
       'whatsapp_group': 'https://chat.whatsapp.com/FKMChildren',
       'google_meet_link': '', 'dues': 0.0, 'dues_period': 'monthly',
       'bylaws': 'All children\'s workers must complete a background check. Two adults must be present at all times with children.',
