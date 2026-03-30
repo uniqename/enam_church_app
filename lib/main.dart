@@ -42,6 +42,7 @@ import 'views/connect/connect_card_screen.dart';
 import 'views/resources/bulletin_screen.dart';
 import 'views/devotionals/devotionals_screen.dart';
 import 'views/volunteer/volunteer_screen.dart';
+import 'views/staff/staff_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -113,6 +114,8 @@ class FaithKlinikApp extends StatelessWidget {
             '/bulletin': (context) => const BulletinScreen(),
             '/devotionals': (context) => const DevotionalsScreen(),
             '/volunteer': (context) => const VolunteerScreen(),
+            '/groups': (context) => const ChurchGroupsScreen(),
+            '/staff': (context) => const StaffScreen(),
           },
         );
       },
@@ -240,7 +243,7 @@ class FaithKlinikApp extends StatelessWidget {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.darkSurface2,
-        selectedColor: AppColors.accentPurple.withOpacity(0.3),
+        selectedColor: AppColors.accentPurple.withValues(alpha: 0.3),
         labelStyle: const TextStyle(color: Colors.white),
         side: const BorderSide(color: AppColors.darkBorder),
       ),

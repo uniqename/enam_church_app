@@ -138,7 +138,8 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   .toList();
               Navigator.pop(ctx);
               if (existing == null) {
-                await _groupService.addGroup(
+                await _groupService.addGroup(OrgGroup(
+                  id: '',
                   name: name,
                   description: descCtrl.text.trim(),
                   leaders: leaders,
@@ -146,10 +147,9 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   meetingTime: meetingTimeCtrl.text.trim(),
                   location: locationCtrl.text.trim(),
                   whatsappGroup: whatsappCtrl.text.trim(),
-                );
+                ));
               } else {
-                await _groupService.updateGroup(
-                  existing.id,
+                await _groupService.updateGroup(existing.copyWith(
                   name: name,
                   description: descCtrl.text.trim(),
                   leaders: leaders,
@@ -158,7 +158,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   meetingTime: meetingTimeCtrl.text.trim(),
                   location: locationCtrl.text.trim(),
                   whatsappGroup: whatsappCtrl.text.trim(),
-                );
+                ));
               }
               await _load();
             },
@@ -275,12 +275,14 @@ class _GroupsScreenState extends State<GroupsScreen> {
               onPressed: () async {
                 if (titleCtrl.text.trim().isEmpty) return;
                 Navigator.pop(ctx);
-                await _eventService.addEvent(Event.create(
+                await _eventService.addEvent(Event(
+                  id: '',
                   title: titleCtrl.text.trim(),
-                  description: descCtrl.text.trim(),
                   date: selectedDate,
+                  time: '',
                   location: locationCtrl.text.trim(),
-                  department: group.name,
+                  type: group.name,
+                  status: 'upcoming',
                 ));
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(

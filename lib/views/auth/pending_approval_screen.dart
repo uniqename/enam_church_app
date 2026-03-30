@@ -8,7 +8,7 @@ class PendingApprovalScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.darkBg,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32),

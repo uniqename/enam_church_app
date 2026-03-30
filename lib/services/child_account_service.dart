@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import '../models/child_account.dart';
 import 'supabase_service.dart';
 
@@ -250,6 +251,62 @@ class ChildAccountService {
     await prefs.remove('active_child_name');
     await prefs.remove('active_child_avatar');
   }
+
+  // -------- Account Requests (children request accounts) --------
+
+  static const _kRequestsKey = 'child_account_requests';
+
+  Future<List<Map<String, dynamic>>> getPendingRequests() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_kRequestsKey);
+    if (raw == null) return [];
+    return List<Map<String, dynamic>>.from(
+        (jsonDecode(raw) as List).map((e) => Map<String, dynamic>.from(e)));
+  }
+
+  Future<void> submitAccountRequest({
+    required String name,
+    required int ageYears,
+    String note = '',
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final existing = await getPendingRequests();
+    existing.add({
+      'id': const Uuid().v4(),
+      'name': name,
+      'age_years': ageYears,
+      'note': note,
+      'submitted_at': DateTime.now().toIso8601String(),
+      'status': 'pending',
+    });
+    await prefs.setString(_kRequestsKey, jsonEncode(existing));
+  }
+
+  /// Admin/parent approves a pending request and creates the account.
+  Future<void> approveRequest(String requestId, String pin) async {
+    final requests = await getPendingRequests();
+    final idx = requests.indexWhere((r) => r['id'] == requestId);
+    if (idx == -1) return;
+    final req = requests[idx];
+    await createAccount(
+      parentUserId: 'approved',
+      accountName: req['name'] as String,
+      pin: pin,
+      ageYears: req['age_years'] as int? ?? 0,
+    );
+    requests.removeAt(idx);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kRequestsKey, jsonEncode(requests));
+  }
+
+  Future<void> deleteRequest(String requestId) async {
+    final requests = await getPendingRequests();
+    requests.removeWhere((r) => r['id'] == requestId);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kRequestsKey, jsonEncode(requests));
+  }
+
+  // -------- Avatar --------
 
   /// Updates avatar URL for a child account.
   Future<void> updateAvatar(String accountId, String avatarUrl) async {

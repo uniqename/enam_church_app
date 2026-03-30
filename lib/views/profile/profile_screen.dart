@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/auth_service.dart';
+import '../../services/child_account_service.dart';
+import '../../models/child_account.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/supabase_service.dart';
 import '../../utils/colors.dart';
@@ -316,6 +318,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       value: _department!,
                     ),
                   const SizedBox(height: 16),
+                  // Child accounts section (for non-child users)
+                  if (_role != 'child') ...[
+                    const Divider(),
+                    const SizedBox(height: 8),
+                    _ChildAccountsTile(parentUserId: _email ?? 'profile_user', role: _role ?? 'member'),
+                    const SizedBox(height: 8),
+                  ],
                   const Divider(),
                   const SizedBox(height: 16),
                   // Tip
@@ -381,6 +390,318 @@ class _InfoTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Expandable tile on the profile screen for managing child accounts.
+class _ChildAccountsTile extends StatefulWidget {
+  final String parentUserId;
+  final String role;
+  const _ChildAccountsTile({required this.parentUserId, required this.role});
+
+  @override
+  State<_ChildAccountsTile> createState() => _ChildAccountsTileState();
+}
+
+class _ChildAccountsTileState extends State<_ChildAccountsTile> {
+  final _service = ChildAccountService();
+  List<ChildAccount> _accounts = [];
+  List<Map<String, dynamic>> _requests = [];
+  bool _expanded = false;
+  bool _loading = false;
+
+  bool get _isAdmin =>
+      widget.role == 'admin' || widget.role == 'pastor';
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    final accounts = _isAdmin
+        ? await _service.getAllLocalAccounts()
+        : await _service.getAccountsForParent(widget.parentUserId);
+    final requests = _isAdmin ? await _service.getPendingRequests() : <Map<String,dynamic>>[];
+    if (mounted) {
+      setState(() {
+        _accounts = accounts;
+        _requests = requests;
+        _loading = false;
+      });
+    }
+  }
+
+  void _showAddDialog() {
+    final nameCtrl = TextEditingController();
+    final pinCtrl = TextEditingController();
+    final ageCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Child Account'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: "Child's Name",
+                  prefixIcon: Icon(Icons.child_care),
+                ),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Enter a name' : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: pinCtrl,
+                decoration: const InputDecoration(
+                  labelText: '4-digit PIN',
+                  prefixIcon: Icon(Icons.lock),
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                obscureText: true,
+                validator: (v) {
+                  if (v == null || v.length != 4) return '4 digits required';
+                  if (!RegExp(r'^\d{4}$').hasMatch(v)) return 'Digits only';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 4),
+              TextFormField(
+                controller: ageCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Age (optional)',
+                  prefixIcon: Icon(Icons.cake),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.childGreen,
+                foregroundColor: Colors.white),
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              Navigator.pop(ctx);
+              await _service.createAccount(
+                parentUserId: widget.parentUserId,
+                accountName: nameCtrl.text.trim(),
+                pin: pinCtrl.text.trim(),
+                ageYears: int.tryParse(ageCtrl.text.trim()) ?? 0,
+              );
+              _load();
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _approveRequest(Map<String, dynamic> req) {
+    final pinCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Approve ${req['name']}'s Request"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Age: ${req['age_years']}  •  Note: ${req['note'] ?? ''}'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: pinCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Assign a 4-digit PIN',
+                prefixIcon: Icon(Icons.lock),
+              ),
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              obscureText: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.childGreen,
+                foregroundColor: Colors.white),
+            onPressed: () async {
+              if (pinCtrl.text.length != 4) return;
+              Navigator.pop(ctx);
+              await _service.approveRequest(req['id'] as String, pinCtrl.text);
+              _load();
+            },
+            child: const Text('Approve & Create'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: () {
+            setState(() => _expanded = !_expanded);
+            if (_expanded) _load();
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.childGreen.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border:
+                  Border.all(color: AppColors.childGreen.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.child_care,
+                    color: AppColors.childGreen, size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Child Accounts',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.childGreen)),
+                      Text(
+                        _isAdmin
+                            ? 'Manage all child accounts & approve requests'
+                            : "Manage your children's app accounts",
+                        style:
+                            const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  _expanded ? Icons.expand_less : Icons.expand_more,
+                  color: AppColors.childGreen,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded) ...[
+          const SizedBox(height: 8),
+          if (_loading)
+            const Center(
+                child: CircularProgressIndicator(color: AppColors.childGreen))
+          else ...[
+            if (_requests.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border:
+                      Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pending Requests (${_requests.length})',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.orange),
+                    ),
+                    const SizedBox(height: 8),
+                    ..._requests.map((req) => ListTile(
+                          dense: true,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 8),
+                          title: Text(req['name'] as String),
+                          subtitle: Text(
+                              'Age ${req['age_years']}  •  ${req['note'] ?? ''}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.check_circle,
+                                    color: AppColors.childGreen, size: 22),
+                                onPressed: () => _approveRequest(req),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.cancel,
+                                    color: Colors.red, size: 22),
+                                onPressed: () async {
+                                  await _service
+                                      .deleteRequest(req['id'] as String);
+                                  _load();
+                                },
+                              ),
+                            ],
+                          ),
+                        )),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            if (_accounts.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(8),
+                child: Text('No child accounts yet.',
+                    style: TextStyle(color: Colors.grey)),
+              )
+            else
+              ..._accounts.map((a) => ListTile(
+                    dense: true,
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          AppColors.childGreen.withValues(alpha: 0.2),
+                      child: Text(a.accountName[0].toUpperCase(),
+                          style: const TextStyle(
+                              color: AppColors.childGreen,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                    title: Text(a.accountName),
+                    subtitle:
+                        a.ageYears > 0 ? Text('Age ${a.ageYears}') : null,
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline,
+                          color: Colors.red, size: 20),
+                      onPressed: () async {
+                        await _service.deleteAccount(a.id);
+                        _load();
+                      },
+                    ),
+                  )),
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              onPressed: _showAddDialog,
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('Add Child Account'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.childGreen,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 44),
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+        ],
+      ],
     );
   }
 }
