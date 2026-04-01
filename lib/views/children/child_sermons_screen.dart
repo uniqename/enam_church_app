@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/child_sermon.dart';
 import '../../services/child_content_service.dart';
+import '../../services/auth_service.dart';
 import '../../utils/colors.dart';
 
 class ChildSermonsScreen extends StatefulWidget {
@@ -12,8 +14,10 @@ class ChildSermonsScreen extends StatefulWidget {
 
 class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
   final _contentService = ChildContentService();
+  final _authService = AuthService();
   List<ChildSermon> _sermons = [];
   bool _isLoading = true;
+  bool _canManage = false;
 
   @override
   void initState() {
@@ -25,8 +29,11 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
     setState(() => _isLoading = true);
     try {
       final sermons = await _contentService.getAllSermons();
+      final role = await _authService.getUserRole();
       setState(() {
         _sermons = sermons;
+        _canManage = role == 'admin' || role == 'pastor' ||
+            role == 'department_head' || role == 'media_team';
         _isLoading = false;
       });
     } catch (e) {
@@ -34,6 +41,21 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load sermons: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _openVideo(String url) async {
+    if (url.isEmpty) return;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open video. Check your internet connection.')),
         );
       }
     }
@@ -48,21 +70,28 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              height: 160,
-              decoration: BoxDecoration(
-                color: AppColors.childOrange.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.play_circle_filled,
-                      size: 64, color: AppColors.childOrange),
-                  SizedBox(height: 8),
-                  Text('Tap to Watch', style: TextStyle(color: AppColors.childOrange)),
-                ],
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(ctx);
+                _openVideo(sermon.videoUrl);
+              },
+              child: Container(
+                width: double.infinity,
+                height: 160,
+                decoration: BoxDecoration(
+                  color: AppColors.childOrange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.play_circle_filled,
+                        size: 72, color: AppColors.childOrange),
+                    SizedBox(height: 8),
+                    Text('Tap to Watch',
+                        style: TextStyle(color: AppColors.childOrange, fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -77,16 +106,12 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
             child: const Text('Close'),
           ),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(ctx);
-              if (sermon.videoUrl.isNotEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Opening sermon video...')),
-                );
-              }
+              _openVideo(sermon.videoUrl);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.childOrange),
-            child: const Text('Watch', style: TextStyle(color: Colors.white)),
+            child: const Text('Watch Now', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -100,6 +125,15 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
         title: const Text("Children's Sermons"),
         backgroundColor: AppColors.childOrange,
         foregroundColor: Colors.white,
+        actions: [
+          if (_canManage)
+            IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: 'Manage Videos',
+              onPressed: () => Navigator.pushNamed(context, '/admin/videos')
+                  .then((_) => _loadData()),
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

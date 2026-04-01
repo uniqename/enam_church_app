@@ -207,8 +207,9 @@ class _AdminVideoUploadScreenState extends State<AdminVideoUploadScreen>
             TextField(
               controller: urlController,
               decoration: InputDecoration(
-                labelText: 'YouTube URL',
-                hintText: 'https://youtube.com/watch?v=...',
+                labelText: 'Video / Audio URL',
+                hintText: 'YouTube, direct .mp4, .mp3, or any stream URL',
+                helperText: 'YouTube links, .mp4 videos, .mp3 audio, Vimeo, etc.',
                 prefixIcon: Icon(Icons.link, color: accentColor),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10)),
@@ -299,11 +300,10 @@ class _AdminVideoUploadScreenState extends State<AdminVideoUploadScreen>
                           return;
                         }
 
-                        if (!_isValidYoutubeUrl(url)) {
+                        if (!_isValidUrl(url)) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                  'Please enter a valid YouTube URL'),
+                              content: Text('Please enter a valid URL (YouTube, mp4, mp3, etc.)'),
                             ),
                           );
                           return;
@@ -450,9 +450,9 @@ class _AdminVideoUploadScreenState extends State<AdminVideoUploadScreen>
     }
   }
 
-  bool _isValidYoutubeUrl(String url) {
-    final lower = url.toLowerCase();
-    return lower.contains('youtube.com') || lower.contains('youtu.be');
+  bool _isValidUrl(String url) {
+    final uri = Uri.tryParse(url);
+    return uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
   }
 
   String _formatCategory(String category) {

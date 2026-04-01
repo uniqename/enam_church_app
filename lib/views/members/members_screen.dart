@@ -261,8 +261,36 @@ class _MembersScreenState extends State<MembersScreen>
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
-              title: Text(member.name),
-              subtitle: Text('${member.role} • ${member.department}'),
+              title: Row(
+                children: [
+                  Expanded(child: Text(member.name, style: const TextStyle(fontWeight: FontWeight.w600))),
+                  if (member.isDeptHead)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.brown.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        member.isActing ? 'Acting Head' : 'Head',
+                        style: const TextStyle(fontSize: 10, color: AppColors.brown, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                ],
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${member.role} • ${member.department}', style: const TextStyle(fontSize: 13)),
+                  if (member.ministries.isNotEmpty)
+                    Text(
+                      member.ministries.join(' · '),
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
               trailing: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -278,8 +306,7 @@ class _MembersScreenState extends State<MembersScreen>
                     ),
                   ),
                   if (_isAdmin)
-                    const Icon(Icons.chevron_right,
-                        size: 16, color: Colors.grey),
+                    const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
                 ],
               ),
               onTap: _isAdmin ? () => _showEditMemberDialog(member) : null,
@@ -562,86 +589,183 @@ class _MembersScreenState extends State<MembersScreen>
     );
   }
 
-  void _showEditMemberDialog(Member member) {
+  void _showEditMemberDialog(Member member) async {
     final nameController = TextEditingController(text: member.name);
     final emailController = TextEditingController(text: member.email);
     final phoneController = TextEditingController(text: member.phone);
+    final newMinistryController = TextEditingController();
+
+    final departments = await _departmentService.getAllDepartments();
+    final deptNames = departments.map((d) => d.name).toList();
+    if (!deptNames.contains(member.department) && member.department.isNotEmpty) {
+      deptNames.insert(0, member.department);
+    }
+
+    String selectedRole = member.role;
+    String selectedDept = member.department.isNotEmpty
+        ? member.department
+        : (deptNames.isNotEmpty ? deptNames.first : '');
+    bool isDeptHead = member.isDeptHead;
+    bool isActing = member.isActing;
+    final List<String> ministries = List.from(member.ministries);
+
+    const roleOptions = ['Member', 'Elder', 'Deacon', 'Deaconess', 'Minister', 'Pastor', 'Leader', 'Youth Leader', 'Children\'s Leader', 'Usher'];
+
+    if (!mounted) return;
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Edit Member'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          title: const Text('Edit Member'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                  keyboardType: TextInputType.emailAddress,
                 ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Phone',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: phoneController,
+                  decoration: const InputDecoration(labelText: 'Phone', border: OutlineInputBorder()),
+                  keyboardType: TextInputType.phone,
                 ),
-                keyboardType: TextInputType.phone,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => _showDeleteMemberDialog(member),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final updatedMember = member.copyWith(
-                name: nameController.text,
-                email: emailController.text,
-                phone: phoneController.text,
-              );
-
-              final navigator = Navigator.of(ctx);
-              final messenger = ScaffoldMessenger.of(context);
-              try {
-                await _memberService.updateMember(updatedMember);
-                navigator.pop();
-                _loadData();
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Member updated successfully')),
-                );
-              } catch (e) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text('Failed to update member: $e')),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.brown,
-              foregroundColor: Colors.white,
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: roleOptions.contains(selectedRole) ? selectedRole : 'Member',
+                  decoration: const InputDecoration(labelText: 'Primary Role', border: OutlineInputBorder()),
+                  items: roleOptions.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                  onChanged: (v) => setLocal(() => selectedRole = v ?? 'Member'),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: deptNames.contains(selectedDept) ? selectedDept : (deptNames.isNotEmpty ? deptNames.first : null),
+                  decoration: const InputDecoration(labelText: 'Primary Department', border: OutlineInputBorder()),
+                  items: deptNames.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                  onChanged: (v) => setLocal(() => selectedDept = v ?? ''),
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  title: const Text('Department Head / Leader', style: TextStyle(fontSize: 14)),
+                  subtitle: const Text('Is this person a head of their dept?', style: TextStyle(fontSize: 12)),
+                  value: isDeptHead,
+                  activeColor: AppColors.brown,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (v) => setLocal(() => isDeptHead = v),
+                ),
+                SwitchListTile(
+                  title: const Text('Acting Role (temporary)', style: TextStyle(fontSize: 14)),
+                  subtitle: const Text('Toggle if filling role temporarily', style: TextStyle(fontSize: 12)),
+                  value: isActing,
+                  activeColor: AppColors.warning,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (v) => setLocal(() => isActing = v),
+                ),
+                const Divider(),
+                const Text('Additional Ministries / Roles', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                const Text('This person can serve in multiple areas:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: ministries.map((m) => Chip(
+                    label: Text(m, style: const TextStyle(fontSize: 12)),
+                    deleteIcon: const Icon(Icons.close, size: 14),
+                    onDeleted: () => setLocal(() => ministries.remove(m)),
+                    backgroundColor: AppColors.brown.withValues(alpha: 0.1),
+                  )).toList(),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: newMinistryController,
+                        decoration: const InputDecoration(
+                          labelText: 'Add ministry/role',
+                          hintText: 'e.g. Children Dance Lead',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        final val = newMinistryController.text.trim();
+                        if (val.isNotEmpty && !ministries.contains(val)) {
+                          setLocal(() {
+                            ministries.add(val);
+                            newMinistryController.clear();
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brown,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      ),
+                      child: const Text('Add'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            child: const Text('Save'),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _showDeleteMemberDialog(member);
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final updatedMember = member.copyWith(
+                  name: nameController.text.trim(),
+                  email: emailController.text.trim(),
+                  phone: phoneController.text.trim(),
+                  role: selectedRole,
+                  department: selectedDept,
+                  isDeptHead: isDeptHead,
+                  isActing: isActing,
+                  ministries: ministries,
+                );
+                final navigator = Navigator.of(ctx);
+                final messenger = ScaffoldMessenger.of(context);
+                try {
+                  await _memberService.updateMember(updatedMember);
+                  navigator.pop();
+                  _loadData();
+                  messenger.showSnackBar(const SnackBar(content: Text('Member updated')));
+                } catch (e) {
+                  messenger.showSnackBar(SnackBar(content: Text('Failed: $e')));
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brown,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Save'),
+            ),
+          ],
+        ),
       ),
     );
   }

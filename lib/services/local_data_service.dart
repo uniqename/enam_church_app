@@ -310,6 +310,8 @@ class LocalDataService {
           department: 'Faith Klinik Dance Ministers',
           joinDate: DateTime(2018, 6, 15),
           status: 'Active',
+          isDeptHead: true,
+          ministries: ['Ushering Lead', "Children's Dance Lead", 'Elder'],
         ),
         Member(
           id: 'mem-6',

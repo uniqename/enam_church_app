@@ -143,7 +143,7 @@ class _BibleQuizGameState extends State<BibleQuizGame> {
                             child: Center(
                               child: Text(
                                 String.fromCharCode(65 + i),
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
                               ),
                             ),
                           ),
@@ -151,7 +151,7 @@ class _BibleQuizGameState extends State<BibleQuizGame> {
                           Expanded(
                             child: Text(
                               q.options[i],
-                              style: const TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16, color: Colors.black87),
                             ),
                           ),
                           if (_answered && i == q.correctIndex)

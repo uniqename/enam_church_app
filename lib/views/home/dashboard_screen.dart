@@ -518,6 +518,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisSpacing: 12,
               childAspectRatio: 1.0,
               children: [
+                if (isAdmin || isDeptHead)
+                  _buildQuickActionCard(
+                    'Admin Panel',
+                    Icons.admin_panel_settings,
+                    const Color(0xFF1565C0),
+                    () => _showAdminPanel(),
+                  ),
                 _buildQuickActionCard(
                   'Streaming',
                   Icons.live_tv,
@@ -806,6 +813,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _showAdminPanel() {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text('Admin Panel', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 8),
+            _buildMenuItem('Manage Members', Icons.people, () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/members');
+            }),
+            _buildMenuItem('Manage Videos', Icons.video_library, () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/admin/videos');
+            }),
+            _buildMenuItem('Bible Stories (Kids)', Icons.auto_stories, () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/admin/bible_stories');
+            }),
+            _buildMenuItem('Departments & Groups', Icons.groups, () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/departments');
+            }),
+            _buildMenuItem('Volunteer Roles', Icons.volunteer_activism, () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/volunteer');
+            }),
+            _buildMenuItem('Announcements', Icons.announcement, () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/announcements');
+            }),
+            _buildMenuItem('Weekly Bulletin', Icons.receipt_long, () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/bulletin');
+            }),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showMoreMenu() {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/child_game.dart';
+import '../../services/child_account_service.dart';
 import '../../services/child_content_service.dart';
 import '../../utils/colors.dart';
 import 'games/bible_quiz_game.dart';
@@ -16,6 +17,7 @@ class _ChildGamesScreenState extends State<ChildGamesScreen> {
   final _contentService = ChildContentService();
   List<ChildGame> _games = [];
   bool _isLoading = true;
+  int _childAge = 10;
 
   @override
   void initState() {
@@ -27,8 +29,10 @@ class _ChildGamesScreenState extends State<ChildGamesScreen> {
     setState(() => _isLoading = true);
     try {
       final games = await _contentService.getAllGames();
+      final age = await ChildAccountService().getActiveChildAge();
       setState(() {
         _games = games;
+        _childAge = age > 0 ? age : 10;
         _isLoading = false;
       });
     } catch (e) {
@@ -42,7 +46,7 @@ class _ChildGamesScreenState extends State<ChildGamesScreen> {
   }
 
   void _launchGame(ChildGame game) {
-    final questions = GameData.getQuestionsForGame(game.id);
+    final questions = GameData.getQuestionsForGame(game.id, age: _childAge);
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -79,11 +83,11 @@ class _ChildGamesScreenState extends State<ChildGamesScreen> {
                       ),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Column(
+                    child: Column(
                       children: [
-                        Icon(Icons.games, size: 64, color: AppColors.childGreen),
-                        SizedBox(height: 16),
-                        Text(
+                        const Icon(Icons.games, size: 64, color: AppColors.childGreen),
+                        const SizedBox(height: 16),
+                        const Text(
                           'Bible Adventure Games!',
                           style: TextStyle(
                             fontSize: 28,
@@ -91,10 +95,12 @@ class _ChildGamesScreenState extends State<ChildGamesScreen> {
                             color: AppColors.childGreen,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
-                          'Play fun games and learn about God!',
-                          style: TextStyle(fontSize: 16),
+                          _childAge >= 13
+                              ? 'Deep Bible challenges — test your theology!'
+                              : 'Play fun games and learn about God!',
+                          style: const TextStyle(fontSize: 16),
                           textAlign: TextAlign.center,
                         ),
                       ],
