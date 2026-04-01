@@ -104,18 +104,22 @@ class ChildAccountService {
 
   /// Returns all child accounts for a given parent.
   Future<List<ChildAccount>> getAccountsForParent(String parentUserId) async {
-    try {
-      if (SupabaseService.isConfigured) {
+    // Only query Supabase when there is a real authenticated session.
+    // Checking isConfigured alone is not enough — demo users have no session.
+    if (SupabaseService.isConfigured && _supabase.currentUser != null) {
+      try {
         final data = await _supabase.client
             .from('child_accounts')
             .select()
             .eq('parent_user_id', parentUserId)
             .order('created_at');
-        return (data as List<dynamic>)
+        final remote = (data as List<dynamic>)
             .map((e) => ChildAccount.fromJson(e as Map<String, dynamic>))
             .toList();
-      }
-    } catch (_) {}
+        // If Supabase returned results, use them; otherwise fall through to local.
+        if (remote.isNotEmpty) return remote;
+      } catch (_) {}
+    }
     final all = await _localAccounts();
     return all.where((a) => a.parentUserId == parentUserId).toList();
   }

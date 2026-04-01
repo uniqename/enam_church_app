@@ -21,6 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _supabase = SupabaseService();
   final _picker = ImagePicker();
 
+  String? _userId;
   String? _name;
   String? _email;
   String? _role;
@@ -39,7 +40,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isLoading = true);
     final prefs = await SharedPreferences.getInstance();
     final user = await _authService.getCurrentUserProfile();
+    final userId = await _authService.getCurrentUserId();
     setState(() {
+      _userId = userId ?? prefs.getString('user_id');
       _name = user?.name ?? prefs.getString('user_name') ?? 'Member';
       _email = user?.email ?? prefs.getString('user_email') ?? '';
       _role = user?.role.name ?? prefs.getString('user_role') ?? 'member';
@@ -63,25 +66,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final file = File(picked.path);
       String? uploadedUrl;
 
-      if (SupabaseService.isConfigured) {
-        final userId = await _authService.getCurrentUserId();
-        if (userId != null) {
-          final fileName = 'avatars/$userId.jpg';
-          await _supabase.client.storage
-              .from('church-media')
-              .upload(fileName, file,
-                  fileOptions: FileOptions(upsert: true));
-          uploadedUrl = _supabase.client.storage
-              .from('church-media')
-              .getPublicUrl(fileName);
+      // Only use Supabase storage if there is a real authenticated session.
+      // Demo users and users logged in offline don't have a Supabase session,
+      // so we store the photo locally in that case.
+      final hasSession = SupabaseService.isConfigured && _authService.currentUser != null;
+      if (hasSession) {
+        final userId = _authService.currentUser!.id;
+        final fileName = 'avatars/$userId.jpg';
+        await _supabase.client.storage
+            .from('church-media')
+            .upload(fileName, file,
+                fileOptions: FileOptions(upsert: true));
+        uploadedUrl = _supabase.client.storage
+            .from('church-media')
+            .getPublicUrl(fileName);
 
-          // Update user record
-          await _supabase.client
-              .from('users')
-              .update({'avatar_url': uploadedUrl}).eq('id', userId);
-        }
+        // Update user record
+        await _supabase.client
+            .from('users')
+            .update({'avatar_url': uploadedUrl}).eq('id', userId);
       } else {
-        // Offline: store local path
+        // No real Supabase session — store the local file path.
         uploadedUrl = picked.path;
       }
 
@@ -320,7 +325,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   if (_role != 'child') ...[
                     const Divider(),
                     const SizedBox(height: 8),
-                    _ChildAccountsTile(parentUserId: _email ?? 'profile_user', role: _role ?? 'member'),
+                    _ChildAccountsTile(parentUserId: _userId ?? _email ?? 'profile_user', role: _role ?? 'member'),
                     const SizedBox(height: 8),
                   ],
                   const Divider(),
