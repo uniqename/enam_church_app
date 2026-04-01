@@ -66,27 +66,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final file = File(picked.path);
       String? uploadedUrl;
 
-      // Only use Supabase storage if there is a real authenticated session.
-      // Demo users and users logged in offline don't have a Supabase session,
-      // so we store the photo locally in that case.
       final hasSession = SupabaseService.isConfigured && _authService.currentUser != null;
       if (hasSession) {
         final userId = _authService.currentUser!.id;
         final fileName = 'avatars/$userId.jpg';
-        await _supabase.client.storage
-            .from('church-media')
-            .upload(fileName, file,
-                fileOptions: FileOptions(upsert: true));
-        uploadedUrl = _supabase.client.storage
-            .from('church-media')
-            .getPublicUrl(fileName);
-
-        // Update user record
-        await _supabase.client
-            .from('users')
-            .update({'avatar_url': uploadedUrl}).eq('id', userId);
+        try {
+          await _supabase.client.storage
+              .from('church-media')
+              .upload(fileName, file, fileOptions: FileOptions(upsert: true));
+          final remoteUrl = _supabase.client.storage
+              .from('church-media')
+              .getPublicUrl(fileName);
+          // Update user record with remote URL
+          try {
+            await _supabase.client
+                .from('users')
+                .update({'avatar_url': remoteUrl}).eq('id', userId);
+          } catch (_) {}
+          uploadedUrl = remoteUrl;
+        } catch (_) {
+          // Storage bucket not configured or policy missing — save locally.
+          uploadedUrl = picked.path;
+        }
       } else {
-        // No real Supabase session — store the local file path.
         uploadedUrl = picked.path;
       }
 
