@@ -251,14 +251,14 @@ class _MembershipScreenState extends State<MembershipScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.card_membership, size: 64, color: Colors.grey),
+            Icon(Icons.card_membership, size: 64, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
             const SizedBox(height: 16),
             const Text('No membership found', style: TextStyle(fontSize: 18)),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Contact the church office to get your membership set up.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -435,7 +435,7 @@ class _MembershipScreenState extends State<MembershipScreen>
                       m.status,
                       style: TextStyle(
                         fontSize: 12,
-                        color: m.status == 'Active' ? Colors.green[700] : Colors.grey[700],
+                        color: m.status == 'Active' ? Colors.green[700] : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
                       ),
                     ),
                   ),
@@ -466,8 +466,6 @@ class _MembershipScreenState extends State<MembershipScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Membership'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
         bottom: _isAdmin
             ? TabBar(
                 controller: _tabController,

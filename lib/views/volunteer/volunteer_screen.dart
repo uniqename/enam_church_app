@@ -126,8 +126,6 @@ class _VolunteerScreenState extends State<VolunteerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Volunteer'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -213,13 +211,13 @@ class _VolunteerScreenState extends State<VolunteerScreen> {
                       ),
                       Row(
                         children: [
-                          Icon(Icons.schedule, size: 12, color: Colors.grey[500]),
+                          Icon(Icons.schedule, size: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.48)),
                           const SizedBox(width: 4),
                           Text(
                             role.commitment,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[500],
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.48),
                             ),
                           ),
                         ],
@@ -234,7 +232,7 @@ class _VolunteerScreenState extends State<VolunteerScreen> {
               role.description,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey[600],
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
                 height: 1.4,
               ),
             ),

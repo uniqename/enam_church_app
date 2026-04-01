@@ -101,8 +101,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Weekly Bulletin'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         actions: [
           if (_canEdit) ...[
             IconButton(
@@ -250,12 +248,12 @@ class _BulletinScreenState extends State<BulletinScreen> {
                                   ),
                                   if (item['time'] != null)
                                     Text(item['time'] as String,
-                                        style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+                                        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55), fontWeight: FontWeight.w500)),
                                 ],
                               ),
                               if (item['leader'] != null)
                                 Text(item['leader'] as String,
-                                    style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+                                    style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.48))),
                             ],
                           ),
                         ),
@@ -265,9 +263,9 @@ class _BulletinScreenState extends State<BulletinScreen> {
                             children: [
                               InkWell(
                                 onTap: () => _showItemDialog(context, i),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(4),
-                                  child: Icon(Icons.edit, size: 16, color: Colors.grey),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(Icons.edit, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                                 ),
                               ),
                               InkWell(
@@ -333,7 +331,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                   children: [
                     InkWell(
                       onTap: () => _showAnnouncementDialog(context, e.key),
-                      child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.edit, size: 16, color: Colors.grey)),
+                      child: Padding(padding: const EdgeInsets.all(4), child: Icon(Icons.edit, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55))),
                     ),
                     InkWell(
                       onTap: () => _deleteAnnouncement(e.key),

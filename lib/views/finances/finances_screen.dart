@@ -63,8 +63,6 @@ class _FinancesScreenState extends State<FinancesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Finances'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -112,7 +110,7 @@ class _FinancesScreenState extends State<FinancesScreen> {
                         if (_isAdmin)
                           Text(
                             'Tap to edit',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.48)),
                           ),
                       ],
                     ),
@@ -182,7 +180,7 @@ class _FinancesScreenState extends State<FinancesScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
           ),
           const SizedBox(height: 4),
           Text(

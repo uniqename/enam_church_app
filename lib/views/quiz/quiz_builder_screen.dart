@@ -161,8 +161,6 @@ class _QuizBuilderScreenState extends State<QuizBuilderScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdit ? 'Edit Quiz' : 'Create Quiz'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _save,

@@ -68,8 +68,6 @@ class BibleAppsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bible Resources'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

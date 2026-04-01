@@ -7,6 +7,7 @@ import '../../models/sermon.dart';
 import '../../services/sermon_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/colors.dart';
+import 'video_player_screen.dart';
 
 class SermonsScreen extends StatefulWidget {
   const SermonsScreen({super.key});
@@ -260,12 +261,10 @@ class _SermonsScreenState extends State<SermonsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sermons'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       floatingActionButton: _isAdmin
           ? FloatingActionButton.extended(
-              backgroundColor: AppColors.purple,
+              backgroundColor: AppColors.accentPurple,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.add),
               label: const Text('Add Sermon'),
@@ -303,7 +302,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: isThisPlaying
-            ? const BorderSide(color: AppColors.purple, width: 2)
+            ? BorderSide(color: Theme.of(context).colorScheme.primary, width: 2)
             : BorderSide.none,
       ),
       child: Padding(
@@ -314,11 +313,11 @@ class _SermonsScreenState extends State<SermonsScreen> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppColors.purple.withValues(alpha: 0.12),
+                  backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   radius: 22,
                   child: Icon(
                     isAudio ? Icons.headphones : Icons.videocam,
-                    color: AppColors.purple,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -330,10 +329,10 @@ class _SermonsScreenState extends State<SermonsScreen> {
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                       const SizedBox(height: 2),
                       Text(sermon.speaker,
-                          style: TextStyle(color: Colors.grey[700], fontSize: 13)),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65), fontSize: 13)),
                       Text(
                         DateFormat('MMMM d, yyyy').format(sermon.date),
-                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12),
                       ),
                     ],
                   ),
@@ -357,7 +356,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
             if (sermon.description.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(sermon.description,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13)),
             ],
             if (isAudio) ...[
               const SizedBox(height: 12),
@@ -382,7 +381,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
                           max: isThisPlaying && _duration.inSeconds > 0
                               ? _duration.inSeconds.toDouble()
                               : 1,
-                          activeColor: AppColors.purple,
+                          activeColor: Theme.of(context).colorScheme.primary,
                           onChanged: isThisPlaying
                               ? (val) => _player.seek(Duration(seconds: val.toInt()))
                               : null,
@@ -408,19 +407,18 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 ],
               ),
             ] else ...[
-              // Video placeholder — tap to open
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.play_arrow),
+                  icon: const Icon(Icons.play_circle_outline),
                   label: const Text('Open Video'),
-                  style: OutlinedButton.styleFrom(foregroundColor: AppColors.purple),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Video player coming soon')),
-                    );
-                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                  ),
+                  onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => VideoPlayerScreen(sermon: sermon))),
                 ),
               ),
             ],

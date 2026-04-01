@@ -96,14 +96,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Account'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.brown.withValues(alpha: 0.05),
+              AppColors.purple.withValues(alpha: 0.05),
               AppColors.purple.withValues(alpha: 0.05),
             ],
             begin: Alignment.topLeft,
@@ -122,14 +120,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const Center(
                     child: Column(
                       children: [
-                        Icon(Icons.church, size: 56, color: AppColors.brown),
+                        Icon(Icons.church, size: 56, color: AppColors.purple),
                         SizedBox(height: 8),
                         Text(
                           'Join Faith Klinik',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.brown,
+                            color: AppColors.purple,
                           ),
                         ),
                         SizedBox(height: 4),
@@ -263,7 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.brown,
+                      color: AppColors.purple,
                     ),
                   ),
                   const SizedBox(height: 12),

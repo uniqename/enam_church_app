@@ -38,8 +38,8 @@ class _SplashScreenState extends State<SplashScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.brown.withOpacity(0.1),
-              AppColors.gold.withOpacity(0.1)
+              AppColors.purple.withValues(alpha: 0.1),
+              AppColors.blue.withValues(alpha: 0.1)
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -52,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const Icon(
                 Icons.church,
                 size: 100,
-                color: AppColors.brown,
+                color: AppColors.purple,
               ),
               const SizedBox(height: 24),
               const Text(
@@ -60,14 +60,14 @@ class _SplashScreenState extends State<SplashScreen> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.brown,
+                  color: AppColors.purple,
                 ),
               ),
               const Text(
                 'Ministries',
                 style: TextStyle(
                   fontSize: 24,
-                  color: AppColors.brown,
+                  color: AppColors.purple,
                 ),
               ),
               const SizedBox(height: 48),

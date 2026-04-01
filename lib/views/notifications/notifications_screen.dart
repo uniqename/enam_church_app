@@ -45,8 +45,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         actions: [
           if (_notifications.any((n) => !n.read))
             IconButton(

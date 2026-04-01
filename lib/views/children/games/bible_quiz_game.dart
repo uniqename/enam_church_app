@@ -84,7 +84,7 @@ class _BibleQuizGameState extends State<BibleQuizGame> {
                 children: [
                   Text(
                     'Question ${_currentIndex + 1}/${widget.questions.length}',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -231,7 +231,7 @@ class _BibleQuizGameState extends State<BibleQuizGame> {
                       ? 'Great job! Keep reading your Bible! 📖'
                       : 'Keep practicing! You\'re learning! 💡',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
             ),
             const SizedBox(height: 32),
             Row(

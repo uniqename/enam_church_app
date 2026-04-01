@@ -170,8 +170,6 @@ class _StaffScreenState extends State<StaffScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Our Team'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         actions: [
           if (_canEdit)
             IconButton(

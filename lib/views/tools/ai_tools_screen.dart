@@ -72,8 +72,6 @@ class AiToolsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Ministry Tools'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -183,7 +181,7 @@ class AiToolsScreen extends StatelessWidget {
                       tool.description,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[600],
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
                         height: 1.4,
                       ),
                     ),

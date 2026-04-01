@@ -60,8 +60,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Announcements'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -183,7 +181,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       floatingActionButton: _canCreate
           ? FloatingActionButton(
               onPressed: _showAddAnnouncementDialog,
-              backgroundColor: AppColors.purple,
+              backgroundColor: AppColors.accentPurple,
               child: const Icon(Icons.add, color: Colors.white),
             )
           : null,

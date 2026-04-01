@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/services.dart';
-import '../../utils/colors.dart';
 
 class BirthdayCardScreen extends StatefulWidget {
   const BirthdayCardScreen({super.key});
@@ -30,8 +29,6 @@ class _BirthdayCardScreenState extends State<BirthdayCardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Birthday Card Studio'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

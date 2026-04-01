@@ -100,8 +100,6 @@ class _MessagesScreenState extends State<MessagesScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Communications'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -194,7 +192,7 @@ class _MessagesScreenState extends State<MessagesScreen>
     if (tab == 0) {
       return FloatingActionButton.extended(
         onPressed: _composeBroadcast,
-        backgroundColor: AppColors.purple,
+        backgroundColor: AppColors.accentPurple,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.campaign),
         label: const Text('Broadcast'),

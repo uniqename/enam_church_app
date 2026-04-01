@@ -65,8 +65,6 @@ class _AdminVideoUploadScreenState extends State<AdminVideoUploadScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Video Management'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,

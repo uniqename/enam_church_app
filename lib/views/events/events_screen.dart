@@ -50,8 +50,6 @@ class _EventsScreenState extends State<EventsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Events'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -192,7 +190,7 @@ class _EventsScreenState extends State<EventsScreen> {
       floatingActionButton: _isAdmin
           ? FloatingActionButton(
               onPressed: _showAddEventDialog,
-              backgroundColor: AppColors.brown,
+              backgroundColor: AppColors.accentPurple,
               child: const Icon(Icons.add, color: Colors.white),
             )
           : null,

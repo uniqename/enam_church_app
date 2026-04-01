@@ -189,23 +189,23 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
                                             const SizedBox(height: 4),
                                             Text(
                                               sermon.speaker,
-                                              style: TextStyle(color: Colors.grey[600]),
+                                              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                                             ),
                                             const SizedBox(height: 4),
                                             Row(
                                               children: [
-                                                const Icon(Icons.timer, size: 14, color: Colors.grey),
+                                                Icon(Icons.timer, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   sermon.duration,
-                                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                                                 ),
                                                 const SizedBox(width: 12),
-                                                const Icon(Icons.visibility, size: 14, color: Colors.grey),
+                                                Icon(Icons.visibility, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   '${sermon.views} views',
-                                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                                                 ),
                                               ],
                                             ),

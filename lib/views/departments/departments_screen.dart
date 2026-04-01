@@ -105,8 +105,6 @@ class _DepartmentsScreenState extends State<DepartmentsScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Departments & Ministries'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,

@@ -105,7 +105,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
             const SizedBox(height: 12),
             Text(
               'Thank you for connecting with us. A member of our team will reach out to you soon. We\'re so glad you\'re here!',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),

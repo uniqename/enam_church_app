@@ -233,7 +233,7 @@ class _MembersScreenState extends State<MembersScreen>
       floatingActionButton: _isAdmin
           ? FloatingActionButton(
               onPressed: _showAddMemberDialog,
-              backgroundColor: AppColors.brown,
+              backgroundColor: AppColors.accentPurple,
               child: const Icon(Icons.add, color: Colors.white),
             )
           : null,

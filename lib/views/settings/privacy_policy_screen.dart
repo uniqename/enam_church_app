@@ -22,7 +22,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Last updated: March 2026',
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
             ),
             const SizedBox(height: 24),
             _section(
@@ -93,10 +93,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
+              child: Text(
                 'By using the Faith Klinik app, you agree to this Privacy Policy. '
                 'We may update this policy periodically and will notify you of significant changes.',
-                style: TextStyle(fontSize: 13, color: Colors.grey),
+                style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                 textAlign: TextAlign.center,
               ),
             ),

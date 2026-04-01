@@ -109,8 +109,6 @@ class _PrayersScreenState extends State<PrayersScreen>
       return Scaffold(
         appBar: AppBar(
           title: const Text('Prayers'),
-          backgroundColor: AppColors.purple,
-          foregroundColor: Colors.white,
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -125,8 +123,6 @@ class _PrayersScreenState extends State<PrayersScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prayers'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -145,7 +141,7 @@ class _PrayersScreenState extends State<PrayersScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddPrayerDialog,
-        backgroundColor: AppColors.brown,
+        backgroundColor: AppColors.accentPurple,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

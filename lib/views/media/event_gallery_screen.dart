@@ -255,8 +255,6 @@ class _EventGalleryScreenState extends State<EventGalleryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Event Gallery'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
         actions: [
           if (_canUpload)
             IconButton(
@@ -269,7 +267,7 @@ class _EventGalleryScreenState extends State<EventGalleryScreen> {
       floatingActionButton: _canUpload
           ? FloatingActionButton.extended(
               onPressed: _uploadPhoto,
-              backgroundColor: AppColors.purple,
+              backgroundColor: AppColors.accentPurple,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.add_photo_alternate),
               label: const Text('Upload'),

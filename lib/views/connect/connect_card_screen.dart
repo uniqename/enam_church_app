@@ -79,8 +79,6 @@ class _ConnectCardScreenState extends State<ConnectCardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Connect with Us'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       body: _submitted ? _buildSuccessView() : _buildForm(),
     );

@@ -205,8 +205,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Profile'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -276,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     'Tap photo to update',
                     style: TextStyle(
-                        fontSize: 12, color: Colors.grey.shade500),
+                        fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.48)),
                   ),
                   const SizedBox(height: 24),
                   // Name
@@ -334,16 +332,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: AppColors.purple.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.info_outline,
+                        const Icon(Icons.info_outline,
                             color: AppColors.purple, size: 20),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Your profile photo is visible to church members. To update your name or email, contact your administrator.',
                             style: TextStyle(
-                                fontSize: 12, color: Colors.black54),
+                                fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           ),
                         ),
                       ],
@@ -381,8 +379,8 @@ class _InfoTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label,
-                  style: const TextStyle(
-                      fontSize: 11, color: Colors.grey)),
+                  style: TextStyle(
+                      fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55))),
               Text(value,
                   style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w500)),
@@ -589,7 +587,7 @@ class _ChildAccountsTileState extends State<_ChildAccountsTile> {
                             ? 'Manage all child accounts & approve requests'
                             : "Manage your children's app accounts",
                         style:
-                            const TextStyle(fontSize: 11, color: Colors.grey),
+                            TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                       ),
                     ],
                   ),
@@ -659,10 +657,10 @@ class _ChildAccountsTileState extends State<_ChildAccountsTile> {
               const SizedBox(height: 8),
             ],
             if (_accounts.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(8),
+              Padding(
+                padding: const EdgeInsets.all(8),
                 child: Text('No child accounts yet.',
-                    style: TextStyle(color: Colors.grey)),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55))),
               )
             else
               ..._accounts.map((a) => ListTile(

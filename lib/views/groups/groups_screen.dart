@@ -348,7 +348,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
               if (group.description.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Text(group.description,
-                    style: TextStyle(color: Colors.grey[700], fontSize: 14)),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65), fontSize: 14)),
               ],
               const SizedBox(height: 16),
               if (group.leaders.isNotEmpty)
@@ -472,7 +472,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   fontWeight: FontWeight.w600, fontSize: 13)),
           Expanded(
             child: Text(value,
-                style: TextStyle(color: Colors.grey[700], fontSize: 13)),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65), fontSize: 13)),
           ),
         ],
       ),
@@ -486,12 +486,10 @@ class _GroupsScreenState extends State<GroupsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Groups & Ministries'),
-        backgroundColor: AppColors.purple,
-        foregroundColor: Colors.white,
       ),
       floatingActionButton: _isAdmin
           ? FloatingActionButton.extended(
-              backgroundColor: AppColors.purple,
+              backgroundColor: AppColors.accentPurple,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.add),
               label: const Text('Add Group'),
@@ -523,9 +521,9 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 ),
                 Expanded(
                   child: _filtered.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text('No groups found',
-                              style: TextStyle(color: Colors.grey)))
+                              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55))))
                       : GridView.builder(
                           padding: const EdgeInsets.fromLTRB(12, 8, 12, 100),
                           gridDelegate:
@@ -592,7 +590,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
             if (group.leaders.isNotEmpty)
               Text(
                 group.leaders.first,
-                style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55), fontSize: 11),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -601,13 +599,13 @@ class _GroupsScreenState extends State<GroupsScreen> {
               Row(
                 children: [
                   Icon(Icons.calendar_today,
-                      size: 11, color: Colors.grey[500]),
+                      size: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.48)),
                   const SizedBox(width: 3),
                   Expanded(
                     child: Text(
                       group.meetingDay,
                       style:
-                          TextStyle(fontSize: 10, color: Colors.grey[500]),
+                          TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.48)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -617,11 +615,11 @@ class _GroupsScreenState extends State<GroupsScreen> {
             if (group.members.isNotEmpty)
               Row(
                 children: [
-                  Icon(Icons.people, size: 11, color: Colors.grey[500]),
+                  Icon(Icons.people, size: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.48)),
                   const SizedBox(width: 3),
                   Text(
                     '${group.members.length} member${group.members.length == 1 ? '' : 's'}',
-                    style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.48)),
                   ),
                 ],
               ),
