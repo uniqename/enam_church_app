@@ -1,4 +1,5 @@
 import '../models/member.dart';
+import 'local_data_service.dart';
 import 'supabase_service.dart';
 import 'package:uuid/uuid.dart';
 
@@ -13,11 +14,14 @@ class MemberService {
   Future<List<Member>> getAllMembers() async {
     try {
       final data = await _supabase.getAll('members');
-      return data.map((json) => Member.fromSupabase(json)).toList();
+      if (data.isNotEmpty) {
+        return data.map((json) => Member.fromSupabase(json)).toList();
+      }
     } catch (e) {
-      print('❌ Failed to fetch members: $e');
-      return [];
+      print('❌ Failed to fetch members from Supabase: $e');
     }
+    // Supabase empty or unavailable — fall back to built-in FK member roster
+    return LocalDataService().getMembers();
   }
 
   Future<Member?> getMemberById(String id) async {

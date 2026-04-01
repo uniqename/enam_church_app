@@ -2,6 +2,9 @@
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.kts.
 
+# Keep MainActivity so R8/ProGuard never strips or renames it
+-keep class com.faithklinikministries.app.MainActivity { *; }
+
 # Flutter specific rules
 -keep class io.flutter.app.** { *; }
 -keep class io.flutter.plugin.**  { *; }

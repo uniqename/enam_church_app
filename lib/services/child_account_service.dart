@@ -221,6 +221,7 @@ class ChildAccountService {
     await prefs.setString(_kActiveChildKey, account.id);
     await prefs.setString('active_child_name', account.accountName);
     await prefs.setString('active_child_avatar', account.avatarUrl ?? '');
+    await prefs.setInt('active_child_age', account.ageYears);
     await prefs.setBool('child_logged_in', true);
     await prefs.setString('user_role', 'child');
   }
@@ -235,6 +236,12 @@ class ChildAccountService {
   Future<String> getActiveChildName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('active_child_name') ?? 'Child';
+  }
+
+  /// Gets active child age (0 = not set).
+  Future<int> getActiveChildAge() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('active_child_age') ?? 0;
   }
 
   /// Gets active child avatar url.

@@ -38,23 +38,30 @@ class AuthService {
   Future<String?> getUserRole() async {
     if (SupabaseService.isConfigured) {
       final user = currentUser;
-      if (user == null) return null;
-      try {
-        final userData = await _supabase.getById('users', user.id);
-        return userData?['role'] as String?;
-      } catch (e) {
-        print('❌ Failed to get user role: $e');
-        return null;
+      if (user != null) {
+        try {
+          final userData = await _supabase.getById('users', user.id);
+          final role = userData?['role'] as String?;
+          if (role != null) {
+            // Keep prefs in sync so offline reads work
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('user_role', role);
+            return role;
+          }
+        } catch (e) {
+          print('❌ Failed to get user role from Supabase: $e');
+        }
       }
+      // No Supabase session (demo login) or query failed — fall back to cached prefs
     }
-    // Demo mode — role stored in prefs
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('user_role');
   }
 
   // Sign in
   Future<AuthResponse> signIn(String email, String password) async {
-    if (!SupabaseService.isConfigured) {
+    // Always use demo path for .demo addresses regardless of Supabase config
+    if (!SupabaseService.isConfigured || email.trim().toLowerCase().endsWith('.demo')) {
       return _demoSignIn(email, password);
     }
     try {
@@ -168,9 +175,14 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_id',    user.id);
     await prefs.setString('user_email', user.email ?? '');
-    final role = user.userMetadata?['role'] as String? ?? 'member';
-    await prefs.setString('user_role',  role);
-    print('✅ User session cached');
+    // Prefer role from users table; fall back to metadata then 'member'
+    String role = user.userMetadata?['role'] as String? ?? 'member';
+    try {
+      final userData = await _supabase.getById('users', user.id);
+      role = userData?['role'] as String? ?? role;
+    } catch (_) {}
+    await prefs.setString('user_role', role);
+    print('✅ User session cached with role: $role');
   }
 
   // Clear user session

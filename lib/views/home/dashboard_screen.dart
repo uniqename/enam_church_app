@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/auth_service.dart';
+import '../../services/child_account_service.dart';
 import '../../services/member_service.dart';
 import '../../services/event_service.dart';
 import '../../services/finance_service.dart';
@@ -26,6 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   int _selectedIndex = 0;
   String? _userRole;
+  int _childAge = 0;
   bool _isLoading = true;
 
   // Stats for adult dashboard
@@ -47,6 +49,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final role = await _authService.getUserRole();
 
       // Load stats for adult dashboard
+      if (role == 'child') {
+        final age = await ChildAccountService().getActiveChildAge();
+        setState(() => _childAge = age);
+      }
+
       if (role != 'child') {
         final members = await _memberService.getAllMembers();
         final events = await _eventService.getAllEvents();
@@ -98,8 +105,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Faith Klinik Ministries'),
-        backgroundColor: isChild ? AppColors.childGreen : AppColors.purple,
-        foregroundColor: Colors.white,
+        backgroundColor: isChild ? AppColors.childGreen : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
@@ -112,7 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: isChild ? AppColors.childGreen : AppColors.purple,
+        selectedItemColor: isChild ? AppColors.childGreen : AppColors.accentPurple,
         unselectedItemColor: Colors.grey,
         items: isChild
             ? const [
@@ -262,6 +268,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 AppColors.childPink,
                 () => Navigator.pushNamed(context, '/prayers'),
               ),
+              if (_childAge >= 12)
+                _buildChildCard(
+                  'Give',
+                  Icons.volunteer_activism,
+                  AppColors.childPurple,
+                  () => Navigator.pushNamed(context, '/giving'),
+                ),
             ],
           ),
         ],
@@ -347,8 +360,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
+                gradient: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkGradient
+                    : AppColors.primaryGradient,
                 borderRadius: BorderRadius.circular(16),
+                border: Theme.of(context).brightness == Brightness.dark
+                    ? Border.all(color: AppColors.darkBorder, width: 1)
+                    : null,
+                boxShadow: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.glowPurple(radius: 24, opacity: 0.18)
+                    : null,
               ),
               child: Column(
                 children: [
@@ -403,7 +424,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       'Members',
                       _memberCount.toString(),
                       Icons.people,
-                      AppColors.purple,
+                      Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -412,7 +433,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       'Events',
                       _eventCount.toString(),
                       Icons.event,
-                      AppColors.blue,
+                      AppColors.accentTeal,
                     ),
                   ),
                 ],
@@ -434,7 +455,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       'Sermons',
                       _sermonCount.toString(),
                       Icons.play_circle,
-                      AppColors.error,
+                      AppColors.accentRose,
                     ),
                   ),
                 ],
@@ -449,11 +470,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard('Members', _memberCount.toString(), Icons.people, AppColors.purple),
+                    child: _buildStatCard('Members', _memberCount.toString(), Icons.people, Theme.of(context).colorScheme.primary),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildStatCard('Events', _eventCount.toString(), Icons.event, AppColors.blue),
+                    child: _buildStatCard('Events', _eventCount.toString(), Icons.event, AppColors.accentTeal),
                   ),
                 ],
               ),
@@ -693,48 +714,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
+        boxShadow: isDark ? AppColors.glowColor(color, radius: 12, opacity: 0.15) : null,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(icon, color: color, size: 28),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+      child: Card(
+        elevation: isDark ? 0 : 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: isDark ? const BorderSide(color: AppColors.darkBorder) : BorderSide.none,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(icon, color: color, size: 28),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: isDark ? 0.18 : 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: color, size: 20),
                   ),
-                  child: Icon(icon, color: color, size: 20),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: color,
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -782,11 +811,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _showMoreMenu() {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => DraggableScrollableSheet(
+      builder: (sheetCtx) => DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.65,
         minChildSize: 0.4,
@@ -1041,16 +1072,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildDarkModeToggle() {
-    final themeProvider = context.watch<ThemeProvider>();
-    return SwitchListTile(
-      secondary: Icon(
-        themeProvider.isDark ? Icons.dark_mode : Icons.light_mode,
-        color: AppColors.purple,
+    return Consumer<ThemeProvider>(
+      builder: (_, themeProvider, __) => SwitchListTile(
+        secondary: Icon(
+          themeProvider.isDark ? Icons.dark_mode : Icons.light_mode,
+          color: AppColors.accentPurple,
+        ),
+        title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.w500)),
+        value: themeProvider.isDark,
+        activeThumbColor: AppColors.accentPurple,
+        onChanged: (_) => themeProvider.toggle(),
       ),
-      title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.w500)),
-      value: themeProvider.isDark,
-      activeThumbColor: AppColors.purple,
-      onChanged: (_) => themeProvider.toggle(),
     );
   }
 

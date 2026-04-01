@@ -21,6 +21,10 @@ class GameData {
         return _davidQuestions;
       case 'jesus':
         return _jesusQuestions;
+      case 'moses':
+        return _mosesQuestions;
+      case 'esther':
+        return _estherQuestions;
       default:
         return _generalQuestions;
     }
@@ -140,6 +144,62 @@ class GameData {
         'Do not lie'
       ],
       correctIndex: 2,
+    ),
+  ];
+
+  static const List<QuizQuestion> _mosesQuestions = [
+    QuizQuestion(
+      question: 'Where was baby Moses hidden to keep him safe?',
+      options: ['In a cave', 'In a basket in the river', 'Under a tree', 'In a tent'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'What did God use to speak to Moses in the desert?',
+      options: ['A cloud', 'A loud voice', 'A burning bush', 'An angel'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'How many plagues did God send on Egypt?',
+      options: ['5', '7', '10', '12'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'What did God give Moses on Mount Sinai?',
+      options: ['A golden crown', 'The Ten Commandments', 'A map to Canaan', 'A new name'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'What did God send to feed the Israelites in the desert?',
+      options: ['Fish and fruit', 'Bread from heaven called manna', 'Milk and honey', 'Roasted lamb'],
+      correctIndex: 1,
+    ),
+  ];
+
+  static const List<QuizQuestion> _estherQuestions = [
+    QuizQuestion(
+      question: 'What country did Queen Esther live in?',
+      options: ['Egypt', 'Israel', 'Persia', 'Babylon'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'Who was Esther\'s cousin who raised her?',
+      options: ['Haman', 'Mordecai', 'Xerxes', 'Daniel'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'Who wanted to destroy all the Jewish people in Persia?',
+      options: ['King Xerxes', 'Haman', 'Nebuchadnezzar', 'Goliath'],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'What did Esther do that was very brave?',
+      options: ['She fought in a battle', 'She ran away from the palace', 'She went to the king without being called', 'She built a tower'],
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'What Jewish holiday celebrates Esther\'s story?',
+      options: ['Passover', 'Purim', 'Hanukkah', 'Pentecost'],
+      correctIndex: 1,
     ),
   ];
 

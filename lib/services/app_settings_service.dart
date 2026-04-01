@@ -16,7 +16,7 @@ class AppSettingsService {
 
   Future<String> givelifyUrl() async {
     final p = await SharedPreferences.getInstance();
-    return p.getString(_givelifyKey) ?? '';
+    return p.getString(_givelifyKey) ?? 'https://giv.li/mls3kn';
   }
 
   Future<void> setGivelifyUrl(String url) async {
@@ -78,7 +78,7 @@ class AppSettingsService {
   Future<Map<String, String>> getAllSettings() async {
     final p = await SharedPreferences.getInstance();
     return {
-      'givelify_url':     p.getString(_givelifyKey)   ?? '',
+      'givelify_url':     p.getString(_givelifyKey)   ?? 'https://giv.li/mls3kn',
       'youtube_url':      p.getString(_youtubeKey)    ?? '',
       'church_name':      p.getString(_churchNameKey) ?? 'Faith Klinik Ministries',
       'church_website':   p.getString(_churchWebKey)  ?? '',
