@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/child_sermon.dart';
 import '../../services/child_content_service.dart';
+import '../../services/sermon_service.dart';
+import '../../services/auth_service.dart';
 import '../../utils/colors.dart';
 
 class ChildSermonsScreen extends StatefulWidget {
@@ -12,8 +15,11 @@ class ChildSermonsScreen extends StatefulWidget {
 
 class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
   final _contentService = ChildContentService();
+  final _sermonService = SermonService();
+  final _authService = AuthService();
   List<ChildSermon> _sermons = [];
   bool _isLoading = true;
+  bool _canManage = false;
 
   @override
   void initState() {
@@ -24,9 +30,21 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final sermons = await _contentService.getAllSermons();
+      final childSermons = await _contentService.getAllSermons();
+      final allSermons = await _sermonService.getAllSermons();
+      final sharedSermons = allSermons
+          .where((s) => s.audience == 'all' && s.fileUrl.isNotEmpty)
+          .map((s) => ChildSermon(
+                id: s.id, title: s.title, speaker: s.speaker,
+                date: s.date, duration: '', views: 0, videoUrl: s.fileUrl,
+              ))
+          .toList();
+      final childIds = childSermons.map((s) => s.id).toSet();
+      final merged = [...childSermons, ...sharedSermons.where((s) => !childIds.contains(s.id))];
+      final role = await _authService.getUserRole();
       setState(() {
-        _sermons = sermons;
+        _sermons = merged;
+        _canManage = role == 'admin' || role == 'pastor' || role == 'department_head' || role == 'media_team';
         _isLoading = false;
       });
     } catch (e) {
@@ -37,6 +55,15 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
         );
       }
     }
+  }
+
+  Future<void> _openVideo(String url) async {
+    if (url.isEmpty) return;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
   }
 
   void _playSermon(ChildSermon sermon) {

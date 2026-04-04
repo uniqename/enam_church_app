@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 import '../../models/sermon.dart';
 import '../../services/sermon_service.dart';
+import '../../services/supabase_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/colors.dart';
 
@@ -97,9 +99,11 @@ class _SermonsScreenState extends State<SermonsScreen> {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
     final speakerCtrl = TextEditingController(text: existing?.speaker ?? '');
     final descCtrl = TextEditingController(text: existing?.description ?? '');
+    final urlCtrl = TextEditingController(text: existing?.fileUrl ?? '');
     DateTime selectedDate = existing?.date ?? DateTime.now();
-    String? pickedPath = existing?.filePath;
+    String? pickedPath = existing?.filePath.isNotEmpty == true ? existing?.filePath : null;
     String fileType = existing?.fileType ?? 'audio';
+    String audience = existing?.audience ?? 'all';
 
     await showDialog(
       context: context,
@@ -148,6 +152,31 @@ class _SermonsScreenState extends State<SermonsScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
+                TextField(
+                  controller: urlCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Streaming URL (YouTube, SoundCloud, direct mp3…)',
+                    hintText: 'https://…',
+                    prefixIcon: Icon(Icons.link),
+                    helperText: 'Add a URL so all members can access this sermon',
+                  ),
+                  keyboardType: TextInputType.url,
+                  onChanged: (v) {
+                    final ext = v.trim().split('?').first.split('.').last.toLowerCase();
+                    if (['mp4', 'mov', 'm4v'].contains(ext)) {
+                      setS(() => fileType = 'video');
+                    } else if (v.trim().isNotEmpty) {
+                      setS(() => fileType = 'audio');
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                const Row(children: [
+                  Expanded(child: Divider()),
+                  Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('OR', style: TextStyle(color: Colors.grey, fontSize: 12))),
+                  Expanded(child: Divider()),
+                ]),
+                const SizedBox(height: 8),
                 OutlinedButton.icon(
                   icon: const Icon(Icons.attach_file),
                   label: Text(pickedPath != null
@@ -168,6 +197,22 @@ class _SermonsScreenState extends State<SermonsScreen> {
                     }
                   },
                 ),
+                if (pickedPath != null)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Text('✅ File will be uploaded to cloud — all members can access it.',
+                        style: TextStyle(fontSize: 11, color: Colors.green)),
+                  ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: audience,
+                  decoration: const InputDecoration(labelText: 'Audience', border: OutlineInputBorder(), prefixIcon: Icon(Icons.people)),
+                  items: const [
+                    DropdownMenuItem(value: 'all', child: Text('Everyone (Adults + Kids)')),
+                    DropdownMenuItem(value: 'adults', child: Text('Adults Only')),
+                  ],
+                  onChanged: (v) => setS(() => audience = v ?? 'all'),
+                ),
               ],
             ),
           ),
@@ -181,20 +226,42 @@ class _SermonsScreenState extends State<SermonsScreen> {
               onPressed: () async {
                 final title = titleCtrl.text.trim();
                 final speaker = speakerCtrl.text.trim();
-                if (title.isEmpty || speaker.isEmpty || pickedPath == null) {
+                final url = urlCtrl.text.trim();
+                if (title.isEmpty || speaker.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Title, speaker and file are required')),
+                    const SnackBar(content: Text('Title and speaker are required')),
+                  );
+                  return;
+                }
+                if (url.isEmpty && pickedPath == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Add a streaming URL or pick a local file')),
                   );
                   return;
                 }
 
                 Navigator.pop(ctx);
 
-                // Copy file to app storage
-                String storedPath = pickedPath!;
-                try {
-                  storedPath = await _service.copyFileToSermonStorage(pickedPath!);
-                } catch (_) {}
+                // Upload picked file to Supabase Storage so all members can access it
+                String storedPath = '';
+                String finalUrl = url;
+                if (pickedPath != null) {
+                  final messenger = ScaffoldMessenger.of(context);
+                  messenger.showSnackBar(const SnackBar(content: Text('Uploading media…'), duration: Duration(seconds: 30)));
+                  final ext = pickedPath!.split('.').last.toLowerCase();
+                  final contentType = (ext == 'mp4' || ext == 'mov') ? 'video/mp4' : 'audio/mpeg';
+                  final uploaded = await SupabaseService().uploadImage(
+                    'sermon-media', '${const Uuid().v4()}.$ext', File(pickedPath!), contentType: contentType,
+                  );
+                  messenger.hideCurrentSnackBar();
+                  if (uploaded != null) {
+                    finalUrl = uploaded;
+                    messenger.showSnackBar(const SnackBar(content: Text('Media uploaded — all members can access it'), backgroundColor: Colors.green));
+                  } else {
+                    try { storedPath = await _service.copyFileToSermonStorage(pickedPath!); } catch (_) { storedPath = pickedPath!; }
+                    messenger.showSnackBar(const SnackBar(content: Text('Saved locally (only visible on this device)'), backgroundColor: Colors.orange));
+                  }
+                }
 
                 if (existing == null) {
                   final s = Sermon.create(
@@ -202,8 +269,10 @@ class _SermonsScreenState extends State<SermonsScreen> {
                     speaker: speaker,
                     date: selectedDate,
                     filePath: storedPath,
+                    fileUrl: finalUrl,
                     fileType: fileType,
                     description: descCtrl.text.trim(),
+                    audience: audience,
                   );
                   await _service.addSermon(s);
                 } else {
@@ -211,9 +280,11 @@ class _SermonsScreenState extends State<SermonsScreen> {
                     title: title,
                     speaker: speaker,
                     date: selectedDate,
-                    filePath: storedPath,
+                    filePath: storedPath.isNotEmpty ? storedPath : existing.filePath,
+                    fileUrl: finalUrl,
                     fileType: fileType,
                     description: descCtrl.text.trim(),
+                    audience: audience,
                   ));
                 }
                 await _init();

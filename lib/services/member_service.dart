@@ -46,8 +46,21 @@ class MemberService {
     }
   }
 
+  static final _uuidPattern = RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    caseSensitive: false,
+  );
+
   Future<void> updateMember(Member member) async {
     try {
+      // Local members (e.g. id='mem-1') have non-UUID ids — promote to Supabase
+      if (!_uuidPattern.hasMatch(member.id)) {
+        final data = member.toSupabase();
+        data['id'] = _uuid.v4();
+        await _supabase.insert('members', data);
+        print('✅ Local member promoted to Supabase: ${member.name}');
+        return;
+      }
       await _supabase.update('members', member.id, member.toSupabase());
       print('✅ Member updated: ${member.name}');
     } catch (e) {

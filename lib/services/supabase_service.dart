@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -118,6 +119,22 @@ class SupabaseService {
     } catch (e) {
       print('❌ delete $table failed: $e');
       rethrow;
+    }
+  }
+
+  Future<String?> uploadImage(String bucket, String path, File file,
+      {String contentType = 'image/jpeg'}) async {
+    if (!isConfigured) return null;
+    try {
+      await _client!.storage.from(bucket).upload(
+            path,
+            file,
+            fileOptions: FileOptions(upsert: true, contentType: contentType),
+          );
+      return _client!.storage.from(bucket).getPublicUrl(path);
+    } catch (e) {
+      print('❌ uploadImage $bucket/$path failed: $e');
+      return null;
     }
   }
 

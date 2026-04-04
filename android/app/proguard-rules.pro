@@ -4,6 +4,7 @@
 
 # Keep MainActivity so R8/ProGuard never strips or renames it
 -keep class com.faithklinikministries.app.MainActivity { *; }
+-keep class com.faithklinikministries.fkapp.** { *; }
 
 # Flutter specific rules
 -keep class io.flutter.app.** { *; }

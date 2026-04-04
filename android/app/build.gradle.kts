@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.faithklinikministries.app"
+        applicationId = "com.faithklinikministries.fkapp"
         minSdk = 24
         targetSdk = 35
         versionCode = flutter.versionCode

@@ -7,6 +7,7 @@ class Announcement {
   final DateTime date;
   final String department;
   final String status;
+  final String audience; // 'all', 'adults'
 
   const Announcement({
     required this.id,
@@ -17,6 +18,7 @@ class Announcement {
     required this.date,
     required this.department,
     required this.status,
+    this.audience = 'all',
   });
 
   factory Announcement.fromSupabase(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class Announcement {
       date: DateTime.parse(json['date'] as String),
       department: json['department'] as String? ?? 'General',
       status: json['status'] as String? ?? 'Published',
+      audience: json['audience'] as String? ?? 'all',
     );
   }
 
@@ -42,6 +45,7 @@ class Announcement {
       'date': date.toIso8601String(),
       'department': department,
       'status': status,
+      'audience': audience,
     };
   }
 }

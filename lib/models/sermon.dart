@@ -9,6 +9,7 @@ class Sermon {
   final String fileUrl;  // remote URL (Supabase Storage)
   final String fileType; // 'audio' or 'video'
   final String description;
+  final String audience; // 'all', 'adults'
   final DateTime createdAt;
 
   const Sermon({
@@ -20,6 +21,7 @@ class Sermon {
     required this.fileUrl,
     required this.fileType,
     required this.description,
+    this.audience = 'all',
     required this.createdAt,
   });
 
@@ -31,6 +33,7 @@ class Sermon {
     String fileUrl = '',
     required String fileType,
     String description = '',
+    String audience = 'all',
   }) {
     return Sermon(
       id: const Uuid().v4(),
@@ -41,6 +44,7 @@ class Sermon {
       fileUrl: fileUrl,
       fileType: fileType,
       description: description,
+      audience: audience,
       createdAt: DateTime.now(),
     );
   }
@@ -54,6 +58,7 @@ class Sermon {
         'file_url': fileUrl,
         'file_type': fileType,
         'description': description,
+        'audience': audience,
         'created_at': createdAt.toIso8601String(),
       };
 
@@ -66,6 +71,7 @@ class Sermon {
         fileUrl: json['file_url'] as String? ?? '',
         fileType: json['file_type'] as String? ?? 'audio',
         description: json['description'] as String? ?? '',
+        audience: json['audience'] as String? ?? 'all',
         createdAt: DateTime.parse(json['created_at'] as String),
       );
 
@@ -77,6 +83,7 @@ class Sermon {
     String? fileUrl,
     String? fileType,
     String? description,
+    String? audience,
   }) =>
       Sermon(
         id: id,
@@ -87,6 +94,7 @@ class Sermon {
         fileUrl: fileUrl ?? this.fileUrl,
         fileType: fileType ?? this.fileType,
         description: description ?? this.description,
+        audience: audience ?? this.audience,
         createdAt: createdAt,
       );
 }

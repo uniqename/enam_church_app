@@ -195,6 +195,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     final contentController = TextEditingController();
     String selectedPriority = 'Normal';
     String selectedDepartment = _isDeptHead ? _userDept : 'General';
+    String selectedAudience = 'all';
 
     showDialog(
       context: context,
@@ -246,6 +247,16 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                         v.trim().isEmpty ? 'General' : v.trim(),
                   ),
                 ],
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedAudience,
+                  decoration: const InputDecoration(labelText: 'Audience', border: OutlineInputBorder(), prefixIcon: Icon(Icons.people)),
+                  items: const [
+                    DropdownMenuItem(value: 'all', child: Text('Everyone (Adults + Kids)')),
+                    DropdownMenuItem(value: 'adults', child: Text('Adults Only')),
+                  ],
+                  onChanged: (v) => setDialogState(() => selectedAudience = v ?? 'all'),
+                ),
               ],
             ),
           ),
@@ -273,6 +284,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                   date: DateTime.now(),
                   department: selectedDepartment,
                   status: 'Published',
+                  audience: selectedAudience,
                 );
                 final navigator = Navigator.of(ctx);
                 final messenger = ScaffoldMessenger.of(context);
