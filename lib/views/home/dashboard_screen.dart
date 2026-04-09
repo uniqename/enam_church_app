@@ -554,7 +554,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            // ── Core actions grid ────────────────────────────────────────
+            // ── Core actions grid (6 primary) ────────────────────────────
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -575,12 +575,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     () => Navigator.pushNamed(context, '/giving')),
                 _buildQuickActionCard('Events', Icons.event, AppColors.accentTeal,
                     () => Navigator.pushNamed(context, '/events')),
-                _buildQuickActionCard('Bulletin', Icons.receipt_long, AppColors.blue,
-                    () => Navigator.pushNamed(context, '/bulletin')),
-                _buildQuickActionCard('Notes', Icons.note_alt, const Color(0xFF5D4037),
-                    () => Navigator.pushNamed(context, '/notes')),
-                _buildQuickActionCard('AI Tools', Icons.rocket_launch, const Color(0xFFFF6B6B),
-                    () => Navigator.pushNamed(context, '/ai_tools')),
               ],
             ),
             const SizedBox(height: 20),
@@ -615,6 +609,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             subtitle: a.content.isNotEmpty ? a.content : a.department,
             color1: a.priority == 'High' ? const Color(0xFFB71C1C) : AppColors.purple,
             color2: a.priority == 'High' ? const Color(0xFFD32F2F) : AppColors.blue,
+            imageUrl: RegExp(r'\.(jpg|jpeg|png|gif|webp)(\?|$)', caseSensitive: false)
+                    .hasMatch(a.mediaUrl)
+                ? a.mediaUrl
+                : '',
           )),
     ];
 
@@ -655,9 +653,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildBannerCard(_BannerSlide slide) {
-    final icon = slide.type == _BannerType.yearTheme
-        ? Icons.star
-        : Icons.campaign;
+    final icon = slide.type == _BannerType.yearTheme ? Icons.star : Icons.campaign;
+    final hasImage = slide.imageUrl.isNotEmpty;
+
+    if (hasImage) {
+      // Image banner — photo background with text overlay
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.network(slide.imageUrl, fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              colors: [slide.color1, slide.color2])))),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.65)],
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                left: 16,
+                right: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(slide.title,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    if (slide.subtitle.isNotEmpty)
+                      Text(slide.subtitle,
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Gradient banner (year theme + text-only announcements)
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
@@ -715,6 +767,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _CommunityItem('Members', Icons.people, AppColors.purple, '/members'),
       _CommunityItem('Messages', Icons.message, AppColors.darkNavy, '/messages'),
       _CommunityItem('Quiz', Icons.quiz, AppColors.warning, '/quiz'),
+      _CommunityItem('Bulletin', Icons.receipt_long, AppColors.blue, '/bulletin'),
+      _CommunityItem('Notes', Icons.note_alt, const Color(0xFF5D4037), '/notes'),
+      _CommunityItem('AI Tools', Icons.rocket_launch, const Color(0xFFFF6B6B), '/ai_tools'),
+      _CommunityItem('Volunteer', Icons.volunteer_activism, AppColors.info, '/volunteer'),
     ];
     return Card(
       elevation: isDark ? 0 : 2,
@@ -736,32 +792,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: items.map((item) => Expanded(
-                child: InkWell(
-                  onTap: () => Navigator.pushNamed(context, item.route),
-                  borderRadius: BorderRadius.circular(10),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: item.color.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(item.icon, color: item.color, size: 24),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(item.label,
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-                            textAlign: TextAlign.center),
-                      ],
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 4,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 6,
+              childAspectRatio: 0.9,
+              children: items.map((item) => InkWell(
+                onTap: () => Navigator.pushNamed(context, item.route),
+                borderRadius: BorderRadius.circular(10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: item.color.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(item.icon, color: item.color, size: 22),
                     ),
-                  ),
+                    const SizedBox(height: 5),
+                    Text(item.label,
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                  ],
                 ),
               )).toList(),
             ),
@@ -1353,11 +1412,13 @@ class _BannerSlide {
   final String subtitle;
   final Color color1;
   final Color color2;
+  final String imageUrl;
   const _BannerSlide({
     required this.type,
     required this.title,
     required this.subtitle,
     required this.color1,
     required this.color2,
+    this.imageUrl = '',
   });
 }

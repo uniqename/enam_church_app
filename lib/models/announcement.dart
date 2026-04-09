@@ -8,6 +8,7 @@ class Announcement {
   final String department;
   final String status;
   final String audience; // 'all', 'adults'
+  final String mediaUrl; // image, mp3, or mp4 hosted on Supabase Storage
 
   const Announcement({
     required this.id,
@@ -19,6 +20,7 @@ class Announcement {
     required this.department,
     required this.status,
     this.audience = 'all',
+    this.mediaUrl = '',
   });
 
   factory Announcement.fromSupabase(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class Announcement {
       department: json['department'] as String? ?? 'General',
       status: json['status'] as String? ?? 'Published',
       audience: json['audience'] as String? ?? 'all',
+      mediaUrl: json['media_url'] as String? ?? '',
     );
   }
 
@@ -46,6 +49,28 @@ class Announcement {
       'department': department,
       'status': status,
       'audience': audience,
+      'media_url': mediaUrl,
     };
   }
+
+  Announcement copyWith({
+    String? title,
+    String? content,
+    String? priority,
+    String? department,
+    String? status,
+    String? audience,
+    String? mediaUrl,
+  }) => Announcement(
+    id: id,
+    title: title ?? this.title,
+    content: content ?? this.content,
+    priority: priority ?? this.priority,
+    author: author,
+    date: date,
+    department: department ?? this.department,
+    status: status ?? this.status,
+    audience: audience ?? this.audience,
+    mediaUrl: mediaUrl ?? this.mediaUrl,
+  );
 }
