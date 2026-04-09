@@ -1,8 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 import '../../models/event.dart';
 import '../../services/event_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/supabase_service.dart';
 import '../../utils/colors.dart';
 
 class EventsScreen extends StatefulWidget {
@@ -76,11 +80,36 @@ class _EventsScreenState extends State<EventsScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        clipBehavior: Clip.antiAlias,
                         child: InkWell(
                           onTap: () => _showEventDetails(event),
                           borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Cover image
+                              if (event.coverUrl.isNotEmpty)
+                                SizedBox(
+                                  height: 80,
+                                  width: double.infinity,
+                                  child: Image.network(
+                                    event.coverUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: AppColors.purple.withValues(alpha: 0.12),
+                                      child: const Icon(Icons.event, color: AppColors.purple),
+                                    ),
+                                  ),
+                                )
+                              else
+                                Container(
+                                  height: 52,
+                                  color: AppColors.purple.withValues(alpha: 0.08),
+                                  child: const Center(child: Icon(Icons.event, color: AppColors.purple, size: 26)),
+                                ),
+                              Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.all(10),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -116,11 +145,11 @@ class _EventsScreenState extends State<EventsScreen> {
                                       ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 8),
                                 Text(
                                   event.title,
                                   style: const TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                   ),
                                   maxLines: 2,
@@ -182,10 +211,13 @@ class _EventsScreenState extends State<EventsScreen> {
                                   ],
                                 ),
                               ],
-                            ),
-                          ),
-                        ),
-                      );
+                            ),   // Column
+                          ),     // Padding
+                          ),     // Expanded
+                        ],       // outer Column children
+                        ),       // outer Column
+                      ),         // InkWell
+                    );           // Card
                     },
                   ),
                 ),
@@ -266,12 +298,19 @@ class _EventsScreenState extends State<EventsScreen> {
     );
   }
 
+  Future<String?> _uploadCover(File file) async {
+    final ext = file.path.split('.').last.toLowerCase();
+    final path = 'events/${const Uuid().v4()}.$ext';
+    return SupabaseService().uploadImage('event-media', path, file, contentType: 'image/jpeg');
+  }
+
   void _showAddEventDialog() {
     final titleController = TextEditingController();
     final locationController = TextEditingController();
     final timeController = TextEditingController();
     DateTime selectedDate = DateTime.now();
     String selectedType = 'Service';
+    File? coverFile;
 
     showDialog(
       context: context,
@@ -282,6 +321,33 @@ class _EventsScreenState extends State<EventsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Cover photo picker
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await ImagePicker().pickImage(
+                        source: ImageSource.gallery, imageQuality: 85);
+                    if (picked != null) setState(() => coverFile = File(picked.path));
+                  },
+                  child: Container(
+                    height: 90,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.purple.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.purple.withValues(alpha: 0.3)),
+                    ),
+                    child: coverFile != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(coverFile!, fit: BoxFit.cover, width: double.infinity))
+                        : const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            Icon(Icons.add_photo_alternate, color: AppColors.purple, size: 28),
+                            SizedBox(height: 4),
+                            Text('Add Cover Photo', style: TextStyle(fontSize: 12, color: AppColors.purple)),
+                          ]),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 TextField(
                   controller: titleController,
                   decoration: const InputDecoration(
@@ -362,6 +428,15 @@ class _EventsScreenState extends State<EventsScreen> {
                   return;
                 }
 
+                final navigator = Navigator.of(ctx);
+                final messenger = ScaffoldMessenger.of(context);
+                String finalCoverUrl = '';
+                if (coverFile != null) {
+                  messenger.showSnackBar(const SnackBar(content: Text('Uploading cover…'), duration: Duration(seconds: 30)));
+                  finalCoverUrl = await _uploadCover(coverFile!) ?? '';
+                  messenger.hideCurrentSnackBar();
+                }
+
                 final newEvent = Event(
                   id: '',
                   title: titleController.text,
@@ -370,10 +445,9 @@ class _EventsScreenState extends State<EventsScreen> {
                   location: locationController.text,
                   type: selectedType,
                   status: 'Upcoming',
+                  coverUrl: finalCoverUrl,
                 );
 
-                final navigator = Navigator.of(ctx);
-                final messenger = ScaffoldMessenger.of(context);
                 try {
                   await _eventService.addEvent(newEvent);
                   navigator.pop();
@@ -409,6 +483,8 @@ class _EventsScreenState extends State<EventsScreen> {
     DateTime selectedDate = event.date;
     String selectedType = event.type;
     String selectedStatus = event.status;
+    File? coverFile;
+    String coverUrl = event.coverUrl;
 
     const validTypes = [
       'Service',
@@ -430,6 +506,37 @@ class _EventsScreenState extends State<EventsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Cover photo picker
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await ImagePicker().pickImage(
+                        source: ImageSource.gallery, imageQuality: 85);
+                    if (picked != null) setDialogState(() => coverFile = File(picked.path));
+                  },
+                  child: Container(
+                    height: 90,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.purple.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.purple.withValues(alpha: 0.3)),
+                    ),
+                    child: coverFile != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(coverFile!, fit: BoxFit.cover, width: double.infinity))
+                        : coverUrl.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(coverUrl, fit: BoxFit.cover, width: double.infinity))
+                            : const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                Icon(Icons.add_photo_alternate, color: AppColors.purple, size: 28),
+                                SizedBox(height: 4),
+                                Text('Add Cover Photo', style: TextStyle(fontSize: 12, color: AppColors.purple)),
+                              ]),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 TextField(
                   controller: titleController,
                   decoration: const InputDecoration(
@@ -520,6 +627,14 @@ class _EventsScreenState extends State<EventsScreen> {
             ElevatedButton(
               onPressed: () async {
                 if (titleController.text.trim().isEmpty) return;
+                final navigator = Navigator.of(ctx);
+                final messenger = ScaffoldMessenger.of(context);
+                String finalCoverUrl = coverUrl;
+                if (coverFile != null) {
+                  messenger.showSnackBar(const SnackBar(content: Text('Uploading cover…'), duration: Duration(seconds: 30)));
+                  finalCoverUrl = await _uploadCover(coverFile!) ?? coverUrl;
+                  messenger.hideCurrentSnackBar();
+                }
                 final updated = event.copyWith(
                   title: titleController.text.trim(),
                   location: locationController.text.trim(),
@@ -527,9 +642,8 @@ class _EventsScreenState extends State<EventsScreen> {
                   date: selectedDate,
                   type: selectedType,
                   status: selectedStatus,
+                  coverUrl: finalCoverUrl,
                 );
-                final navigator = Navigator.of(ctx);
-                final messenger = ScaffoldMessenger.of(context);
                 try {
                   await _eventService.updateEvent(updated);
                   navigator.pop();

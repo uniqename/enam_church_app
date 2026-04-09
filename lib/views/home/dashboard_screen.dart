@@ -9,8 +9,10 @@ import '../../services/event_service.dart';
 import '../../services/finance_service.dart';
 import '../../services/sermon_service.dart';
 import '../../services/announcement_service.dart';
+import '../../services/banner_service.dart';
 import '../../services/supabase_service.dart';
 import '../../models/announcement.dart';
+import '../../models/banner_slide.dart';
 import '../../utils/colors.dart';
 import '../admin/admin_video_upload_screen.dart';
 
@@ -28,6 +30,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _financeService = FinanceService();
   final _sermonService = SermonService();
   final _announcementService = AnnouncementService();
+  final _bannerService = BannerService();
 
   int _selectedIndex = 0;
   String? _userRole;
@@ -43,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Sliding banner
   List<Announcement> _bannerAnnouncements = [];
+  List<_BannerSlide> _dedicatedBannerSlides = [];
   final _bannerController = PageController();
   int _bannerPage = 0;
   Timer? _bannerTimer;
@@ -69,11 +73,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final events = await _eventService.getAllEvents();
         final sermons = await _sermonService.getAllSermons();
         final financeTotal = await _financeService.getTotal();
-        // Load announcements for banner (active ones only)
+        // Load banners: dedicated banners table first, fallback to announcements
         try {
-          final all = await _announcementService.getAllAnnouncements();
-          final active = all.where((a) => a.status == 'Active' || a.status == 'active').toList();
-          setState(() => _bannerAnnouncements = active.take(5).toList());
+          final dedicated = await _bannerService.getActiveBanners();
+          if (dedicated.isNotEmpty) {
+            // Build banner slides from dedicated banners table
+            final slides = dedicated.map((b) => _BannerSlide(
+              type: _BannerType.announcement,
+              title: b.title,
+              subtitle: b.subtitle,
+              color1: AppColors.purple,
+              color2: AppColors.blue,
+              imageUrl: b.mediaType == 'image' ? b.mediaUrl : '',
+              linkRoute: b.linkRoute,
+            )).toList();
+            setState(() => _dedicatedBannerSlides = slides);
+          } else {
+            // Fallback: use active announcements
+            final all = await _announcementService.getAllAnnouncements();
+            final active = all.where((a) => a.status == 'Active' || a.status == 'active').toList();
+            setState(() => _bannerAnnouncements = active.take(5).toList());
+          }
           _startBannerTimer();
         } catch (_) {}
         int pendingCount = 0;
@@ -594,26 +614,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ── Sliding banner ───────────────────────────────────────────────────────────
   Widget _buildSlidingBanner() {
-    // Slides: year theme card always first, then announcements
+    // Year theme always first
+    const yearTheme = _BannerSlide(
+      type: _BannerType.yearTheme,
+      title: 'Year Theme 2026',
+      subtitle: '"Possessing Our Possessions" — Obadiah 1:17',
+      color1: Color(0xFF4A0080),
+      color2: Color(0xFF7B1FA2),
+    );
+
+    // Use dedicated banners if loaded, else fall back to announcements
     final slides = <_BannerSlide>[
-      const _BannerSlide(
-        type: _BannerType.yearTheme,
-        title: 'Year Theme 2026',
-        subtitle: '"Possessing Our Possessions" — Obadiah 1:17',
-        color1: Color(0xFF4A0080),
-        color2: Color(0xFF7B1FA2),
-      ),
-      ..._bannerAnnouncements.map((a) => _BannerSlide(
-            type: _BannerType.announcement,
-            title: a.title,
-            subtitle: a.content.isNotEmpty ? a.content : a.department,
-            color1: a.priority == 'High' ? const Color(0xFFB71C1C) : AppColors.purple,
-            color2: a.priority == 'High' ? const Color(0xFFD32F2F) : AppColors.blue,
-            imageUrl: RegExp(r'\.(jpg|jpeg|png|gif|webp)(\?|$)', caseSensitive: false)
-                    .hasMatch(a.mediaUrl)
-                ? a.mediaUrl
-                : '',
-          )),
+      yearTheme,
+      if (_dedicatedBannerSlides.isNotEmpty)
+        ..._dedicatedBannerSlides
+      else
+        ..._bannerAnnouncements.map((a) => _BannerSlide(
+              type: _BannerType.announcement,
+              title: a.title,
+              subtitle: a.content.isNotEmpty ? a.content : a.department,
+              color1: a.priority == 'High' ? const Color(0xFFB71C1C) : AppColors.purple,
+              color2: a.priority == 'High' ? const Color(0xFFD32F2F) : AppColors.blue,
+              imageUrl: RegExp(r'\.(jpg|jpeg|png|gif|webp)(\?|$)', caseSensitive: false)
+                      .hasMatch(a.mediaUrl)
+                  ? a.mediaUrl
+                  : '',
+            )),
     ];
 
     if (slides.length == 1) {
@@ -629,7 +655,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             controller: _bannerController,
             itemCount: slides.length,
             onPageChanged: (i) => setState(() => _bannerPage = i),
-            itemBuilder: (_, i) => _buildBannerCard(slides[i]),
+            itemBuilder: (_, i) {
+              final slide = slides[i];
+              return GestureDetector(
+                onTap: slide.linkRoute.isNotEmpty
+                    ? () => Navigator.pushNamed(context, slide.linkRoute)
+                    : null,
+                child: _buildBannerCard(slide),
+              );
+            },
           ),
         ),
         const SizedBox(height: 8),
@@ -1321,6 +1355,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Navigator.pushNamed(context, '/admin/bible_stories');
                         },
                       ),
+                    if (_userRole == 'admin' || _userRole == 'pastor')
+                      _buildMenuItem(
+                        'Manage Banners',
+                        Icons.view_carousel,
+                        () {
+                          Navigator.pop(context);
+                          Navigator.pushNamed(context, '/admin/banners');
+                        },
+                      ),
                     const Divider(height: 32),
                     _buildMenuItem(
                       'Privacy Policy',
@@ -1413,6 +1456,7 @@ class _BannerSlide {
   final Color color1;
   final Color color2;
   final String imageUrl;
+  final String linkRoute;
   const _BannerSlide({
     required this.type,
     required this.title,
@@ -1420,5 +1464,6 @@ class _BannerSlide {
     required this.color1,
     required this.color2,
     this.imageUrl = '',
+    this.linkRoute = '',
   });
 }

@@ -43,6 +43,7 @@ import 'views/resources/bulletin_screen.dart';
 import 'views/devotionals/devotionals_screen.dart';
 import 'views/volunteer/volunteer_screen.dart';
 import 'views/staff/staff_screen.dart';
+import 'views/banners/banners_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -116,6 +117,7 @@ class FaithKlinikApp extends StatelessWidget {
             '/volunteer': (context) => const VolunteerScreen(),
             '/groups': (context) => const ChurchGroupsScreen(),
             '/staff': (context) => const StaffScreen(),
+            '/admin/banners': (context) => const BannersScreen(),
           },
         );
       },

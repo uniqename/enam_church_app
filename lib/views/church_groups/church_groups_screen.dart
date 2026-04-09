@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 import '../../models/org_group.dart';
+import '../../services/supabase_service.dart';
 import '../../models/dues_entry.dart';
 import '../../models/group_finance.dart';
 import '../../models/user.dart';
@@ -157,6 +161,12 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
     );
   }
 
+  Future<String?> _uploadGroupCover(File file) async {
+    final ext = file.path.split('.').last.toLowerCase();
+    final path = 'groups/${const Uuid().v4()}.$ext';
+    return SupabaseService().uploadImage('group-media', path, file, contentType: 'image/jpeg');
+  }
+
   void _showAddGroupDialog() {
     _showGroupFormDialog(null);
   }
@@ -176,6 +186,8 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
     final bylawsC = TextEditingController(text: existing?.bylaws);
     final duesC = TextEditingController(text: existing?.dues?.toString() ?? '');
     String duesPeriod = existing?.duesPeriod ?? 'monthly';
+    File? coverFile;
+    String coverUrl = existing?.coverUrl ?? '';
 
     showDialog(
       context: context,
@@ -188,6 +200,37 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
           child: StatefulBuilder(builder: (ctx2, setSt) {
             return SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
+                // Cover photo picker
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await ImagePicker().pickImage(
+                        source: ImageSource.gallery, imageQuality: 85);
+                    if (picked != null) setSt(() => coverFile = File(picked.path));
+                  },
+                  child: Container(
+                    height: 90,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.darkSurface,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.darkBorder),
+                    ),
+                    child: coverFile != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(coverFile!, fit: BoxFit.cover, width: double.infinity))
+                        : coverUrl.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(coverUrl, fit: BoxFit.cover, width: double.infinity))
+                            : const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                Icon(Icons.add_photo_alternate, color: AppColors.accentPurple, size: 28),
+                                SizedBox(height: 4),
+                                Text('Add Cover Photo', style: TextStyle(fontSize: 12, color: AppColors.accentPurple)),
+                              ]),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 _DarkField(controller: nameC, label: 'Group Name *'),
                 const SizedBox(height: 10),
                 _DarkField(controller: descC, label: 'Description', maxLines: 3),
@@ -236,6 +279,16 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
             child: Text(existing == null ? 'Add' : 'Save'),
             onPressed: () async {
               if (nameC.text.trim().isEmpty) return;
+              String finalCoverUrl = coverUrl;
+              if (coverFile != null) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Uploading cover…'),
+                      duration: Duration(seconds: 30)));
+                }
+                finalCoverUrl = await _uploadGroupCover(coverFile!) ?? coverUrl;
+                if (mounted) ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              }
               final data = OrgGroup(
                 id: existing?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
                 name: nameC.text.trim(),
@@ -251,6 +304,7 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
                 bylaws: bylawsC.text.trim(),
                 dues: double.tryParse(duesC.text) ?? 0,
                 duesPeriod: duesPeriod,
+                coverUrl: finalCoverUrl,
               );
               if (existing == null) {
                 await _service.addGroup(data);
@@ -326,18 +380,34 @@ class _GroupCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppColors.darkSurface2,
+            if (group.coverUrl.isNotEmpty)
+              ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.darkBorder),
+                child: Image.network(
+                  group.coverUrl,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 48, height: 48,
+                    decoration: BoxDecoration(color: AppColors.darkSurface2, borderRadius: BorderRadius.circular(12)),
+                    child: Center(child: Text(group.imageEmoji, style: const TextStyle(fontSize: 22))),
+                  ),
+                ),
+              )
+            else
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.darkSurface2,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.darkBorder),
+                ),
+                child: Center(
+                    child: Text(group.imageEmoji,
+                        style: const TextStyle(fontSize: 22))),
               ),
-              child: Center(
-                  child: Text(group.imageEmoji,
-                      style: const TextStyle(fontSize: 22))),
-            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 import '../../models/quiz_model.dart';
 import '../../services/quiz_service.dart';
+import '../../services/supabase_service.dart';
 import '../../utils/colors.dart';
 
 class QuizBuilderScreen extends StatefulWidget {
@@ -97,6 +101,18 @@ class _QuizBuilderScreenState extends State<QuizBuilderScreen> {
 
     setState(() => _isSaving = true);
     try {
+      // Upload any pending question images
+      for (final q in _questions) {
+        if (q.imageFile != null) {
+          final ext = q.imageFile!.path.split('.').last.toLowerCase();
+          final path = 'quiz/${const Uuid().v4()}.$ext';
+          final url = await SupabaseService().uploadImage(
+              'quiz-media', path, q.imageFile!, contentType: 'image/jpeg');
+          if (url != null) q.imageUrlController.text = url;
+          q.imageFile = null;
+        }
+      }
+
       final questions = _questions
           .map((q) => QuizQuestion(
                 question: q.questionController.text.trim(),
@@ -315,11 +331,45 @@ class _QuizBuilderScreenState extends State<QuizBuilderScreen> {
               decoration: _inputDecor('Question text', Icons.help_outline),
             ),
             const SizedBox(height: 8),
-            TextField(
-              controller: q.imageUrlController,
-              decoration: _inputDecor(
-                  'Image URL (optional)', Icons.image_outlined),
-            ),
+            // Image picker row
+            StatefulBuilder(builder: (_, setRow) => Row(
+              children: [
+                if (q.imageFile != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(q.imageFile!, width: 52, height: 52, fit: BoxFit.cover),
+                  )
+                else if (q.imageUrlController.text.isNotEmpty)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(q.imageUrlController.text, width: 52, height: 52, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 52, color: Colors.grey)),
+                  )
+                else
+                  Container(
+                    width: 52, height: 52,
+                    decoration: BoxDecoration(color: AppColors.purple.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.image_outlined, color: AppColors.purple),
+                  ),
+                const SizedBox(width: 10),
+                Expanded(child: OutlinedButton.icon(
+                  icon: const Icon(Icons.add_photo_alternate, size: 18),
+                  label: const Text('Pick Image', style: TextStyle(fontSize: 13)),
+                  style: OutlinedButton.styleFrom(foregroundColor: AppColors.purple, side: const BorderSide(color: AppColors.purple)),
+                  onPressed: () async {
+                    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+                    if (picked != null) {
+                      setState(() => q.imageFile = File(picked.path));
+                    }
+                  },
+                )),
+                if (q.imageFile != null || q.imageUrlController.text.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+                    onPressed: () => setState(() { q.imageFile = null; q.imageUrlController.text = ''; }),
+                  ),
+              ],
+            )),
             const SizedBox(height: 12),
             const Text('Answers — tap the circle to mark correct:',
                 style: TextStyle(fontSize: 12, color: Colors.grey)),
@@ -418,6 +468,7 @@ class _EditableQuestion {
   final List<TextEditingController> optionControllers;
   int correctIndex;
   int timeLimit;
+  File? imageFile; // pending local file before upload
 
   _EditableQuestion()
       : questionController = TextEditingController(),

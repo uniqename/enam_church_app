@@ -14,6 +14,7 @@ class OrgGroup {
   final String duesPeriod; // monthly / quarterly / annual
   final String bylaws;
   final String imageEmoji;
+  final String coverUrl; // photo uploaded to Supabase Storage
 
   const OrgGroup({
     required this.id,
@@ -31,6 +32,7 @@ class OrgGroup {
     this.duesPeriod = 'monthly',
     this.bylaws = '',
     this.imageEmoji = '🙏',
+    this.coverUrl = '',
   });
 
   /// Convenience getter — returns the primary leader name
@@ -66,6 +68,7 @@ class OrgGroup {
       duesPeriod: json['dues_period'] as String? ?? 'monthly',
       bylaws: json['bylaws'] as String? ?? '',
       imageEmoji: json['image_emoji'] as String? ?? '🙏',
+      coverUrl: json['cover_url'] as String? ?? '',
     );
   }
 
@@ -85,6 +88,7 @@ class OrgGroup {
       'dues_period': duesPeriod,
       'bylaws': bylaws,
       'image_emoji': imageEmoji,
+      'cover_url': coverUrl,
       };
 
   OrgGroup copyWith({
@@ -102,6 +106,7 @@ class OrgGroup {
     String? duesPeriod,
     String? bylaws,
     String? imageEmoji,
+    String? coverUrl,
   }) =>
       OrgGroup(
         id: id,
@@ -119,5 +124,6 @@ class OrgGroup {
         duesPeriod: duesPeriod ?? this.duesPeriod,
         bylaws: bylaws ?? this.bylaws,
         imageEmoji: imageEmoji ?? this.imageEmoji,
+        coverUrl: coverUrl ?? this.coverUrl,
       );
 }
