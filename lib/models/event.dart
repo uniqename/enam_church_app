@@ -6,7 +6,8 @@ class Event {
   final String location;
   final String type;
   final String status;
-  final String coverUrl; // photo uploaded to Supabase Storage
+  final String coverUrl;    // photo uploaded to Supabase Storage
+  final String streamingUrl; // YouTube / Facebook / any stream link for this event
 
   const Event({
     required this.id,
@@ -17,6 +18,7 @@ class Event {
     required this.type,
     required this.status,
     this.coverUrl = '',
+    this.streamingUrl = '',
   });
 
   factory Event.fromSupabase(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class Event {
       type: json['type'] as String? ?? 'General',
       status: json['status'] as String? ?? 'Upcoming',
       coverUrl: json['cover_url'] as String? ?? '',
+      streamingUrl: json['streaming_url'] as String? ?? '',
     );
   }
 
@@ -42,6 +45,7 @@ class Event {
       'type': type,
       'status': status,
       'cover_url': coverUrl,
+      'streaming_url': streamingUrl,
     };
   }
 
@@ -53,6 +57,7 @@ class Event {
     String? type,
     String? status,
     String? coverUrl,
+    String? streamingUrl,
   }) {
     return Event(
       id: id,
@@ -63,6 +68,7 @@ class Event {
       type: type ?? this.type,
       status: status ?? this.status,
       coverUrl: coverUrl ?? this.coverUrl,
+      streamingUrl: streamingUrl ?? this.streamingUrl,
     );
   }
 }

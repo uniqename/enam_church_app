@@ -23,21 +23,29 @@ class _ChildGamesScreenState extends State<ChildGamesScreen> {
     _loadData();
   }
 
+  // Built-in games shown when DB is empty
+  static const _builtInGames = [
+    ChildGame(id: 'creation', title: 'Creation Story', description: 'Learn about how God made the world in 6 days!', difficulty: 'Easy', completed: false),
+    ChildGame(id: 'noah', title: 'Noah\'s Ark', description: 'Follow Noah\'s great adventure with the animals!', difficulty: 'Easy', completed: false),
+    ChildGame(id: 'david', title: 'David & Goliath', description: 'How did young David defeat the giant warrior?', difficulty: 'Medium', completed: false),
+    ChildGame(id: 'moses', title: 'Moses & Exodus', description: 'Join Moses as he leads God\'s people to freedom!', difficulty: 'Medium', completed: false),
+    ChildGame(id: 'jesus', title: 'Life of Jesus', description: 'Learn about the miracles and teachings of Jesus!', difficulty: 'Easy', completed: false),
+    ChildGame(id: 'esther', title: 'Queen Esther', description: 'Discover how brave Esther saved her people!', difficulty: 'Hard', completed: false),
+  ];
+
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
       final games = await _contentService.getAllGames();
       setState(() {
-        _games = games;
+        _games = games.isNotEmpty ? games : _builtInGames;
         _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load games: $e')),
-        );
-      }
+      setState(() {
+        _games = _builtInGames;
+        _isLoading = false;
+      });
     }
   }
 

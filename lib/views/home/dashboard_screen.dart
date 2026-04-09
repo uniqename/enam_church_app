@@ -131,12 +131,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _startBannerTimer() {
     _bannerTimer?.cancel();
-    // year theme + up to 5 announcements = at most 6 slides
-    final totalSlides = 1 + _bannerAnnouncements.length;
+    final extraSlides = _dedicatedBannerSlides.isNotEmpty
+        ? _dedicatedBannerSlides.length
+        : _bannerAnnouncements.length;
+    final totalSlides = 1 + extraSlides;
     if (totalSlides < 2) return;
     _bannerTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (!mounted || !_bannerController.hasClients) return;
-      final next = (_bannerPage + 1) % totalSlides;
+      final extra = _dedicatedBannerSlides.isNotEmpty
+          ? _dedicatedBannerSlides.length
+          : _bannerAnnouncements.length;
+      final count = 1 + extra;
+      final next = (_bannerPage + 1) % count;
       _bannerController.animateToPage(next,
           duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
     });

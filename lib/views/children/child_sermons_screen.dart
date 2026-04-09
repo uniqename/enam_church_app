@@ -27,6 +27,15 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
     _loadData();
   }
 
+  // Built-in videos shown when DB returns nothing
+  static final _builtInVideos = [
+    ChildSermon(id: 'bi_1', title: 'The Creation Story for Kids', speaker: 'Kids Bible', date: DateTime(2024, 1, 1), duration: '5 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=K1gOBYFUPUA'),
+    ChildSermon(id: 'bi_2', title: 'Noah\'s Ark for Children', speaker: 'Kids Bible', date: DateTime(2024, 1, 2), duration: '6 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=9oQEaJFfTK8'),
+    ChildSermon(id: 'bi_3', title: 'David and Goliath', speaker: 'Kids Bible', date: DateTime(2024, 1, 3), duration: '7 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=lCqNoRE9YuE'),
+    ChildSermon(id: 'bi_4', title: 'Jesus Loves Me - Animated', speaker: 'Kids Worship', date: DateTime(2024, 1, 4), duration: '3 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=bMhReGilnIk'),
+    ChildSermon(id: 'bi_5', title: 'The Prodigal Son', speaker: 'Kids Bible', date: DateTime(2024, 1, 5), duration: '5 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=F_iXMFCnaEs'),
+  ];
+
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
@@ -40,7 +49,8 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
               ))
           .toList();
       final childIds = childSermons.map((s) => s.id).toSet();
-      final merged = [...childSermons, ...sharedSermons.where((s) => !childIds.contains(s.id))];
+      var merged = [...childSermons, ...sharedSermons.where((s) => !childIds.contains(s.id))];
+      if (merged.isEmpty) merged = _builtInVideos;
       final role = await _authService.getUserRole();
       setState(() {
         _sermons = merged;
@@ -48,12 +58,10 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load sermons: $e')),
-        );
-      }
+      setState(() {
+        _sermons = _builtInVideos;
+        _isLoading = false;
+      });
     }
   }
 

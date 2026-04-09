@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/event.dart';
 import '../../services/event_service.dart';
@@ -264,6 +265,25 @@ class _EventsScreenState extends State<EventsScreen> {
             const SizedBox(height: 8),
             _detailRow(Icons.circle,
                 event.status, color: AppColors.success),
+            if (event.streamingUrl.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.live_tv, size: 18),
+                  label: const Text('Watch Stream'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: () async {
+                    final uri = Uri.tryParse(event.streamingUrl);
+                    if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  },
+                ),
+              ),
+            ],
           ],
         ),
         actions: [
@@ -308,6 +328,7 @@ class _EventsScreenState extends State<EventsScreen> {
     final titleController = TextEditingController();
     final locationController = TextEditingController();
     final timeController = TextEditingController();
+    final streamingController = TextEditingController();
     DateTime selectedDate = DateTime.now();
     String selectedType = 'Service';
     File? coverFile;
@@ -410,6 +431,16 @@ class _EventsScreenState extends State<EventsScreen> {
                     setState(() => selectedType = value ?? 'Service');
                   },
                 ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: streamingController,
+                  decoration: const InputDecoration(
+                    labelText: 'Streaming URL (optional)',
+                    hintText: 'YouTube, Facebook Live link…',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.live_tv),
+                  ),
+                ),
               ],
             ),
           ),
@@ -446,6 +477,7 @@ class _EventsScreenState extends State<EventsScreen> {
                   type: selectedType,
                   status: 'Upcoming',
                   coverUrl: finalCoverUrl,
+                  streamingUrl: streamingController.text.trim(),
                 );
 
                 try {
@@ -480,6 +512,7 @@ class _EventsScreenState extends State<EventsScreen> {
     final locationController =
         TextEditingController(text: event.location);
     final timeController = TextEditingController(text: event.time);
+    final streamingController = TextEditingController(text: event.streamingUrl);
     DateTime selectedDate = event.date;
     String selectedType = event.type;
     String selectedStatus = event.status;
@@ -608,6 +641,16 @@ class _EventsScreenState extends State<EventsScreen> {
                   onChanged: (v) =>
                       setDialogState(() => selectedStatus = v ?? 'Upcoming'),
                 ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: streamingController,
+                  decoration: const InputDecoration(
+                    labelText: 'Streaming URL (optional)',
+                    hintText: 'YouTube, Facebook Live link…',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.live_tv),
+                  ),
+                ),
               ],
             ),
           ),
@@ -643,6 +686,7 @@ class _EventsScreenState extends State<EventsScreen> {
                   type: selectedType,
                   status: selectedStatus,
                   coverUrl: finalCoverUrl,
+                  streamingUrl: streamingController.text.trim(),
                 );
                 try {
                   await _eventService.updateEvent(updated);
