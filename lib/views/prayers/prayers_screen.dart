@@ -71,13 +71,18 @@ class _PrayersScreenState extends State<PrayersScreen>
         myPrayers = await _prayerService.getMyPrayers(userId);
       }
 
-      if (isPrayerWarrior) {
+      if (isAdmin) {
+        // Pastors/admins see ALL prayers including private ones
+        allPrayers = await _prayerService.getAllPrayers();
+      } else if (isPrayerWarrior) {
+        // Prayer warriors see public prayers only
         allPrayers = await _prayerService.getAllPrayersForPrayerWarriors();
       }
 
       final testimonies = await _prayerService.getTestimonies();
 
-      final tabCount = isPrayerWarrior ? 3 : 2;
+      final showAllTab = isAdmin || isPrayerWarrior;
+      final tabCount = showAllTab ? 3 : 2;
       if (_tabController.length != tabCount) {
         _tabController.dispose();
         _tabController = TabController(length: tabCount, vsync: this);
@@ -116,9 +121,11 @@ class _PrayersScreenState extends State<PrayersScreen>
       );
     }
 
+    final showAllTab = _isAdmin || _isPrayerWarrior;
     final tabs = [
       const Tab(text: 'My Prayers'),
-      if (_isPrayerWarrior) const Tab(text: 'All Prayers'),
+      if (showAllTab)
+        Tab(text: _isAdmin ? 'All Prayers' : 'Prayer Warriors'),
       const Tab(text: 'Testimonies'),
     ];
 
@@ -139,7 +146,7 @@ class _PrayersScreenState extends State<PrayersScreen>
         controller: _tabController,
         children: [
           _buildMyPrayersTab(),
-          if (_isPrayerWarrior) _buildAllPrayersTab(),
+          if (_isAdmin || _isPrayerWarrior) _buildAllPrayersTab(),
           _buildTestimoniesTab(),
         ],
       ),
@@ -181,7 +188,9 @@ class _PrayersScreenState extends State<PrayersScreen>
               const Icon(Icons.shield, color: AppColors.purple, size: 18),
               const SizedBox(width: 8),
               Text(
-                'Prayer Warriors View — Interceding for all members',
+                _isAdmin
+                    ? 'Pastor View — All prayer requests (including private)'
+                    : 'Prayer Warriors View — Interceding for all members',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -570,7 +579,7 @@ class _PrayersScreenState extends State<PrayersScreen>
     final titleController = TextEditingController();
     final requestController = TextEditingController();
     String selectedCategory = 'General';
-    bool isPrivate = false;
+    bool isPrivate = true; // private by default — user must opt in to share
 
     showDialog(
       context: context,
@@ -612,11 +621,15 @@ class _PrayersScreenState extends State<PrayersScreen>
                 ),
                 const SizedBox(height: 4),
                 CheckboxListTile(
-                  title: const Text('Private (only visible to you)'),
-                  value: isPrivate,
+                  title: const Text('Share with congregation'),
+                  subtitle: const Text(
+                    'Makes this prayer visible to all members.\nPastors can always see all prayers.',
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                  value: !isPrivate,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (v) =>
-                      setDialogState(() => isPrivate = v ?? false),
+                      setDialogState(() => isPrivate = !(v ?? false)),
                 ),
               ],
             ),

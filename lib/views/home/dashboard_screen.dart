@@ -139,23 +139,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   label: 'Videos',
                 ),
               ]
-            : const [
-                BottomNavigationBarItem(
+            : [
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.home),
                   label: 'Home',
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.people),
-                  label: 'Members',
-                ),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.event),
                   label: 'Events',
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.monetization_on),
-                  label: 'Finance',
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.live_tv),
+                  label: 'Live',
                 ),
+                if (_userRole == 'admin' || _userRole == 'pastor' || _userRole == 'treasurer')
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.monetization_on),
+                    label: 'Finance',
+                  )
+                else
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.mic),
+                    label: 'Sermons',
+                  ),
               ],
       ),
     );
@@ -327,17 +333,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildAdultDashboard() {
     if (_selectedIndex == 1) {
-      Navigator.pushNamed(context, '/members').then((_) {
-        setState(() => _selectedIndex = 0);
-      });
-      return const Center(child: CircularProgressIndicator());
-    } else if (_selectedIndex == 2) {
       Navigator.pushNamed(context, '/events').then((_) {
         setState(() => _selectedIndex = 0);
       });
       return const Center(child: CircularProgressIndicator());
+    } else if (_selectedIndex == 2) {
+      Navigator.pushNamed(context, '/streaming').then((_) {
+        setState(() => _selectedIndex = 0);
+      });
+      return const Center(child: CircularProgressIndicator());
     } else if (_selectedIndex == 3) {
-      Navigator.pushNamed(context, '/finances').then((_) {
+      final isFinanceRole = _userRole == 'admin' || _userRole == 'pastor' || _userRole == 'treasurer';
+      Navigator.pushNamed(context, isFinanceRole ? '/finances' : '/sermons').then((_) {
         setState(() => _selectedIndex = 0);
       });
       return const Center(child: CircularProgressIndicator());
@@ -503,13 +510,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 16),
             ],
             const Text(
-              'Quick Actions',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              'Quick Access',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
+            // ── Core 6 actions ──────────────────────────────────────────────
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -518,81 +523,153 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisSpacing: 12,
               childAspectRatio: 1.0,
               children: [
-                _buildQuickActionCard(
-                  'Streaming',
-                  Icons.live_tv,
-                  AppColors.error,
-                  () => Navigator.pushNamed(context, '/streaming'),
-                ),
-                _buildQuickActionCard(
-                  'Sermons',
-                  Icons.mic,
-                  AppColors.purple,
-                  () => Navigator.pushNamed(context, '/sermons'),
-                ),
-                _buildQuickActionCard(
-                  'Devotionals',
-                  Icons.auto_stories,
-                  AppColors.accentBlue,
-                  () => Navigator.pushNamed(context, '/devotionals'),
-                ),
-                _buildQuickActionCard(
-                  'Prayers',
-                  Icons.favorite,
-                  AppColors.brown,
-                  () => Navigator.pushNamed(context, '/prayers'),
-                ),
-                _buildQuickActionCard(
-                  'Giving',
-                  Icons.card_giftcard,
-                  AppColors.success,
-                  () => Navigator.pushNamed(context, '/giving'),
-                ),
-                _buildQuickActionCard(
-                  'Groups',
-                  Icons.groups,
-                  AppColors.blue,
-                  () => Navigator.pushNamed(context, '/groups'),
-                ),
-                _buildQuickActionCard(
-                  'Connect',
-                  Icons.waving_hand,
-                  AppColors.warning,
-                  () => Navigator.pushNamed(context, '/connect'),
-                ),
-                _buildQuickActionCard(
-                  'Messages',
-                  Icons.message,
-                  AppColors.darkNavy,
-                  () => Navigator.pushNamed(context, '/messages'),
-                ),
-                _buildQuickActionCard(
-                  'Our Team',
-                  Icons.people_alt,
-                  const Color(0xFF6A0080),
-                  () => Navigator.pushNamed(context, '/staff'),
-                ),
-                _buildQuickActionCard(
-                  'Bulletin',
-                  Icons.receipt_long,
-                  AppColors.blue,
-                  () => Navigator.pushNamed(context, '/bulletin'),
-                ),
-                _buildQuickActionCard(
-                  'Volunteer',
-                  Icons.volunteer_activism,
-                  AppColors.info,
-                  () => Navigator.pushNamed(context, '/volunteer'),
-                ),
-                _buildQuickActionCard(
-                  'AI Tools',
-                  Icons.rocket_launch,
-                  const Color(0xFFFF6B6B),
-                  () => Navigator.pushNamed(context, '/ai_tools'),
-                ),
+                _buildQuickActionCard('Streaming', Icons.live_tv, AppColors.error,
+                    () => Navigator.pushNamed(context, '/streaming')),
+                _buildQuickActionCard('Sermons', Icons.mic, AppColors.purple,
+                    () => Navigator.pushNamed(context, '/sermons')),
+                _buildQuickActionCard('Devotionals', Icons.auto_stories, AppColors.accentBlue,
+                    () => Navigator.pushNamed(context, '/devotionals')),
+                _buildQuickActionCard('Prayers', Icons.favorite, AppColors.brown,
+                    () => Navigator.pushNamed(context, '/prayers')),
+                _buildQuickActionCard('Giving', Icons.card_giftcard, AppColors.success,
+                    () => Navigator.pushNamed(context, '/giving')),
+                _buildQuickActionCard('Events', Icons.event, AppColors.accentTeal,
+                    () => Navigator.pushNamed(context, '/events')),
               ],
             ),
+            const SizedBox(height: 20),
+            // ── Community widget ─────────────────────────────────────────────
+            _buildCommunityWidget(),
+            const SizedBox(height: 12),
+            // ── Finance widget (admin / pastor / treasurer only) ─────────────
+            if (isAdmin || isTreasurer) ...[
+              _buildFinanceWidget(),
+              const SizedBox(height: 12),
+            ],
           ],
+        ),
+      ),
+    );
+  }
+
+  // ── Community widget ────────────────────────────────────────────────────────
+  Widget _buildCommunityWidget() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final items = [
+      _CommunityItem('Groups', Icons.groups, AppColors.blue, '/groups'),
+      _CommunityItem('Members', Icons.people, AppColors.purple, '/members'),
+      _CommunityItem('Messages', Icons.message, AppColors.darkNavy, '/messages'),
+      _CommunityItem('Quiz', Icons.quiz, AppColors.warning, '/quiz'),
+    ];
+    return Card(
+      elevation: isDark ? 0 : 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: isDark ? const BorderSide(color: AppColors.darkBorder) : BorderSide.none,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.hub_outlined, size: 18, color: AppColors.purple),
+                const SizedBox(width: 6),
+                const Text('Community',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: items.map((item) => Expanded(
+                child: InkWell(
+                  onTap: () => Navigator.pushNamed(context, item.route),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: item.color.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(item.icon, color: item.color, size: 24),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(item.label,
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                            textAlign: TextAlign.center),
+                      ],
+                    ),
+                  ),
+                ),
+              )).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Finance widget (role-gated) ──────────────────────────────────────────────
+  Widget _buildFinanceWidget() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTreasurer = _userRole == 'treasurer';
+    return InkWell(
+      onTap: () => Navigator.pushNamed(context, '/finances'),
+      borderRadius: BorderRadius.circular(14),
+      child: Card(
+        elevation: isDark ? 0 : 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: isDark ? const BorderSide(color: AppColors.darkBorder) : BorderSide.none,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            gradient: LinearGradient(
+              colors: [AppColors.success.withValues(alpha: 0.15), AppColors.success.withValues(alpha: 0.05)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.account_balance_wallet, color: AppColors.success, size: 26),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isTreasurer ? 'Finance Overview' : 'Church Finances',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'GH₵ ${_financeTotal.toStringAsFixed(2)}  · Total recorded',
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: AppColors.success),
+            ],
+          ),
         ),
       ),
     );
@@ -1103,4 +1180,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       trailing: const Icon(Icons.chevron_right, color: Colors.grey),
     );
   }
+}
+
+class _CommunityItem {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final String route;
+  const _CommunityItem(this.label, this.icon, this.color, this.route);
 }

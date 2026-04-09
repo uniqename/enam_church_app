@@ -75,7 +75,7 @@ class PrayerService {
   Future<List<PrayerRequest>> getAllPrayersForPrayerWarriors() async {
     try {
       final data = await _supabase.query(
-        'prayer_requests', column: 'is_private', value: false,
+        'prayer_requests', column: 'private', value: false,
         orderBy: 'date', ascending: false,
       );
       return data.map((json) => PrayerRequest.fromSupabase(json)).toList();

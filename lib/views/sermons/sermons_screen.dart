@@ -4,6 +4,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/sermon.dart';
 import '../../services/sermon_service.dart';
 import '../../services/supabase_service.dart';
@@ -30,6 +32,39 @@ class _SermonsScreenState extends State<SermonsScreen> {
   bool _isPlaying = false;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
+
+  // Track expanded YouTube embeds and their WebView controllers
+  final Map<String, bool> _expandedCards = {};
+  final Map<String, WebViewController> _controllers = {};
+
+  // ── URL helpers ─────────────────────────────────────────────────────────────
+  static String? _youTubeVideoId(String url) {
+    final patterns = [
+      RegExp(r'youtube\.com/watch\?.*v=([a-zA-Z0-9_-]{11})'),
+      RegExp(r'youtu\.be/([a-zA-Z0-9_-]{11})'),
+      RegExp(r'youtube\.com/embed/([a-zA-Z0-9_-]{11})'),
+      RegExp(r'youtube\.com/shorts/([a-zA-Z0-9_-]{11})'),
+    ];
+    for (final p in patterns) {
+      final m = p.firstMatch(url);
+      if (m != null) return m.group(1);
+    }
+    return null;
+  }
+
+  static bool _isFacebookUrl(String url) =>
+      url.contains('facebook.com') || url.contains('fb.watch');
+
+  static bool _isInstagramUrl(String url) => url.contains('instagram.com');
+
+  WebViewController _getController(String sermonId, String embedUrl) {
+    return _controllers.putIfAbsent(sermonId, () {
+      return WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(Colors.black)
+        ..loadRequest(Uri.parse(embedUrl));
+    });
+  }
 
   @override
   void initState() {
@@ -162,10 +197,14 @@ class _SermonsScreenState extends State<SermonsScreen> {
                   ),
                   keyboardType: TextInputType.url,
                   onChanged: (v) {
-                    final ext = v.trim().split('?').first.split('.').last.toLowerCase();
-                    if (['mp4', 'mov', 'm4v'].contains(ext)) {
+                    final trimmed = v.trim();
+                    final ext = trimmed.split('?').first.split('.').last.toLowerCase();
+                    if (_youTubeVideoId(trimmed) != null ||
+                        _isFacebookUrl(trimmed) ||
+                        _isInstagramUrl(trimmed) ||
+                        ['mp4', 'mov', 'm4v'].contains(ext)) {
                       setS(() => fileType = 'video');
-                    } else if (v.trim().isNotEmpty) {
+                    } else if (trimmed.isNotEmpty) {
                       setS(() => fileType = 'audio');
                     }
                   },
@@ -366,29 +405,44 @@ class _SermonsScreenState extends State<SermonsScreen> {
 
   Widget _buildSermonCard(Sermon sermon) {
     final isThisPlaying = _playingId == sermon.id;
-    final isAudio = sermon.fileType == 'audio';
+    final url = sermon.fileUrl;
+    final ytId = _youTubeVideoId(url);
+    final isFb = _isFacebookUrl(url);
+    final isIg = _isInstagramUrl(url);
+    final isStream = ytId != null || isFb || isIg;
+    final isAudio = !isStream && sermon.fileType == 'audio';
+    final isExpanded = _expandedCards[sermon.id] ?? false;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: isThisPlaying ? 4 : 1,
+      elevation: isThisPlaying || isExpanded ? 4 : 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: isThisPlaying
+        side: isThisPlaying || isExpanded
             ? const BorderSide(color: AppColors.purple, width: 2)
             : BorderSide.none,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header row ───────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+            child: Row(
               children: [
                 CircleAvatar(
                   backgroundColor: AppColors.purple.withValues(alpha: 0.12),
                   radius: 22,
                   child: Icon(
-                    isAudio ? Icons.headphones : Icons.videocam,
+                    ytId != null
+                        ? Icons.smart_display
+                        : isFb
+                            ? Icons.facebook
+                            : isIg
+                                ? Icons.camera_alt
+                                : isAudio
+                                    ? Icons.headphones
+                                    : Icons.videocam,
                     color: AppColors.purple,
                   ),
                 ),
@@ -398,13 +452,16 @@ class _SermonsScreenState extends State<SermonsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(sermon.title,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15)),
                       const SizedBox(height: 2),
                       Text(sermon.speaker,
-                          style: TextStyle(color: Colors.grey[700], fontSize: 13)),
+                          style:
+                              TextStyle(color: Colors.grey[700], fontSize: 13)),
                       Text(
                         DateFormat('MMMM d, yyyy').format(sermon.date),
-                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                        style:
+                            TextStyle(color: Colors.grey[500], fontSize: 12),
                       ),
                     ],
                   ),
@@ -425,18 +482,123 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 ],
               ],
             ),
-            if (sermon.description.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(sermon.description,
+          ),
+          if (sermon.description.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+              child: Text(sermon.description,
                   style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-            ],
-            if (isAudio) ...[
-              const SizedBox(height: 12),
-              Row(
+            ),
+
+          // ── Playback area ────────────────────────────────────────────────
+          if (ytId != null) ...[
+            // YouTube: thumbnail thumbnail → expands to embed
+            GestureDetector(
+              onTap: () => setState(() =>
+                  _expandedCards[sermon.id] = !isExpanded),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: isExpanded
+                        ? BorderRadius.zero
+                        : const BorderRadius.only(
+                            bottomLeft: Radius.circular(12),
+                            bottomRight: Radius.circular(12),
+                          ),
+                    child: isExpanded
+                        ? SizedBox(
+                            height: 220,
+                            child: WebViewWidget(
+                              controller: _getController(
+                                sermon.id,
+                                'https://www.youtube.com/embed/$ytId?autoplay=1&playsinline=1',
+                              ),
+                            ),
+                          )
+                        : Image.network(
+                            'https://img.youtube.com/vi/$ytId/hqdefault.jpg',
+                            height: 180,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              height: 180,
+                              color: Colors.black87,
+                              child: const Icon(Icons.smart_display,
+                                  color: Colors.white, size: 48),
+                            ),
+                          ),
+                  ),
+                  if (!isExpanded)
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      child: const Icon(Icons.play_arrow,
+                          color: Colors.white, size: 36),
+                    ),
+                  if (isExpanded)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: () =>
+                            setState(() => _expandedCards[sermon.id] = false),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(Icons.close,
+                              color: Colors.white, size: 18),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ] else if (isFb || isIg) ...[
+            // Facebook / Instagram — open externally
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: Icon(isFb ? Icons.facebook : Icons.camera_alt,
+                      size: 18),
+                  label: Text(
+                      'Watch on ${isFb ? 'Facebook' : 'Instagram'}'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.purple,
+                    side: const BorderSide(color: AppColors.purple),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: () async {
+                    final uri = Uri.parse(url);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri,
+                          mode: LaunchMode.externalApplication);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ] else if (isAudio) ...[
+            // Audio player
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+              child: Row(
                 children: [
                   IconButton(
                     icon: Icon(
-                      isThisPlaying && _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                      isThisPlaying && _isPlaying
+                          ? Icons.pause_circle_filled
+                          : Icons.play_circle_filled,
                       size: 40,
                       color: AppColors.purple,
                     ),
@@ -447,7 +609,9 @@ class _SermonsScreenState extends State<SermonsScreen> {
                       children: [
                         Slider(
                           value: isThisPlaying && _duration.inSeconds > 0
-                              ? _position.inSeconds.toDouble().clamp(0, _duration.inSeconds.toDouble())
+                              ? _position.inSeconds
+                                  .toDouble()
+                                  .clamp(0, _duration.inSeconds.toDouble())
                               : 0,
                           min: 0,
                           max: isThisPlaying && _duration.inSeconds > 0
@@ -455,21 +619,26 @@ class _SermonsScreenState extends State<SermonsScreen> {
                               : 1,
                           activeColor: AppColors.purple,
                           onChanged: isThisPlaying
-                              ? (val) => _player.seek(Duration(seconds: val.toInt()))
+                              ? (val) =>
+                                  _player.seek(Duration(seconds: val.toInt()))
                               : null,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              isThisPlaying ? _formatDuration(_position) : '0:00',
-                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                              isThisPlaying
+                                  ? _formatDuration(_position)
+                                  : '0:00',
+                              style: const TextStyle(
+                                  fontSize: 11, color: Colors.grey),
                             ),
                             Text(
                               isThisPlaying && _duration > Duration.zero
                                   ? _formatDuration(_duration)
                                   : '',
-                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                              style: const TextStyle(
+                                  fontSize: 11, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -478,25 +647,36 @@ class _SermonsScreenState extends State<SermonsScreen> {
                   ),
                 ],
               ),
-            ] else ...[
-              // Video placeholder — tap to open
-              const SizedBox(height: 10),
-              SizedBox(
+            ),
+          ] else if (url.isNotEmpty) ...[
+            // Direct video URL — open in WebView
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+              child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('Open Video'),
-                  style: OutlinedButton.styleFrom(foregroundColor: AppColors.purple),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Video player coming soon')),
-                    );
+                  icon: const Icon(Icons.play_arrow, size: 18),
+                  label: const Text('Watch Video'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.purple,
+                    side: const BorderSide(color: AppColors.purple),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: () async {
+                    final uri = Uri.parse(url);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri,
+                          mode: LaunchMode.externalApplication);
+                    }
                   },
                 ),
               ),
-            ],
+            ),
+          ] else ...[
+            const SizedBox(height: 14),
           ],
-        ),
+        ],
       ),
     );
   }
