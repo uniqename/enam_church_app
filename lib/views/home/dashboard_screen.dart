@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
@@ -7,7 +8,9 @@ import '../../services/member_service.dart';
 import '../../services/event_service.dart';
 import '../../services/finance_service.dart';
 import '../../services/sermon_service.dart';
+import '../../services/announcement_service.dart';
 import '../../services/supabase_service.dart';
+import '../../models/announcement.dart';
 import '../../utils/colors.dart';
 import '../admin/admin_video_upload_screen.dart';
 
@@ -24,6 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _eventService = EventService();
   final _financeService = FinanceService();
   final _sermonService = SermonService();
+  final _announcementService = AnnouncementService();
 
   int _selectedIndex = 0;
   String? _userRole;
@@ -36,6 +40,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _sermonCount = 0;
   double _financeTotal = 0.0;
   int _pendingApprovals = 0;
+
+  // Sliding banner
+  List<Announcement> _bannerAnnouncements = [];
+  final _bannerController = PageController();
+  int _bannerPage = 0;
+  Timer? _bannerTimer;
 
   @override
   void initState() {
@@ -59,6 +69,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final events = await _eventService.getAllEvents();
         final sermons = await _sermonService.getAllSermons();
         final financeTotal = await _financeService.getTotal();
+        // Load announcements for banner (active ones only)
+        try {
+          final all = await _announcementService.getAllAnnouncements();
+          final active = all.where((a) => a.status == 'Active' || a.status == 'active').toList();
+          setState(() => _bannerAnnouncements = active.take(5).toList());
+          _startBannerTimer();
+        } catch (_) {}
         int pendingCount = 0;
         if (role == 'admin' || role == 'pastor') {
           try {
@@ -90,6 +107,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  void _startBannerTimer() {
+    _bannerTimer?.cancel();
+    // year theme + up to 5 announcements = at most 6 slides
+    final totalSlides = 1 + _bannerAnnouncements.length;
+    if (totalSlides < 2) return;
+    _bannerTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_bannerController.hasClients) return;
+      final next = (_bannerPage + 1) % totalSlides;
+      _bannerController.animateToPage(next,
+          duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+    });
+  }
+
+  @override
+  void dispose() {
+    _bannerTimer?.cancel();
+    _bannerController.dispose();
+    super.dispose();
   }
 
   @override
@@ -505,6 +542,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 24),
             ],
+                    // ── Sliding banner ───────────────────────────────────────────
+            _buildSlidingBanner(),
+            const SizedBox(height: 20),
             if (isAdmin && _pendingApprovals > 0) ...[
               _buildPendingApprovalsBanner(),
               const SizedBox(height: 16),
@@ -514,7 +554,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            // ── Core 6 actions ──────────────────────────────────────────────
+            // ── Core actions grid ────────────────────────────────────────
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -535,6 +575,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     () => Navigator.pushNamed(context, '/giving')),
                 _buildQuickActionCard('Events', Icons.event, AppColors.accentTeal,
                     () => Navigator.pushNamed(context, '/events')),
+                _buildQuickActionCard('Bulletin', Icons.receipt_long, AppColors.blue,
+                    () => Navigator.pushNamed(context, '/bulletin')),
+                _buildQuickActionCard('Notes', Icons.note_alt, const Color(0xFF5D4037),
+                    () => Navigator.pushNamed(context, '/notes')),
+                _buildQuickActionCard('AI Tools', Icons.rocket_launch, const Color(0xFFFF6B6B),
+                    () => Navigator.pushNamed(context, '/ai_tools')),
               ],
             ),
             const SizedBox(height: 20),
@@ -548,6 +594,115 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Sliding banner ───────────────────────────────────────────────────────────
+  Widget _buildSlidingBanner() {
+    // Slides: year theme card always first, then announcements
+    final slides = <_BannerSlide>[
+      const _BannerSlide(
+        type: _BannerType.yearTheme,
+        title: 'Year Theme 2026',
+        subtitle: '"Possessing Our Possessions" — Obadiah 1:17',
+        color1: Color(0xFF4A0080),
+        color2: Color(0xFF7B1FA2),
+      ),
+      ..._bannerAnnouncements.map((a) => _BannerSlide(
+            type: _BannerType.announcement,
+            title: a.title,
+            subtitle: a.content.isNotEmpty ? a.content : a.department,
+            color1: a.priority == 'High' ? const Color(0xFFB71C1C) : AppColors.purple,
+            color2: a.priority == 'High' ? const Color(0xFFD32F2F) : AppColors.blue,
+          )),
+    ];
+
+    if (slides.length == 1) {
+      // Only year theme — static card, no pager
+      return _buildBannerCard(slides[0]);
+    }
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 110,
+          child: PageView.builder(
+            controller: _bannerController,
+            itemCount: slides.length,
+            onPageChanged: (i) => setState(() => _bannerPage = i),
+            itemBuilder: (_, i) => _buildBannerCard(slides[i]),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(slides.length, (i) => AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: _bannerPage == i ? 20 : 6,
+            height: 6,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3),
+              color: _bannerPage == i
+                  ? AppColors.purple
+                  : AppColors.purple.withValues(alpha: 0.3),
+            ),
+          )),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBannerCard(_BannerSlide slide) {
+    final icon = slide.type == _BannerType.yearTheme
+        ? Icons.star
+        : Icons.campaign;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [slide.color1, slide.color2],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 26),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(slide.title,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                Text(slide.subtitle,
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 12, height: 1.3),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1188,4 +1343,21 @@ class _CommunityItem {
   final Color color;
   final String route;
   const _CommunityItem(this.label, this.icon, this.color, this.route);
+}
+
+enum _BannerType { yearTheme, announcement }
+
+class _BannerSlide {
+  final _BannerType type;
+  final String title;
+  final String subtitle;
+  final Color color1;
+  final Color color2;
+  const _BannerSlide({
+    required this.type,
+    required this.title,
+    required this.subtitle,
+    required this.color1,
+    required this.color2,
+  });
 }
