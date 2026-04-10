@@ -244,7 +244,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
                   ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: audience,
+                  initialValue: audience,
                   decoration: const InputDecoration(labelText: 'Audience', border: OutlineInputBorder(), prefixIcon: Icon(Icons.people)),
                   items: const [
                     DropdownMenuItem(value: 'all', child: Text('Everyone (Adults + Kids)')),
@@ -580,10 +580,9 @@ class _SermonsScreenState extends State<SermonsScreen> {
                   ),
                   onPressed: () async {
                     final uri = Uri.parse(url);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri,
-                          mode: LaunchMode.externalApplication);
-                    }
+                    try {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } catch (_) {}
                   },
                 ),
               ),
@@ -665,10 +664,9 @@ class _SermonsScreenState extends State<SermonsScreen> {
                   ),
                   onPressed: () async {
                     final uri = Uri.parse(url);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri,
-                          mode: LaunchMode.externalApplication);
-                    }
+                    try {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } catch (_) {}
                   },
                 ),
               ),

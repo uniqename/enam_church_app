@@ -273,7 +273,7 @@ class _StreamingScreenState extends State<StreamingScreen> {
                 Row(children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: category,
+                      initialValue: category,
                       dropdownColor: AppColors.darkSurface2,
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
@@ -294,7 +294,7 @@ class _StreamingScreenState extends State<StreamingScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: status,
+                      initialValue: status,
                       dropdownColor: AppColors.darkSurface2,
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(

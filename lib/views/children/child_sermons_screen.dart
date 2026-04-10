@@ -83,27 +83,32 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              height: 160,
-              decoration: BoxDecoration(
-                color: AppColors.childOrange.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.play_circle_filled,
-                      size: 64, color: AppColors.childOrange),
-                  SizedBox(height: 8),
-                  Text('Tap to Watch', style: TextStyle(color: AppColors.childOrange)),
-                ],
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(ctx);
+                _openVideo(sermon.videoUrl);
+              },
+              child: Container(
+                width: double.infinity,
+                height: 160,
+                decoration: BoxDecoration(
+                  color: AppColors.childOrange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.play_circle_filled,
+                        size: 64, color: AppColors.childOrange),
+                    SizedBox(height: 8),
+                    Text('Tap to Watch', style: TextStyle(color: AppColors.childOrange)),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 12),
             Text('Speaker: ${sermon.speaker}'),
-            Text('Duration: ${sermon.duration}'),
-            Text('Views: ${sermon.views}'),
+            if (sermon.duration.isNotEmpty) Text('Duration: ${sermon.duration}'),
           ],
         ),
         actions: [
@@ -112,13 +117,9 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
             child: const Text('Close'),
           ),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(ctx);
-              if (sermon.videoUrl.isNotEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Opening sermon video...')),
-                );
-              }
+              _openVideo(sermon.videoUrl);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.childOrange),
             child: const Text('Watch', style: TextStyle(color: Colors.white)),
