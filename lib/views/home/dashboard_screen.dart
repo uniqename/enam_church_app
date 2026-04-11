@@ -323,15 +323,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildChildSlidingBanner(),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          const SizedBox(height: 24),
           const Text(
             'What would you like to do today?',
             style: TextStyle(
@@ -385,9 +382,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   () => Navigator.pushNamed(context, '/giving'),
                 ),
             ],
-          ),
-              ],
-            ),
           ),
         ],
       ),
@@ -571,15 +565,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       onRefresh: _loadUserData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeroBanner(isAdmin: isAdmin, isDeptHead: isDeptHead, isMediaTeam: isMediaTeam, isTreasurer: isTreasurer),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            const SizedBox(height: 20),
             if (isAdmin) ...[
               const Text(
                 'Overview',
@@ -718,9 +709,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildFinanceWidget(),
               const SizedBox(height: 12),
             ],
-                ],
-              ),
-            ),
           ],
         ),
       ),
