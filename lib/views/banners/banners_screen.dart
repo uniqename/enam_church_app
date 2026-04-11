@@ -51,6 +51,52 @@ class _BannersScreenState extends State<BannersScreen> {
     return await SupabaseService().uploadImage('church-media', path, file);
   }
 
+  // Pick multiple images and create one banner per image
+  Future<void> _pickAndSaveMultiple() async {
+    final picked = await ImagePicker().pickMultiImage(imageQuality: 85);
+    if (picked.isEmpty) return;
+
+    // Ask audience once for all images
+    String audience = _audienceFilter;
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(SnackBar(
+      content: Text('Uploading ${picked.length} image${picked.length > 1 ? 's' : ''}…'),
+      duration: const Duration(seconds: 60),
+    ));
+
+    int uploaded = 0;
+    for (int i = 0; i < picked.length; i++) {
+      final file = File(picked[i].path);
+      final filename = picked[i].name.replaceAll(RegExp(r'\.[^.]+$'), '');
+      try {
+        final url = await _uploadMedia(file);
+        if (url != null) {
+          await _service.addBanner(BannerSlideModel(
+            id: '',
+            title: filename,
+            subtitle: '',
+            mediaUrl: url,
+            mediaType: 'image',
+            linkRoute: '',
+            isActive: true,
+            sortOrder: _banners.length + i,
+            audience: audience,
+          ));
+          uploaded++;
+        }
+      } catch (_) {}
+    }
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(
+      content: Text('$uploaded of ${picked.length} banner${picked.length > 1 ? 's' : ''} added'),
+      backgroundColor: uploaded > 0 ? AppColors.success : Colors.red,
+      duration: const Duration(seconds: 4),
+    ));
+    _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +105,11 @@ class _BannersScreenState extends State<BannersScreen> {
         backgroundColor: AppColors.purple,
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library),
+            tooltip: 'Add Multiple Images',
+            onPressed: _pickAndSaveMultiple,
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             tooltip: 'Add Banner',
