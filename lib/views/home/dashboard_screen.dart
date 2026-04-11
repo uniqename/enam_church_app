@@ -43,12 +43,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   double _financeTotal = 0.0;
   int _pendingApprovals = 0;
 
-  // Sliding banner
+  // Sliding banner (adult)
   List<Announcement> _bannerAnnouncements = [];
   List<_BannerSlide> _dedicatedBannerSlides = [];
   final _bannerController = PageController();
   int _bannerPage = 0;
   Timer? _bannerTimer;
+
+  // Sliding banner (children)
+  List<_BannerSlide> _childBannerSlides = [];
+  final _childBannerController = PageController();
+  int _childBannerPage = 0;
+  Timer? _childBannerTimer;
 
   @override
   void initState() {
@@ -65,6 +71,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (role == 'child') {
         final age = await ChildAccountService().getActiveChildAge();
         setState(() => _childAge = age);
+        try {
+          final childBanners = await _bannerService.getActiveChildBanners();
+          final slides = childBanners.map((b) => _BannerSlide(
+            type: _BannerType.announcement,
+            title: b.title,
+            subtitle: b.subtitle,
+            color1: AppColors.childOrange,
+            color2: AppColors.childYellow,
+            imageUrl: b.mediaType == 'image' ? b.mediaUrl : '',
+            linkRoute: b.linkRoute,
+          )).toList();
+          setState(() => _childBannerSlides = slides);
+          _startChildBannerTimer();
+        } catch (_) {}
       }
 
       if (role != 'child') {
@@ -130,19 +150,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _startBannerTimer() {
     _bannerTimer?.cancel();
-    final extraSlides = _dedicatedBannerSlides.isNotEmpty
+    final totalSlides = _dedicatedBannerSlides.isNotEmpty
         ? _dedicatedBannerSlides.length
         : _bannerAnnouncements.length;
-    final totalSlides = 1 + extraSlides;
     if (totalSlides < 2) return;
     _bannerTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (!mounted || !_bannerController.hasClients) return;
-      final extra = _dedicatedBannerSlides.isNotEmpty
+      final count = _dedicatedBannerSlides.isNotEmpty
           ? _dedicatedBannerSlides.length
           : _bannerAnnouncements.length;
-      final count = 1 + extra;
+      if (count < 2) return;
       final next = (_bannerPage + 1) % count;
       _bannerController.animateToPage(next,
+          duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+    });
+  }
+
+  void _startChildBannerTimer() {
+    _childBannerTimer?.cancel();
+    if (_childBannerSlides.length < 2) return;
+    _childBannerTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_childBannerController.hasClients) return;
+      if (_childBannerSlides.length < 2) return;
+      final next = (_childBannerPage + 1) % _childBannerSlides.length;
+      _childBannerController.animateToPage(next,
           duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
     });
   }
@@ -150,7 +181,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void dispose() {
     _bannerTimer?.cancel();
+    _childBannerTimer?.cancel();
     _bannerController.dispose();
+    _childBannerController.dispose();
     super.dispose();
   }
 
@@ -260,42 +293,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: AppColors.childGradient,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Column(
-              children: [
-                Icon(
-                  Icons.child_care,
-                  size: 64,
-                  color: Colors.white,
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Welcome to Children\'s Church!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Learn, Play, and Grow in Faith!',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
+          _buildChildSlidingBanner(),
           const SizedBox(height: 24),
           const Text(
             'What would you like to do today?',
@@ -336,11 +334,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 AppColors.childPink,
                 () => Navigator.pushNamed(context, '/prayers'),
               ),
+              _buildChildCard(
+                'My Notes',
+                Icons.note_alt,
+                AppColors.childPurple,
+                () => Navigator.pushNamed(context, '/child_notes'),
+              ),
               if (_childAge >= 12)
                 _buildChildCard(
                   'Give',
                   Icons.volunteer_activism,
-                  AppColors.childPurple,
+                  AppColors.childGreen,
                   () => Navigator.pushNamed(context, '/giving'),
                 ),
             ],
@@ -390,6 +394,103 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildChildSlidingBanner() {
+    final canEdit = _userRole == 'admin' || _userRole == 'pastor' ||
+        _userRole == 'dept_head' || _userRole == 'media_team';
+
+    Widget bannerContent;
+    if (_childBannerSlides.isEmpty) {
+      // Default hardcoded welcome banner
+      bannerContent = Container(
+        height: 160,
+        decoration: BoxDecoration(
+          gradient: AppColors.childGradient,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.child_care, size: 56, color: Colors.white),
+            SizedBox(height: 12),
+            Text(
+              'Welcome to Children\'s Church!',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 6),
+            Text(
+              'Learn, Play, and Grow in Faith!',
+              style: TextStyle(fontSize: 14, color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    } else if (_childBannerSlides.length == 1) {
+      bannerContent = SizedBox(height: 160, child: _buildBannerCard(_childBannerSlides[0]));
+    } else {
+      bannerContent = Column(
+        children: [
+          SizedBox(
+            height: 160,
+            child: PageView.builder(
+              controller: _childBannerController,
+              itemCount: _childBannerSlides.length,
+              onPageChanged: (i) => setState(() => _childBannerPage = i),
+              itemBuilder: (_, i) {
+                final slide = _childBannerSlides[i];
+                return GestureDetector(
+                  onTap: slide.linkRoute.isNotEmpty
+                      ? () => Navigator.pushNamed(context, slide.linkRoute)
+                      : null,
+                  child: _buildBannerCard(slide),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_childBannerSlides.length, (i) => AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: _childBannerPage == i ? 20 : 6,
+              height: 6,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                color: _childBannerPage == i
+                    ? AppColors.childOrange
+                    : AppColors.childOrange.withValues(alpha: 0.3),
+              ),
+            )),
+          ),
+        ],
+      );
+    }
+
+    return Stack(
+      children: [
+        bannerContent,
+        if (canEdit)
+          Positioned(
+            top: 6,
+            right: 8,
+            child: GestureDetector(
+              onTap: () => Navigator.pushNamed(context, '/admin/banners').then((_) => _loadUserData()),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.black38,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(Icons.edit, size: 15, color: Colors.white),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -567,22 +668,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 24),
             ],
-                    // ── Sliding banner ───────────────────────────────────────────
-            if (_userRole == 'admin' || _userRole == 'pastor' || _userRole == 'media_team')
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  icon: const Icon(Icons.edit, size: 14),
-                  label: const Text('Edit Banners', style: TextStyle(fontSize: 12)),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.purple,
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  onPressed: () => Navigator.pushNamed(context, '/admin/banners').then((_) => _loadUserData()),
-                ),
-              ),
             _buildSlidingBanner(),
             const SizedBox(height: 20),
             if (isAdmin && _pendingApprovals > 0) ...[
@@ -639,18 +724,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ── Sliding banner ───────────────────────────────────────────────────────────
   Widget _buildSlidingBanner() {
-    // Year theme always first
-    const yearTheme = _BannerSlide(
-      type: _BannerType.yearTheme,
-      title: 'Year Theme 2026',
-      subtitle: '"Possessing Our Possessions" — Obadiah 1:17',
-      color1: Color(0xFF4A0080),
-      color2: Color(0xFF7B1FA2),
-    );
+    final canEdit = _userRole == 'admin' || _userRole == 'pastor' || _userRole == 'media_team';
 
     // Use dedicated banners if loaded, else fall back to announcements
     final slides = <_BannerSlide>[
-      yearTheme,
       if (_dedicatedBannerSlides.isNotEmpty)
         ..._dedicatedBannerSlides
       else
@@ -667,46 +744,79 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )),
     ];
 
-    if (slides.length == 1) {
-      // Only year theme — static card, no pager
-      return _buildBannerCard(slides[0]);
+    // Default welcome slide when no banners configured
+    if (slides.isEmpty) {
+      slides.add(const _BannerSlide(
+        type: _BannerType.announcement,
+        title: 'Welcome to Faith Klinik',
+        subtitle: 'Building faith, healing lives, transforming communities',
+        color1: Color(0xFF4A0080),
+        color2: Color(0xFF7B1FA2),
+      ));
     }
 
-    return Column(
-      children: [
-        SizedBox(
-          height: 110,
-          child: PageView.builder(
-            controller: _bannerController,
-            itemCount: slides.length,
-            onPageChanged: (i) => setState(() => _bannerPage = i),
-            itemBuilder: (_, i) {
-              final slide = slides[i];
-              return GestureDetector(
-                onTap: slide.linkRoute.isNotEmpty
-                    ? () => Navigator.pushNamed(context, slide.linkRoute)
-                    : null,
-                child: _buildBannerCard(slide),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(slides.length, (i) => AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: _bannerPage == i ? 20 : 6,
-            height: 6,
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(3),
-              color: _bannerPage == i
-                  ? AppColors.purple
-                  : AppColors.purple.withValues(alpha: 0.3),
+    Widget bannerContent;
+    if (slides.length == 1) {
+      bannerContent = SizedBox(height: 110, child: _buildBannerCard(slides[0]));
+    } else {
+      bannerContent = Column(
+        children: [
+          SizedBox(
+            height: 110,
+            child: PageView.builder(
+              controller: _bannerController,
+              itemCount: slides.length,
+              onPageChanged: (i) => setState(() => _bannerPage = i),
+              itemBuilder: (_, i) {
+                final slide = slides[i];
+                return GestureDetector(
+                  onTap: slide.linkRoute.isNotEmpty
+                      ? () => Navigator.pushNamed(context, slide.linkRoute)
+                      : null,
+                  child: _buildBannerCard(slide),
+                );
+              },
             ),
-          )),
-        ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(slides.length, (i) => AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: _bannerPage == i ? 20 : 6,
+              height: 6,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                color: _bannerPage == i
+                    ? AppColors.purple
+                    : AppColors.purple.withValues(alpha: 0.3),
+              ),
+            )),
+          ),
+        ],
+      );
+    }
+
+    return Stack(
+      children: [
+        bannerContent,
+        if (canEdit)
+          Positioned(
+            top: 6,
+            right: 8,
+            child: GestureDetector(
+              onTap: () => Navigator.pushNamed(context, '/admin/banners').then((_) => _loadUserData()),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.black38,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(Icons.edit, size: 15, color: Colors.white),
+              ),
+            ),
+          ),
       ],
     );
   }

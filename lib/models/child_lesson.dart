@@ -5,6 +5,7 @@ class ChildLesson {
   final String duration;
   final String ageRange;
   final bool completed;
+  final String scriptureRef; // e.g. "Genesis 1:1-10"
 
   const ChildLesson({
     required this.id,
@@ -13,6 +14,7 @@ class ChildLesson {
     required this.duration,
     required this.ageRange,
     required this.completed,
+    this.scriptureRef = '',
   });
 
   factory ChildLesson.fromSupabase(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class ChildLesson {
       duration: json['duration'] as String? ?? '5 min',
       ageRange: json['age_range'] as String? ?? '5-10',
       completed: json['completed'] as bool? ?? false,
+      scriptureRef: json['scripture_ref'] as String? ?? '',
     );
   }
 
@@ -34,10 +37,11 @@ class ChildLesson {
       'duration': duration,
       'age_range': ageRange,
       'completed': completed,
+      'scripture_ref': scriptureRef,
     };
   }
 
-  ChildLesson copyWith({bool? completed}) {
+  ChildLesson copyWith({bool? completed, String? scriptureRef}) {
     return ChildLesson(
       id: id,
       title: title,
@@ -45,6 +49,7 @@ class ChildLesson {
       duration: duration,
       ageRange: ageRange,
       completed: completed ?? this.completed,
+      scriptureRef: scriptureRef ?? this.scriptureRef,
     );
   }
 }

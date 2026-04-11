@@ -141,8 +141,7 @@ class _BannersScreenState extends State<BannersScreen> {
                         const TextStyle(fontSize: 11, color: Colors.grey)),
                 const SizedBox(width: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: b.isActive
                         ? AppColors.success.withValues(alpha: 0.15)
@@ -154,6 +153,24 @@ class _BannersScreenState extends State<BannersScreen> {
                     style: TextStyle(
                       fontSize: 10,
                       color: b.isActive ? AppColors.success : Colors.grey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: b.audience == 'children'
+                        ? AppColors.childOrange.withValues(alpha: 0.15)
+                        : AppColors.purple.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    b.audience == 'children' ? 'Kids' : 'Adult',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: b.audience == 'children' ? AppColors.childOrange : AppColors.purple,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -219,6 +236,7 @@ class _BannersScreenState extends State<BannersScreen> {
     final subtitleCtrl = TextEditingController(text: existing?.subtitle ?? '');
     final routeCtrl = TextEditingController(text: existing?.linkRoute ?? '');
     bool isActive = existing?.isActive ?? true;
+    String audience = existing?.audience ?? 'adult';
     String mediaUrl = existing?.mediaUrl ?? '';
     String mediaType = existing?.mediaType ?? 'none';
     File? pickedFile;
@@ -393,8 +411,22 @@ class _BannersScreenState extends State<BannersScreen> {
                   ),
                 ],
                 const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: audience,
+                  decoration: const InputDecoration(
+                    labelText: 'Show on',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.people),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'adult', child: Text('Adult Dashboard')),
+                    DropdownMenuItem(value: 'children', child: Text("Children's Dashboard")),
+                  ],
+                  onChanged: (v) => setS(() => audience = v ?? 'adult'),
+                ),
+                const SizedBox(height: 12),
                 SwitchListTile(
-                  title: const Text('Show on home banner'),
+                  title: const Text('Active (visible on dashboard)'),
                   value: isActive,
                   activeThumbColor: AppColors.success,
                   contentPadding: EdgeInsets.zero,
@@ -479,6 +511,7 @@ class _BannersScreenState extends State<BannersScreen> {
                   linkRoute: routeCtrl.text.trim(),
                   isActive: isActive,
                   sortOrder: existing?.sortOrder ?? _banners.length,
+                  audience: audience,
                 );
 
                 if (isEdit) {

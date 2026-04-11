@@ -27,13 +27,13 @@ class _ChildSermonsScreenState extends State<ChildSermonsScreen> {
     _loadData();
   }
 
-  // Built-in videos shown when DB returns nothing
+  // Built-in fallback videos — use YouTube search URLs (always resolve, never "unavailable")
   static final _builtInVideos = [
-    ChildSermon(id: 'bi_1', title: 'The Creation Story for Kids', speaker: 'Kids Bible', date: DateTime(2024, 1, 1), duration: '5 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=K1gOBYFUPUA'),
-    ChildSermon(id: 'bi_2', title: 'Noah\'s Ark for Children', speaker: 'Kids Bible', date: DateTime(2024, 1, 2), duration: '6 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=9oQEaJFfTK8'),
-    ChildSermon(id: 'bi_3', title: 'David and Goliath', speaker: 'Kids Bible', date: DateTime(2024, 1, 3), duration: '7 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=lCqNoRE9YuE'),
-    ChildSermon(id: 'bi_4', title: 'Jesus Loves Me - Animated', speaker: 'Kids Worship', date: DateTime(2024, 1, 4), duration: '3 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=bMhReGilnIk'),
-    ChildSermon(id: 'bi_5', title: 'The Prodigal Son', speaker: 'Kids Bible', date: DateTime(2024, 1, 5), duration: '5 min', views: 0, videoUrl: 'https://www.youtube.com/watch?v=F_iXMFCnaEs'),
+    ChildSermon(id: 'bi_1', title: 'The Creation Story for Kids', speaker: 'Kids Bible', date: DateTime(2024, 1, 1), duration: '5 min', views: 0, videoUrl: 'https://www.youtube.com/results?search_query=creation+story+for+kids+bible+animated'),
+    ChildSermon(id: 'bi_2', title: "Noah's Ark for Children", speaker: 'Kids Bible', date: DateTime(2024, 1, 2), duration: '6 min', views: 0, videoUrl: 'https://www.youtube.com/results?search_query=noah+ark+bible+story+for+kids+animated'),
+    ChildSermon(id: 'bi_3', title: 'David and Goliath', speaker: 'Kids Bible', date: DateTime(2024, 1, 3), duration: '7 min', views: 0, videoUrl: 'https://www.youtube.com/results?search_query=david+goliath+bible+story+for+children'),
+    ChildSermon(id: 'bi_4', title: 'Jesus Loves Me - Animated', speaker: 'Kids Worship', date: DateTime(2024, 1, 4), duration: '3 min', views: 0, videoUrl: 'https://www.youtube.com/results?search_query=jesus+loves+me+bible+animated+kids+song'),
+    ChildSermon(id: 'bi_5', title: 'The Prodigal Son', speaker: 'Kids Bible', date: DateTime(2024, 1, 5), duration: '5 min', views: 0, videoUrl: 'https://www.youtube.com/results?search_query=prodigal+son+bible+story+children+animated'),
   ];
 
   Future<void> _loadData() async {

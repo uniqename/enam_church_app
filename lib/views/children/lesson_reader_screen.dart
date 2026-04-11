@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/child_lesson.dart';
 import '../../services/child_content_service.dart';
 import '../../utils/colors.dart';
@@ -118,7 +119,56 @@ class _LessonReaderScreenState extends State<LessonReaderScreen> {
                   : widget.lesson.content,
               style: TextStyle(fontSize: _fontSize, height: 1.6),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
+            // Bible passage buttons
+            if (widget.lesson.scriptureRef.isNotEmpty) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.menu_book, size: 18),
+                      label: Text(
+                        'Read ${widget.lesson.scriptureRef}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onPressed: () {
+                        final encoded = Uri.encodeComponent(widget.lesson.scriptureRef);
+                        launchUrl(
+                          Uri.parse('https://www.bible.com/search/bible?q=$encoded'),
+                          mode: LaunchMode.externalApplication,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.childBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.headphones, size: 18),
+                      label: const Text('Listen / Read Aloud'),
+                      onPressed: () {
+                        final encoded = Uri.encodeComponent(widget.lesson.scriptureRef);
+                        launchUrl(
+                          Uri.parse('https://www.bible.com/search/bible?q=$encoded'),
+                          mode: LaunchMode.externalApplication,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.childPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+            const SizedBox(height: 8),
             // Complete button
             if (!_completed)
               SizedBox(

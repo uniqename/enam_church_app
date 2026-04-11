@@ -46,20 +46,20 @@ class _BibleQuizGameState extends State<BibleQuizGame> {
     }
   }
 
-  Color _optionColor(int index) {
-    if (!_answered) return Colors.white;
+  Color _optionColor(BuildContext context, int index) {
+    if (!_answered) return Theme.of(context).colorScheme.surface;
     final correct = widget.questions[_currentIndex].correctIndex;
-    if (index == correct) return Colors.green.shade100;
-    if (index == _selectedAnswer) return Colors.red.shade100;
-    return Colors.white;
+    if (index == correct) return Colors.green.withValues(alpha: 0.2);
+    if (index == _selectedAnswer) return Colors.red.withValues(alpha: 0.2);
+    return Theme.of(context).colorScheme.surface;
   }
 
-  Color _optionBorder(int index) {
-    if (!_answered) return Colors.grey.shade300;
+  Color _optionBorder(BuildContext context, int index) {
+    if (!_answered) return Theme.of(context).colorScheme.outline;
     final correct = widget.questions[_currentIndex].correctIndex;
     if (index == correct) return Colors.green;
     if (index == _selectedAnswer) return Colors.red;
-    return Colors.grey.shade300;
+    return Theme.of(context).colorScheme.outline;
   }
 
   Widget _buildQuestion() {
@@ -127,9 +127,9 @@ class _BibleQuizGameState extends State<BibleQuizGame> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: _optionColor(i),
+                        color: _optionColor(context, i),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: _optionBorder(i), width: 2),
+                        border: Border.all(color: _optionBorder(context, i), width: 2),
                       ),
                       child: Row(
                         children: [

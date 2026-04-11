@@ -7,6 +7,7 @@ class BannerSlideModel {
   final String linkRoute;  // optional in-app route to navigate on tap
   final bool isActive;
   final int sortOrder;
+  final String audience; // 'adult' or 'children'
 
   const BannerSlideModel({
     required this.id,
@@ -17,6 +18,7 @@ class BannerSlideModel {
     this.linkRoute = '',
     this.isActive = true,
     this.sortOrder = 0,
+    this.audience = 'adult',
   });
 
   factory BannerSlideModel.fromSupabase(Map<String, dynamic> json) => BannerSlideModel(
@@ -28,6 +30,7 @@ class BannerSlideModel {
         linkRoute: json['link_route'] as String? ?? '',
         isActive: json['is_active'] as bool? ?? true,
         sortOrder: json['sort_order'] as int? ?? 0,
+        audience: json['audience'] as String? ?? 'adult',
       );
 
   Map<String, dynamic> toSupabase() => {
@@ -39,6 +42,7 @@ class BannerSlideModel {
         'link_route': linkRoute,
         'is_active': isActive,
         'sort_order': sortOrder,
+        'audience': audience,
       };
 
   BannerSlideModel copyWith({
@@ -49,6 +53,7 @@ class BannerSlideModel {
     String? linkRoute,
     bool? isActive,
     int? sortOrder,
+    String? audience,
   }) =>
       BannerSlideModel(
         id: id,
@@ -59,5 +64,6 @@ class BannerSlideModel {
         linkRoute: linkRoute ?? this.linkRoute,
         isActive: isActive ?? this.isActive,
         sortOrder: sortOrder ?? this.sortOrder,
+        audience: audience ?? this.audience,
       );
 }
