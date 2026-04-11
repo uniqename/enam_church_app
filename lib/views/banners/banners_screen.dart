@@ -45,21 +45,10 @@ class _BannersScreenState extends State<BannersScreen> {
     setState(() { _banners = all; _loading = false; });
   }
 
-  Future<String?> _uploadMedia(File file, String mediaType) async {
+  Future<String?> _uploadMedia(File file) async {
     final ext = file.path.split('.').last.toLowerCase();
     final path = 'banners/${const Uuid().v4()}.$ext';
-    try {
-      return await SupabaseService().uploadImage('church-media', path, file);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Upload failed: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 10),
-        ));
-      }
-      return null;
-    }
+    return await SupabaseService().uploadImage('church-media', path, file);
   }
 
   @override
@@ -571,18 +560,28 @@ class _BannersScreenState extends State<BannersScreen> {
                   messenger.showSnackBar(const SnackBar(
                       content: Text('Uploading media…'),
                       duration: Duration(seconds: 30)));
-                  final uploaded =
-                      await _uploadMedia(pickedFile!, mediaType);
-                  messenger.hideCurrentSnackBar();
-                  if (uploaded != null) {
-                    finalUrl = uploaded;
-                    finalType = mediaType;
-                  } else {
+                  try {
+                    final uploaded = await _uploadMedia(pickedFile!);
+                    messenger.hideCurrentSnackBar();
+                    if (uploaded != null) {
+                      finalUrl = uploaded;
+                      finalType = mediaType;
+                    } else {
+                      // isConfigured = false (demo mode)
+                      finalUrl = '';
+                      finalType = 'none';
+                    }
+                  } catch (e) {
+                    messenger.hideCurrentSnackBar();
+                    if (mounted) {
+                      messenger.showSnackBar(SnackBar(
+                        content: Text('Upload error: $e'),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 15),
+                      ));
+                    }
                     finalUrl = '';
                     finalType = 'none';
-                    messenger.showSnackBar(const SnackBar(
-                        content: Text('Upload failed'),
-                        backgroundColor: Colors.orange));
                   }
                 }
 
