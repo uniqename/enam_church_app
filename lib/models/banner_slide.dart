@@ -34,7 +34,7 @@ class BannerSlideModel {
       );
 
   Map<String, dynamic> toSupabase() => {
-        'id': id,
+        if (id.isNotEmpty) 'id': id,
         'title': title,
         'subtitle': subtitle,
         'media_url': mediaUrl,
