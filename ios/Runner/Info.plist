@@ -42,9 +42,7 @@
 	<string>Faith Klinik Ministries uses your location to help you find nearby church events and services.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Faith Klinik Ministries uses Face ID to provide quick and secure access to your account.</string>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>Faith Klinik Ministries uses tracking to provide a personalised experience and relevant ministry content.</string>
-	<key>NSContactsUsageDescription</key>
+<key>NSContactsUsageDescription</key>
 	<string>Faith Klinik Ministries accesses your contacts so you can invite friends and family to join the community.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Faith Klinik Ministries adds church events and service schedules to your calendar.</string>
