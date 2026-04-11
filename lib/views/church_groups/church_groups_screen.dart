@@ -57,9 +57,7 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
     }
   }
 
-  bool get _isAdmin => _me?.role == UserRole.admin ||
-      _me?.role == UserRole.pastor ||
-      _me?.role == UserRole.dept_head;
+  bool get _isAdmin => _me?.role == UserRole.admin || _me?.role == UserRole.pastor;
 
   bool _isLeaderOf(OrgGroup g) {
     if (_userId == null) return false;

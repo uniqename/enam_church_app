@@ -1,3 +1,4 @@
+import 'package:uuid/uuid.dart';
 import '../models/child_game.dart';
 import '../models/child_lesson.dart';
 import '../models/child_sermon.dart';
@@ -9,6 +10,7 @@ class ChildContentService {
   ChildContentService._internal();
 
   final _supabase = SupabaseService();
+  final _uuid = const Uuid();
 
   // Games
   Future<List<ChildGame>> getAllGames() async {
@@ -88,6 +90,60 @@ class ChildContentService {
       print('✅ Lesson updated');
     } catch (e) {
       print('❌ Failed to update lesson: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> addLesson(ChildLesson lesson) async {
+    try {
+      final data = lesson.toSupabase();
+      data['id'] = _uuid.v4();
+      await _supabase.insert('child_lessons', data);
+      print('✅ Lesson added');
+    } catch (e) {
+      print('❌ Failed to add lesson: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteLesson(String id) async {
+    try {
+      await _supabase.delete('child_lessons', id);
+      print('✅ Lesson deleted');
+    } catch (e) {
+      print('❌ Failed to delete lesson: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> addSermon(ChildSermon sermon) async {
+    try {
+      final data = sermon.toSupabase();
+      data['id'] = _uuid.v4();
+      await _supabase.insert('child_sermons', data);
+      print('✅ Sermon added');
+    } catch (e) {
+      print('❌ Failed to add sermon: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateSermon(ChildSermon sermon) async {
+    try {
+      await _supabase.update('child_sermons', sermon.id, sermon.toSupabase());
+      print('✅ Sermon updated');
+    } catch (e) {
+      print('❌ Failed to update sermon: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteSermon(String id) async {
+    try {
+      await _supabase.delete('child_sermons', id);
+      print('✅ Sermon deleted');
+    } catch (e) {
+      print('❌ Failed to delete sermon: $e');
       rethrow;
     }
   }

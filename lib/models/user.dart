@@ -76,8 +76,16 @@ class AppUser {
   bool get isTreasurer => role == UserRole.treasurer;
   bool get isMember => role == UserRole.member;
   bool get isChild => role == UserRole.child;
-  bool get canManageContent => isAdmin || isDeptHead || isMediaTeam;
+  bool get canManageContent => isAdmin || isMediaTeam;
   bool get canManageFinances => isAdmin || isTreasurer;
+
+  bool get isChildrensDept =>
+      department.toLowerCase().contains('children') ||
+      department.toLowerCase().contains('child') ||
+      department.toLowerCase().contains('teacher');
+
+  bool get canManageChildrenContent =>
+      isAdmin || (role == UserRole.dept_head && isChildrensDept);
 
   bool canEditDepartment(String departmentName) {
     return isAdmin; // Pastors and admins can edit any department
