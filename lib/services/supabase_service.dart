@@ -135,6 +135,8 @@ class SupabaseService {
       );
     } catch (_) {}
 
+    final user = _client!.auth.currentUser;
+    print('🔑 upload — user: ${user?.id ?? "NOT LOGGED IN"}, bucket: $bucket, path: $path');
     try {
       await _client!.storage.from(bucket).upload(
             path,
@@ -143,20 +145,8 @@ class SupabaseService {
           );
       return _client!.storage.from(bucket).getPublicUrl(path);
     } catch (e) {
-      print('❌ uploadImage $bucket/$path failed: $e');
-      final msg = e.toString().toLowerCase();
-      if (msg.contains('not found') || msg.contains('bucket')) {
-        throw Exception(
-            'Storage bucket "$bucket" not found. '
-            'Run supabase_storage_policies.sql in your Supabase SQL Editor.');
-      }
-      if (msg.contains('row level security') || msg.contains('403') ||
-          msg.contains('unauthorized') || msg.contains('policy')) {
-        throw Exception(
-            'Upload blocked (403 — storage policy missing). '
-            'Run supabase_storage_policies.sql in your Supabase SQL Editor.');
-      }
-      rethrow;
+      print('❌ uploadImage failed: $e');
+      throw Exception('Upload failed: $e');
     }
   }
 
