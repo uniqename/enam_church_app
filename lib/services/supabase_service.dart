@@ -123,18 +123,40 @@ class SupabaseService {
   }
 
   Future<String?> uploadImage(String bucket, String path, File file,
-      {String contentType = 'image/jpeg'}) async {
+      {String? contentType}) async {
     if (!isConfigured) return null;
+    final ct = contentType ?? _contentTypeFromPath(path);
     try {
       await _client!.storage.from(bucket).upload(
             path,
             file,
-            fileOptions: FileOptions(upsert: true, contentType: contentType),
+            fileOptions: FileOptions(upsert: true, contentType: ct),
           );
       return _client!.storage.from(bucket).getPublicUrl(path);
     } catch (e) {
       print('❌ uploadImage $bucket/$path failed: $e');
-      return null;
+      rethrow;
+    }
+  }
+
+  static String _contentTypeFromPath(String path) {
+    final ext = path.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg': return 'image/jpeg';
+      case 'png':  return 'image/png';
+      case 'gif':  return 'image/gif';
+      case 'webp': return 'image/webp';
+      case 'heic':
+      case 'heif': return 'image/heic';
+      case 'mp4':  return 'video/mp4';
+      case 'mov':  return 'video/quicktime';
+      case 'm4v':  return 'video/mp4';
+      case 'mp3':  return 'audio/mpeg';
+      case 'm4a':  return 'audio/mp4';
+      case 'aac':  return 'audio/aac';
+      case 'wav':  return 'audio/wav';
+      default:     return 'application/octet-stream';
     }
   }
 

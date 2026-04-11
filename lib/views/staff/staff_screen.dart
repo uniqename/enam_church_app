@@ -160,7 +160,18 @@ class _StaffScreenState extends State<StaffScreen> {
   Future<String?> _uploadPhoto(String staffId, File file) async {
     final ext = file.path.split('.').last.toLowerCase();
     final path = 'staff/$staffId.$ext';
-    return SupabaseService().uploadImage('staff-photos', path, file, contentType: 'image/jpeg');
+    try {
+      return await SupabaseService().uploadImage('church-media', path, file);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Photo upload failed: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 10),
+        ));
+      }
+      return null;
+    }
   }
 
   bool get _canEdit => _currentUser?.canManageContent ?? false;

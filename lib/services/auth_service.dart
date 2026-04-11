@@ -221,27 +221,51 @@ class AuthService {
   }
 
   Future<AppUser?> getCurrentUserProfile() async {
-    if (!SupabaseService.isConfigured) {
-      final prefs = await SharedPreferences.getInstance();
-      final id = prefs.getString('user_id');
-      if (id == null) return null;
-      final name = prefs.getString('user_name') ?? 'Demo User';
-      final email = prefs.getString('user_email') ?? '';
-      final role = prefs.getString('user_role') ?? 'member';
-      return AppUser(
-        id: id, email: email, name: name, phone: '',
-        role: UserRole.values.firstWhere(
-          (r) => r.name == role, orElse: () => UserRole.member),
-        department: '', status: 'active',
-      );
+    final prefs = await SharedPreferences.getInstance();
+
+    // If Supabase is configured and we have a live session, try the DB first
+    if (SupabaseService.isConfigured && currentUser != null) {
+      try {
+        final data = await _supabase.getById('users', currentUser!.id);
+        if (data != null) {
+          // Keep prefs in sync for offline fallback
+          await prefs.setString('user_role', data['role'] as String? ?? 'member');
+          await prefs.setString('user_department', data['department'] as String? ?? '');
+          await prefs.setString('user_name', data['name'] as String? ?? '');
+          return AppUser.fromSupabase(data);
+        }
+      } catch (_) {}
     }
-    final user = currentUser;
-    if (user == null) return null;
-    try {
-      final data = await _supabase.getById('users', user.id);
-      if (data == null) return null;
-      return AppUser.fromSupabase(data);
-    } catch (_) { return null; }
+
+    // Fallback: build profile from cached SharedPreferences
+    // This covers demo users, expired sessions, and Supabase query failures.
+    final id = prefs.getString('user_id') ??
+        (SupabaseService.isConfigured ? currentUser?.id : null);
+    if (id == null) return null;
+    final role = prefs.getString('user_role') ?? 'member';
+    return AppUser(
+      id: id,
+      email: prefs.getString('user_email') ?? currentUser?.email ?? '',
+      name: prefs.getString('user_name') ??
+          currentUser?.userMetadata?['name'] as String? ?? 'User',
+      phone: '',
+      role: _roleFromString(role),
+      department: prefs.getString('user_department') ?? '',
+      status: 'active',
+    );
+  }
+
+  static UserRole _roleFromString(String role) {
+    switch (role.toLowerCase()) {
+      case 'pastor':          return UserRole.pastor;
+      case 'admin':           return UserRole.admin;
+      case 'department_head':
+      case 'dept_head':       return UserRole.dept_head;
+      case 'media_team':      return UserRole.media_team;
+      case 'treasurer':       return UserRole.treasurer;
+      case 'child':           return UserRole.child;
+      default:                return UserRole.member;
+    }
   }
 
   Future<String?> getCurrentUserEmail() async {

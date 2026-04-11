@@ -65,13 +65,18 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     final ext = file.path.split('.').last.toLowerCase();
     final id = const Uuid().v4();
     final path = 'announcements/$id.$ext';
-    final contentType = mediaType == 'image'
-        ? 'image/jpeg'
-        : mediaType == 'video'
-            ? 'video/mp4'
-            : 'audio/mpeg';
-    return SupabaseService().uploadImage('church-media', path, file,
-        contentType: contentType);
+    try {
+      return await SupabaseService().uploadImage('church-media', path, file);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Upload failed: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 10),
+        ));
+      }
+      return null;
+    }
   }
 
   @override

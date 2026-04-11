@@ -107,7 +107,7 @@ class _QuizBuilderScreenState extends State<QuizBuilderScreen> {
           final ext = q.imageFile!.path.split('.').last.toLowerCase();
           final path = 'quiz/${const Uuid().v4()}.$ext';
           final url = await SupabaseService().uploadImage(
-              'church-media', path, q.imageFile!, contentType: 'image/jpeg');
+              'church-media', path, q.imageFile!);
           if (url != null) q.imageUrlController.text = url;
           q.imageFile = null;
         }

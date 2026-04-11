@@ -19,12 +19,25 @@ class _BannersScreenState extends State<BannersScreen> {
   final _service = BannerService();
   List<BannerSlideModel> _banners = [];
   bool _loading = true;
+  String _audienceFilter = 'adult';
 
   @override
   void initState() {
     super.initState();
     _load();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final arg = ModalRoute.of(context)?.settings.arguments;
+    if (arg is String && ['adult', 'children', 'campaign'].contains(arg)) {
+      _audienceFilter = arg;
+    }
+  }
+
+  List<BannerSlideModel> get _filtered =>
+      _banners.where((b) => b.audience == _audienceFilter).toList();
 
   Future<void> _load() async {
     setState(() => _loading = true);
@@ -35,13 +48,18 @@ class _BannersScreenState extends State<BannersScreen> {
   Future<String?> _uploadMedia(File file, String mediaType) async {
     final ext = file.path.split('.').last.toLowerCase();
     final path = 'banners/${const Uuid().v4()}.$ext';
-    final contentType = mediaType == 'image'
-        ? 'image/jpeg'
-        : mediaType == 'video'
-            ? 'video/mp4'
-            : 'audio/mpeg';
-    return SupabaseService().uploadImage('church-media', path, file,
-        contentType: contentType);
+    try {
+      return await SupabaseService().uploadImage('church-media', path, file);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Upload failed: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 10),
+        ));
+      }
+      return null;
+    }
   }
 
   @override
@@ -61,46 +79,101 @@ class _BannersScreenState extends State<BannersScreen> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _banners.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          : Column(
+              children: [
+                // ── Audience filter chips ────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+                  child: Row(
                     children: [
-                      const Icon(Icons.view_carousel_outlined,
-                          size: 64, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      const Text('No banners yet',
-                          style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add First Banner'),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.purple,
-                            foregroundColor: Colors.white),
-                        onPressed: () => _showDialog(null),
-                      ),
+                      _audienceChip('adult', 'Hero (Adult)', AppColors.purple),
+                      const SizedBox(width: 8),
+                      _audienceChip('children', "Children's", AppColors.childOrange),
+                      const SizedBox(width: 8),
+                      _audienceChip('campaign', 'Campaign', Colors.teal),
                     ],
                   ),
-                )
-              : ReorderableListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _banners.length,
-                  onReorder: (oldIdx, newIdx) async {
-                    if (newIdx > oldIdx) newIdx--;
-                    setState(() {
-                      final item = _banners.removeAt(oldIdx);
-                      _banners.insert(newIdx, item);
-                    });
-                    // Save new sort order
-                    for (int i = 0; i < _banners.length; i++) {
-                      await _service.updateBanner(
-                          _banners[i].copyWith(sortOrder: i));
-                    }
-                  },
-                  itemBuilder: (_, i) => _buildCard(_banners[i], i),
                 ),
+                // ── Banner list ──────────────────────────────────────────
+                Expanded(
+                  child: _filtered.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.view_carousel_outlined,
+                                  size: 64, color: Colors.grey),
+                              const SizedBox(height: 16),
+                              Text('No ${_audienceLabel()} banners yet',
+                                  style: const TextStyle(color: Colors.grey, fontSize: 16)),
+                              const SizedBox(height: 12),
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.add),
+                                label: const Text('Add Banner'),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.purple,
+                                    foregroundColor: Colors.white),
+                                onPressed: () => _showDialog(null),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ReorderableListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _filtered.length,
+                          onReorder: (oldIdx, newIdx) async {
+                            if (newIdx > oldIdx) newIdx--;
+                            final visible = _filtered.toList();
+                            final item = visible.removeAt(oldIdx);
+                            visible.insert(newIdx, item);
+                            setState(() {
+                              // Apply new order back to _banners
+                              for (final b in visible) {
+                                final idx = _banners.indexWhere((x) => x.id == b.id);
+                                if (idx != -1) _banners[idx] = b;
+                              }
+                            });
+                            for (int i = 0; i < visible.length; i++) {
+                              await _service.updateBanner(visible[i].copyWith(sortOrder: i));
+                            }
+                          },
+                          itemBuilder: (_, i) => _buildCard(_filtered[i], i),
+                        ),
+                ),
+              ],
+            ),
     );
+  }
+
+  Widget _audienceChip(String value, String label, Color color) {
+    final selected = _audienceFilter == value;
+    return GestureDetector(
+      onTap: () => setState(() => _audienceFilter = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? color : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? color : Colors.grey.shade400),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: selected ? Colors.white : null,
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _audienceLabel() {
+    switch (_audienceFilter) {
+      case 'children': return "Children's";
+      case 'campaign': return 'Campaign';
+      default: return 'Hero (Adult)';
+    }
   }
 
   Widget _buildCard(BannerSlideModel b, int idx) {
@@ -246,7 +319,7 @@ class _BannersScreenState extends State<BannersScreen> {
     final subtitleCtrl = TextEditingController(text: existing?.subtitle ?? '');
     final routeCtrl = TextEditingController(text: existing?.linkRoute ?? '');
     bool isActive = existing?.isActive ?? true;
-    String audience = existing?.audience ?? 'adult';
+    String audience = existing?.audience ?? _audienceFilter;
     String mediaUrl = existing?.mediaUrl ?? '';
     String mediaType = existing?.mediaType ?? 'none';
     File? pickedFile;

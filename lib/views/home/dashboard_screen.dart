@@ -513,7 +513,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             top: 8,
             right: 10,
             child: GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/admin/banners').then((_) => _loadUserData()),
+              onTap: () => Navigator.pushNamed(context, '/admin/banners',
+                  arguments: 'children').then((_) => _loadUserData()),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
@@ -791,29 +792,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
-    return Stack(
-      children: [
-        heroContent,
-        if (canEdit)
-          Positioned(
-            top: 10, right: 10,
-            child: GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/admin/banners').then((_) => _loadUserData()),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.edit, size: 13, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text('Edit Banners', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
-                  ],
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: -16),
+      child: Stack(
+        children: [
+          heroContent,
+          if (canEdit)
+            Positioned(
+              top: 10, right: 10,
+              child: GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/admin/banners',
+                    arguments: 'adult').then((_) => _loadUserData()),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.edit, size: 13, color: Colors.white),
+                      SizedBox(width: 4),
+                      Text('Hero Banners', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -821,8 +826,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final hasImage = slide.imageUrl.isNotEmpty;
     if (hasImage) {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(0)),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Stack(
@@ -862,10 +866,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildHeroGradientCard(_BannerSlide slide) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: [slide.color1, slide.color2], begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -943,7 +945,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Spacer(),
             if (canEdit)
               GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/admin/banners').then((_) => _loadUserData()),
+                onTap: () => Navigator.pushNamed(context, '/admin/banners',
+                    arguments: 'campaign').then((_) => _loadUserData()),
                 child: const Text('Manage', style: TextStyle(fontSize: 12, color: AppColors.purple)),
               ),
           ],

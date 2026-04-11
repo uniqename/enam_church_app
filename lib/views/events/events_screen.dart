@@ -321,7 +321,18 @@ class _EventsScreenState extends State<EventsScreen> {
   Future<String?> _uploadCover(File file) async {
     final ext = file.path.split('.').last.toLowerCase();
     final path = 'events/${const Uuid().v4()}.$ext';
-    return SupabaseService().uploadImage('church-media', path, file, contentType: 'image/jpeg');
+    try {
+      return await SupabaseService().uploadImage('church-media', path, file);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Upload failed: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 10),
+        ));
+      }
+      return null;
+    }
   }
 
   void _showAddEventDialog() {

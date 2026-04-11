@@ -286,19 +286,21 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 String finalUrl = url;
                 if (pickedPath != null) {
                   final messenger = ScaffoldMessenger.of(context);
-                  messenger.showSnackBar(const SnackBar(content: Text('Uploading media…'), duration: Duration(seconds: 30)));
+                  messenger.showSnackBar(const SnackBar(content: Text('Uploading media…'), duration: Duration(seconds: 60)));
                   final ext = pickedPath!.split('.').last.toLowerCase();
-                  final contentType = (ext == 'mp4' || ext == 'mov') ? 'video/mp4' : 'audio/mpeg';
-                  final uploaded = await SupabaseService().uploadImage(
-                    'sermon-media', '${const Uuid().v4()}.$ext', File(pickedPath!), contentType: contentType,
-                  );
-                  messenger.hideCurrentSnackBar();
-                  if (uploaded != null) {
-                    finalUrl = uploaded;
-                    messenger.showSnackBar(const SnackBar(content: Text('Media uploaded — all members can access it'), backgroundColor: Colors.green));
-                  } else {
+                  try {
+                    final uploaded = await SupabaseService().uploadImage(
+                      'church-media', 'sermons/${const Uuid().v4()}.$ext', File(pickedPath!),
+                    );
+                    messenger.hideCurrentSnackBar();
+                    if (uploaded != null) {
+                      finalUrl = uploaded;
+                      messenger.showSnackBar(const SnackBar(content: Text('Media uploaded — all members can access it'), backgroundColor: Colors.green));
+                    }
+                  } catch (e) {
+                    messenger.hideCurrentSnackBar();
                     try { storedPath = await _service.copyFileToSermonStorage(pickedPath!); } catch (_) { storedPath = pickedPath!; }
-                    messenger.showSnackBar(const SnackBar(content: Text('Saved locally (only visible on this device)'), backgroundColor: Colors.orange));
+                    messenger.showSnackBar(SnackBar(content: Text('Cloud upload failed ($e) — saved locally'), backgroundColor: Colors.orange, duration: const Duration(seconds: 8)));
                   }
                 }
 

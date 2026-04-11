@@ -239,23 +239,19 @@ class _ChurchLibraryScreenState extends State<ChurchLibraryScreen> {
       messenger.showSnackBar(const SnackBar(
           content: Text('Uploading…'), duration: Duration(seconds: 30)));
       final path = 'library/${const Uuid().v4()}.$fileExt';
-      final contentType = type == 'audio'
-          ? 'audio/mpeg'
-          : type == 'video'
-              ? 'video/mp4'
-              : type == 'pdf' || type == 'plan'
-                  ? 'application/pdf'
-                  : 'image/jpeg';
-      final uploaded = await _supabase.uploadImage(
-          'church-media', path, file, contentType: contentType);
-      messenger.hideCurrentSnackBar();
-      if (uploaded == null) {
-        messenger.showSnackBar(const SnackBar(
-            content: Text('Upload failed'),
-            backgroundColor: Colors.red));
+      try {
+        final uploaded = await _supabase.uploadImage('church-media', path, file);
+        messenger.hideCurrentSnackBar();
+        if (uploaded == null) return;
+        fileUrl = uploaded;
+      } catch (e) {
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(SnackBar(
+            content: Text('Upload failed: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 10)));
         return;
       }
-      fileUrl = uploaded;
     }
 
     try {
