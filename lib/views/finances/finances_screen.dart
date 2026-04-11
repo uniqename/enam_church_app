@@ -215,7 +215,7 @@ class _FinancesScreenState extends State<FinancesScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  value: selectedType,
+                  initialValue: selectedType,
                   decoration: const InputDecoration(
                     labelText: 'Type',
                     border: OutlineInputBorder(),
@@ -244,7 +244,7 @@ class _FinancesScreenState extends State<FinancesScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedMethod,
+                  initialValue: selectedMethod,
                   decoration: const InputDecoration(
                     labelText: 'Method',
                     border: OutlineInputBorder(),
@@ -359,7 +359,7 @@ class _FinancesScreenState extends State<FinancesScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  value: selectedType,
+                  initialValue: selectedType,
                   decoration: const InputDecoration(
                     labelText: 'Type',
                     border: OutlineInputBorder(),
@@ -388,7 +388,7 @@ class _FinancesScreenState extends State<FinancesScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedMethod,
+                  initialValue: selectedMethod,
                   decoration: const InputDecoration(
                     labelText: 'Method',
                     border: OutlineInputBorder(),

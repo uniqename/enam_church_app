@@ -64,7 +64,7 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
     return g.leader == _userId ||
         g.leader == _userName ||
         (_me?.role == UserRole.dept_head &&
-            (_me?.department?.toLowerCase().contains(g.name.toLowerCase()) ?? false));
+            (_me?.department.toLowerCase().contains(g.name.toLowerCase()) ?? false));
   }
 
   bool _canManage(OrgGroup g) => _isAdmin || _isLeaderOf(g);
@@ -164,7 +164,7 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
   Future<String?> _uploadGroupCover(File file) async {
     final ext = file.path.split('.').last.toLowerCase();
     final path = 'groups/${const Uuid().v4()}.$ext';
-    return SupabaseService().uploadImage('group-media', path, file, contentType: 'image/jpeg');
+    return SupabaseService().uploadImage('church-media', path, file, contentType: 'image/jpeg');
   }
 
   void _showAddGroupDialog() {
@@ -184,7 +184,7 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
     final gmeetC = TextEditingController(text: existing?.googleMeetLink);
     final waC = TextEditingController(text: existing?.whatsappGroup);
     final bylawsC = TextEditingController(text: existing?.bylaws);
-    final duesC = TextEditingController(text: existing?.dues?.toString() ?? '');
+    final duesC = TextEditingController(text: existing?.dues.toString() ?? '');
     String duesPeriod = existing?.duesPeriod ?? 'monthly';
     File? coverFile;
     String coverUrl = existing?.coverUrl ?? '';
@@ -252,7 +252,7 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: duesPeriod,
+                      initialValue: duesPeriod,
                       dropdownColor: AppColors.darkSurface2,
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
@@ -690,16 +690,16 @@ class _AboutTab extends StatelessWidget {
           ]),
 
         // Links
-        if (group.googleMeetLink?.isNotEmpty == true ||
+        if (group.googleMeetLink.isNotEmpty == true ||
             group.whatsappGroup.isNotEmpty) ...[
           const SizedBox(height: 12),
           _InfoCard(title: 'Quick Links', children: [
-            if (group.googleMeetLink?.isNotEmpty == true)
+            if (group.googleMeetLink.isNotEmpty == true)
               _LinkButton(
                 icon: Icons.videocam_outlined,
                 label: 'Join Google Meet',
                 color: AppColors.googleMeet,
-                onTap: () => _openUrl(context, group.googleMeetLink!),
+                onTap: () => _openUrl(context, group.googleMeetLink),
               ),
             if (group.whatsappGroup.isNotEmpty)
               _LinkButton(
@@ -712,21 +712,21 @@ class _AboutTab extends StatelessWidget {
         ],
 
         // Dues info
-        if (group.dues != null) ...[
-          const SizedBox(height: 12),
-          _InfoCard(title: 'Dues', children: [
-            _Row(
-              icon: Icons.payments_outlined,
-              label: 'GHS ${group.dues!.toStringAsFixed(2)} / ${group.duesPeriod ?? "monthly"}',
-            ),
-          ]),
-        ],
+        ...[
+        const SizedBox(height: 12),
+        _InfoCard(title: 'Dues', children: [
+          _Row(
+            icon: Icons.payments_outlined,
+            label: 'GHS ${group.dues!.toStringAsFixed(2)} / ${group.duesPeriod ?? "monthly"}',
+          ),
+        ]),
+      ],
 
         // Bylaws
-        if (group.bylaws?.isNotEmpty == true) ...[
+        if (group.bylaws.isNotEmpty == true) ...[
           const SizedBox(height: 12),
           _InfoCard(title: 'Bylaws & Rules', children: [
-            Text(group.bylaws!,
+            Text(group.bylaws,
                 style: const TextStyle(color: Colors.white70, fontSize: 13)),
           ]),
         ],
@@ -1032,7 +1032,7 @@ class _DuesTab extends StatelessWidget {
             _DarkField(controller: amtC, label: 'Amount (GHS)', keyboardType: TextInputType.number),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
-              value: period,
+              initialValue: period,
               dropdownColor: AppColors.darkSurface2,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
@@ -1205,7 +1205,7 @@ class _FinancesTab extends StatelessWidget {
               _DarkField(controller: titleC, label: 'Title *'),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
-                value: category,
+                initialValue: category,
                 dropdownColor: AppColors.darkSurface2,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(

@@ -199,7 +199,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
             _sectionLabel('Your Visit'),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _visitType,
+              initialValue: _visitType,
               decoration: const InputDecoration(
                 labelText: 'How are you joining us?',
                 border: OutlineInputBorder(),

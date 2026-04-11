@@ -128,7 +128,7 @@ class _EventGalleryScreenState extends State<EventGalleryScreen> {
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
-                    value: dept,
+                    initialValue: dept,
                     decoration: const InputDecoration(
                       labelText: 'Department',
                       border: OutlineInputBorder(),

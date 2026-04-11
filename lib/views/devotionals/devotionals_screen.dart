@@ -334,7 +334,7 @@ class _DevotionalsScreenState extends State<DevotionalsScreen> {
                 _DarkField(controller: prayerC, label: 'Prayer', maxLines: 3),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: ageGroup,
+                  initialValue: ageGroup,
                   dropdownColor: AppColors.darkSurface2,
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(

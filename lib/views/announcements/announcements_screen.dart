@@ -70,7 +70,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
         : mediaType == 'video'
             ? 'video/mp4'
             : 'audio/mpeg';
-    return SupabaseService().uploadImage('announcement-media', path, file,
+    return SupabaseService().uploadImage('church-media', path, file,
         contentType: contentType);
   }
 
@@ -273,7 +273,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: priority,
+                  initialValue: priority,
                   decoration: const InputDecoration(
                       labelText: 'Priority', border: OutlineInputBorder()),
                   items: validPriorities
@@ -291,7 +291,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                 ],
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: audience,
+                  initialValue: audience,
                   decoration: const InputDecoration(
                       labelText: 'Audience',
                       border: OutlineInputBorder(),

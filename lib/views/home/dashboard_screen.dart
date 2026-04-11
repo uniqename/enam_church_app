@@ -12,7 +12,6 @@ import '../../services/announcement_service.dart';
 import '../../services/banner_service.dart';
 import '../../services/supabase_service.dart';
 import '../../models/announcement.dart';
-import '../../models/banner_slide.dart';
 import '../../utils/colors.dart';
 import '../admin/admin_video_upload_screen.dart';
 
@@ -569,6 +568,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 24),
             ],
                     // ── Sliding banner ───────────────────────────────────────────
+            if (_userRole == 'admin' || _userRole == 'pastor' || _userRole == 'media_team')
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.edit, size: 14),
+                  label: const Text('Edit Banners', style: TextStyle(fontSize: 12)),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.purple,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  onPressed: () => Navigator.pushNamed(context, '/admin/banners').then((_) => _loadUserData()),
+                ),
+              ),
             _buildSlidingBanner(),
             const SizedBox(height: 20),
             if (isAdmin && _pendingApprovals > 0) ...[
@@ -590,17 +604,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
               childAspectRatio: 1.0,
               children: [
                 _buildQuickActionCard('Streaming', Icons.live_tv, AppColors.error,
-                    () => Navigator.pushNamed(context, '/streaming')),
+                    () => Navigator.pushNamed(context, '/streaming'),
+                    editRoute: '/streaming'),
                 _buildQuickActionCard('Sermons', Icons.mic, AppColors.purple,
-                    () => Navigator.pushNamed(context, '/sermons')),
+                    () => Navigator.pushNamed(context, '/sermons'),
+                    editRoute: '/sermons'),
                 _buildQuickActionCard('Devotionals', Icons.auto_stories, AppColors.accentBlue,
-                    () => Navigator.pushNamed(context, '/devotionals')),
+                    () => Navigator.pushNamed(context, '/devotionals'),
+                    editRoute: '/devotionals'),
                 _buildQuickActionCard('Prayers', Icons.favorite, AppColors.brown,
-                    () => Navigator.pushNamed(context, '/prayers')),
+                    () => Navigator.pushNamed(context, '/prayers'),
+                    editRoute: '/prayers'),
                 _buildQuickActionCard('Giving', Icons.card_giftcard, AppColors.success,
                     () => Navigator.pushNamed(context, '/giving')),
                 _buildQuickActionCard('Events', Icons.event, AppColors.accentTeal,
-                    () => Navigator.pushNamed(context, '/events')),
+                    () => Navigator.pushNamed(context, '/events'),
+                    editRoute: '/events'),
               ],
             ),
             const SizedBox(height: 20),
@@ -802,15 +821,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // ── Community widget ────────────────────────────────────────────────────────
   Widget _buildCommunityWidget() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final canManage = _userRole == 'admin' || _userRole == 'pastor' ||
+        _userRole == 'dept_head' || _userRole == 'media_team';
     final items = [
       _CommunityItem('Groups', Icons.groups, AppColors.blue, '/groups'),
-      _CommunityItem('Members', Icons.people, AppColors.purple, '/members'),
+      _CommunityItem('Members', Icons.people, AppColors.purple, '/members',
+          editRoute: canManage ? '/members' : null),
       _CommunityItem('Messages', Icons.message, AppColors.darkNavy, '/messages'),
       _CommunityItem('Quiz', Icons.quiz, AppColors.warning, '/quiz'),
-      _CommunityItem('Bulletin', Icons.receipt_long, AppColors.blue, '/bulletin'),
+      _CommunityItem('Bulletin', Icons.receipt_long, AppColors.blue, '/bulletin',
+          editRoute: canManage ? '/bulletin' : null),
       _CommunityItem('Notes', Icons.note_alt, const Color(0xFF5D4037), '/notes'),
       _CommunityItem('AI Tools', Icons.rocket_launch, const Color(0xFFFF6B6B), '/ai_tools'),
-      _CommunityItem('Volunteer', Icons.volunteer_activism, AppColors.info, '/volunteer'),
+      _CommunityItem('Volunteer', Icons.volunteer_activism, AppColors.info, '/volunteer',
+          editRoute: canManage ? '/volunteer' : null),
     ];
     return Card(
       elevation: isDark ? 0 : 2,
@@ -839,29 +863,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisSpacing: 10,
               crossAxisSpacing: 6,
               childAspectRatio: 0.9,
-              children: items.map((item) => InkWell(
-                onTap: () => Navigator.pushNamed(context, item.route),
-                borderRadius: BorderRadius.circular(10),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: item.color.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(item.icon, color: item.color, size: 22),
+              children: items.map((item) => Stack(
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.pushNamed(context, item.route),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: item.color.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(item.icon, color: item.color, size: 22),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(item.label,
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                      ],
                     ),
-                    const SizedBox(height: 5),
-                    Text(item.label,
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
-                  ],
-                ),
+                  ),
+                  if (item.editRoute != null)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pushNamed(context, item.editRoute!),
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: item.color.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Icon(Icons.edit, size: 10, color: item.color),
+                        ),
+                      ),
+                    ),
+                ],
               )).toList(),
             ),
           ],
@@ -1100,35 +1144,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildQuickActionCard(String title, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildQuickActionCard(String title, IconData icon, Color color,
+      VoidCallback onTap, {String? editRoute}) {
+    final canEdit = editRoute != null &&
+        (_userRole == 'admin' || _userRole == 'pastor' ||
+            _userRole == 'dept_head' || _userRole == 'media_team');
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Stack(
+        children: [
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color, size: 32),
+                  const SizedBox(height: 8),
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          if (canEdit)
+            Positioned(
+              top: 4,
+              right: 4,
+              child: GestureDetector(
+                onTap: () => Navigator.pushNamed(context, editRoute),
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(Icons.edit, size: 12, color: color),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -1281,7 +1344,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                     _buildMenuItem(
-                      'Bible Apps',
+                      'Bible Apps & Library',
                       Icons.menu_book,
                       () {
                         Navigator.pop(context);
@@ -1336,40 +1399,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Navigator.pushNamed(context, '/ai_tools');
                       },
                     ),
-                    // Elevated roles — content management
+                    // ── Content management (elevated roles) ─────────────
                     if (_userRole == 'admin' || _userRole == 'pastor' ||
-                        _userRole == 'department_head' || _userRole == 'media_team')
-                      _buildMenuItem(
-                        'Upload Video',
-                        Icons.video_call,
-                        () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const AdminVideoUploadScreen(),
-                            ),
-                          );
-                        },
+                        _userRole == 'dept_head' || _userRole == 'media_team') ...[
+                      const Divider(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: Text('Manage Content',
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[500],
+                                letterSpacing: 0.8)),
                       ),
-                    if (_userRole == 'admin' || _userRole == 'pastor')
-                      _buildMenuItem(
-                        'Manage Bible Stories',
-                        Icons.auto_stories,
-                        () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/admin/bible_stories');
-                        },
-                      ),
-                    if (_userRole == 'admin' || _userRole == 'pastor')
-                      _buildMenuItem(
-                        'Manage Banners',
-                        Icons.view_carousel,
-                        () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/admin/banners');
-                        },
-                      ),
+                      _buildMenuItem('Manage Banners', Icons.view_carousel, () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/admin/banners');
+                      }),
+                      _buildMenuItem('Announcements', Icons.campaign, () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/announcements');
+                      }),
+                      _buildMenuItem('Weekly Bulletin', Icons.receipt_long, () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/bulletin');
+                      }),
+                      _buildMenuItem('Church Library', Icons.local_library, () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/church_library');
+                      }),
+                      _buildMenuItem('Upload Video', Icons.video_call, () {
+                        Navigator.pop(context);
+                        Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => const AdminVideoUploadScreen()));
+                      }),
+                    ],
+                    if (_userRole == 'admin' || _userRole == 'pastor') ...[
+                      _buildMenuItem('Manage Bible Stories', Icons.auto_stories, () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/admin/bible_stories');
+                      }),
+                      _buildMenuItem('Members', Icons.people, () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/members');
+                      }),
+                    ],
                     const Divider(height: 32),
                     _buildMenuItem(
                       'Privacy Policy',
@@ -1450,7 +1524,8 @@ class _CommunityItem {
   final IconData icon;
   final Color color;
   final String route;
-  const _CommunityItem(this.label, this.icon, this.color, this.route);
+  final String? editRoute;
+  const _CommunityItem(this.label, this.icon, this.color, this.route, {this.editRoute});
 }
 
 enum _BannerType { yearTheme, announcement }

@@ -40,7 +40,7 @@ class _BannersScreenState extends State<BannersScreen> {
         : mediaType == 'video'
             ? 'video/mp4'
             : 'audio/mpeg';
-    return SupabaseService().uploadImage('banner-media', path, file,
+    return SupabaseService().uploadImage('church-media', path, file,
         contentType: contentType);
   }
 
@@ -167,7 +167,7 @@ class _BannersScreenState extends State<BannersScreen> {
           children: [
             Switch(
               value: b.isActive,
-              activeColor: AppColors.success,
+              activeThumbColor: AppColors.success,
               onChanged: (v) async {
                 await _service.updateBanner(b.copyWith(isActive: v));
                 _load();
@@ -396,7 +396,7 @@ class _BannersScreenState extends State<BannersScreen> {
                 SwitchListTile(
                   title: const Text('Show on home banner'),
                   value: isActive,
-                  activeColor: AppColors.success,
+                  activeThumbColor: AppColors.success,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (v) => setS(() => isActive = v),
                 ),

@@ -107,7 +107,7 @@ class _QuizBuilderScreenState extends State<QuizBuilderScreen> {
           final ext = q.imageFile!.path.split('.').last.toLowerCase();
           final path = 'quiz/${const Uuid().v4()}.$ext';
           final url = await SupabaseService().uploadImage(
-              'quiz-media', path, q.imageFile!, contentType: 'image/jpeg');
+              'church-media', path, q.imageFile!, contentType: 'image/jpeg');
           if (url != null) q.imageUrlController.text = url;
           q.imageFile = null;
         }
@@ -255,7 +255,7 @@ class _QuizBuilderScreenState extends State<QuizBuilderScreen> {
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
-              value: _category,
+              initialValue: _category,
               decoration: _inputDecor('Category', Icons.category),
               items: _categories
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))

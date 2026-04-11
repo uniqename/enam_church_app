@@ -180,7 +180,7 @@ class _ConnectCardScreenState extends State<ConnectCardScreen> {
             _sectionLabel('Your Visit'),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: _visitType,
+              initialValue: _visitType,
               decoration: _inputDecoration('Visit Type', Icons.person_pin),
               items: _visitTypes
                   .map((v) => DropdownMenuItem(value: v, child: Text(v)))

@@ -433,7 +433,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
               TextField(controller: leaderCtrl, decoration: const InputDecoration(labelText: 'Led By')),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: selectedIcon,
+                initialValue: selectedIcon,
                 decoration: const InputDecoration(labelText: 'Icon'),
                 items: _iconMap.entries.map((e) => DropdownMenuItem(
                   value: e.key,

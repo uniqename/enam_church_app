@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../utils/colors.dart';
+import 'church_library_screen.dart';
 
 class BibleAppsScreen extends StatelessWidget {
   const BibleAppsScreen({super.key});
@@ -159,27 +160,41 @@ class BibleAppsScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Card(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Our Church Library',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'We have physical Bible study materials, devotional books, and '
-                      'sermon series available at the church library. '
-                      'Visit us during church hours to borrow materials.',
-                    ),
-                    const SizedBox(height: 12),
-                    ListTile(
-                      leading: const Icon(Icons.location_on, color: AppColors.primary),
-                      title: const Text('Faith Klinik Ministries'),
-                      subtitle: const Text('Columbus, Ohio'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ],
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const ChurchLibraryScreen())),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: AppColors.brown.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.local_library, color: AppColors.brown, size: 28),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Church Library',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            SizedBox(height: 4),
+                            Text(
+                              'Books, reading plans, PDFs, audio sermons and more — curated by the team.',
+                              style: TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: AppColors.brown),
+                    ],
+                  ),
                 ),
               ),
             ),
