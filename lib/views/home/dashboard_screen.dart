@@ -323,12 +323,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildChildSlidingBanner(),
-          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
           const Text(
             'What would you like to do today?',
             style: TextStyle(
@@ -382,6 +385,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   () => Navigator.pushNamed(context, '/giving'),
                 ),
             ],
+          ),
+              ],
+            ),
           ),
         ],
       ),
@@ -440,9 +446,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Default hardcoded welcome banner
       bannerContent = Container(
         height: 160,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: AppColors.childGradient,
-          borderRadius: BorderRadius.circular(16),
         ),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -565,12 +570,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       onRefresh: _loadUserData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeroBanner(isAdmin: isAdmin, isDeptHead: isDeptHead, isMediaTeam: isMediaTeam, isTreasurer: isTreasurer),
-            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             if (isAdmin) ...[
               const Text(
                 'Overview',
@@ -709,6 +717,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildFinanceWidget(),
               const SizedBox(height: 12),
             ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -792,13 +803,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: -16),
-      child: Stack(
-        children: [
-          heroContent,
-          if (canEdit)
-            Positioned(
+    return Stack(
+      children: [
+        heroContent,
+        if (canEdit)
+          Positioned(
               top: 10, right: 10,
               child: GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/admin/banners',
@@ -817,48 +826,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-        ],
-      ),
+      ],
     );
   }
 
   Widget _buildHeroCard(_BannerSlide slide) {
     final hasImage = slide.imageUrl.isNotEmpty;
     if (hasImage) {
-      return Container(
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(0)),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.network(slide.imageUrl, fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _buildHeroGradientCard(slide)),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.72)],
-                  ),
-                ),
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(slide.imageUrl, fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _buildHeroGradientCard(slide)),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.72)],
               ),
-              Positioned(
-                bottom: 20, left: 20, right: 20,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(slide.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20), maxLines: 2, overflow: TextOverflow.ellipsis),
-                    if (slide.subtitle.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(slide.subtitle, style: const TextStyle(color: Colors.white70, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
-                      ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: 20, left: 20, right: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(slide.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20), maxLines: 2, overflow: TextOverflow.ellipsis),
+                if (slide.subtitle.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(slide.subtitle, style: const TextStyle(color: Colors.white70, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  ),
+              ],
+            ),
+          ),
+        ],
       );
     }
     return _buildHeroGradientCard(slide);
@@ -963,67 +965,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (hasImage) {
       // Image banner — photo background with text overlay
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.network(slide.imageUrl, fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                      decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              colors: [slide.color1, slide.color2])))),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.65)],
-                  ),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(slide.imageUrl, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                            colors: [slide.color1, slide.color2])))),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.65)],
                 ),
               ),
-              Positioned(
-                bottom: 12,
-                left: 16,
-                right: 16,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(slide.title,
+            ),
+            Positioned(
+              bottom: 12,
+              left: 16,
+              right: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(slide.title,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  if (slide.subtitle.isNotEmpty)
+                    Text(slide.subtitle,
                         style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15),
+                            color: Colors.white70, fontSize: 11),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis),
-                    if (slide.subtitle.isNotEmpty)
-                      Text(slide.subtitle,
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 11),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis),
-                  ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
     // Gradient banner (year theme + text-only announcements)
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [slide.color1, slide.color2],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(

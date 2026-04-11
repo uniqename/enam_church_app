@@ -135,6 +135,14 @@ class SupabaseService {
       return _client!.storage.from(bucket).getPublicUrl(path);
     } catch (e) {
       print('❌ uploadImage $bucket/$path failed: $e');
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('row level security') || msg.contains('403') ||
+          msg.contains('unauthorized') || msg.contains('policy')) {
+        throw Exception(
+            'Upload blocked by storage policy (403). '
+            'In Supabase dashboard → Storage → Policies → church-media, '
+            'add an INSERT policy for authenticated users.');
+      }
       rethrow;
     }
   }
