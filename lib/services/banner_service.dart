@@ -20,7 +20,7 @@ class BannerService {
         ascending: true,
       );
       final all = data.map((j) => BannerSlideModel.fromSupabase(j)).toList();
-      return all.where((b) => b.audience != 'children').toList();
+      return all.where((b) => b.audience == 'adult').toList();
     } catch (e) {
       return [];
     }
@@ -37,6 +37,22 @@ class BannerService {
       );
       final all = data.map((j) => BannerSlideModel.fromSupabase(j)).toList();
       return all.where((b) => b.audience == 'children').toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<BannerSlideModel>> getActiveCampaignBanners() async {
+    try {
+      final data = await _supabase.query(
+        'banners',
+        column: 'is_active',
+        value: true,
+        orderBy: 'sort_order',
+        ascending: true,
+      );
+      final all = data.map((j) => BannerSlideModel.fromSupabase(j)).toList();
+      return all.where((b) => b.audience == 'campaign').toList();
     } catch (e) {
       return [];
     }

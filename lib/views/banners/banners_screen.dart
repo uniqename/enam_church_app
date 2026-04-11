@@ -163,14 +163,24 @@ class _BannersScreenState extends State<BannersScreen> {
                   decoration: BoxDecoration(
                     color: b.audience == 'children'
                         ? AppColors.childOrange.withValues(alpha: 0.15)
-                        : AppColors.purple.withValues(alpha: 0.12),
+                        : b.audience == 'campaign'
+                            ? Colors.teal.withValues(alpha: 0.15)
+                            : AppColors.purple.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    b.audience == 'children' ? 'Kids' : 'Adult',
+                    b.audience == 'children'
+                        ? 'Kids'
+                        : b.audience == 'campaign'
+                            ? 'Campaign'
+                            : 'Adult',
                     style: TextStyle(
                       fontSize: 10,
-                      color: b.audience == 'children' ? AppColors.childOrange : AppColors.purple,
+                      color: b.audience == 'children'
+                          ? AppColors.childOrange
+                          : b.audience == 'campaign'
+                              ? Colors.teal
+                              : AppColors.purple,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -421,6 +431,7 @@ class _BannersScreenState extends State<BannersScreen> {
                   items: const [
                     DropdownMenuItem(value: 'adult', child: Text('Adult Dashboard')),
                     DropdownMenuItem(value: 'children', child: Text("Children's Dashboard")),
+                    DropdownMenuItem(value: 'campaign', child: Text('Campaign / Year Theme')),
                   ],
                   onChanged: (v) => setS(() => audience = v ?? 'adult'),
                 ),
