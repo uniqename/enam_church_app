@@ -324,7 +324,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildChildSlidingBanner(),
           Padding(
@@ -571,7 +571,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildHeroBanner(isAdmin: isAdmin, isDeptHead: isDeptHead, isMediaTeam: isMediaTeam, isTreasurer: isTreasurer),
             Padding(
