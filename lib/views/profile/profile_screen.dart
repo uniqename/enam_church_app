@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/auth_service.dart';
 import '../../services/child_account_service.dart';
 import '../../models/child_account.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/supabase_service.dart';
 import '../../utils/colors.dart';
 
@@ -66,19 +65,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (SupabaseService.isConfigured) {
         final userId = await _authService.getCurrentUserId();
         if (userId != null) {
-          final fileName = 'avatars/$userId.jpg';
-          await _supabase.client.storage
-              .from('church-media')
-              .upload(fileName, file,
-                  fileOptions: FileOptions(upsert: true));
-          uploadedUrl = _supabase.client.storage
-              .from('church-media')
-              .getPublicUrl(fileName);
-
-          // Update user record
-          await _supabase.client
-              .from('users')
-              .update({'avatar_url': uploadedUrl}).eq('id', userId);
+          // Upload via SupabaseService so errors surface properly
+          final path = 'avatars/$userId.jpg';
+          uploadedUrl = await _supabase.uploadImage('church-media', path, file);
+          if (uploadedUrl != null) {
+            // Best-effort update of user record — ignore failure
+            try {
+              await _supabase.client
+                  .from('users')
+                  .update({'avatar_url': uploadedUrl}).eq('id', userId);
+            } catch (_) {}
+          }
         }
       } else {
         // Offline: store local path

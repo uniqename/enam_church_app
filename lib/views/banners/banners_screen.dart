@@ -85,7 +85,17 @@ class _BannersScreenState extends State<BannersScreen> {
           ));
           uploaded++;
         }
-      } catch (_) {}
+      } catch (e) {
+        messenger.hideCurrentSnackBar();
+        if (mounted) {
+          messenger.showSnackBar(SnackBar(
+            content: Text('Banner save error: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 15),
+          ));
+        }
+        return;
+      }
     }
 
     messenger.hideCurrentSnackBar();
