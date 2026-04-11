@@ -835,20 +835,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           ),
-          Positioned(
-            bottom: 20, left: 20, right: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(slide.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20), maxLines: 2, overflow: TextOverflow.ellipsis),
-                if (slide.subtitle.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(slide.subtitle, style: const TextStyle(color: Colors.white70, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
-                  ),
-              ],
+          if (slide.subtitle.isNotEmpty)
+            Positioned(
+              bottom: 20, left: 20, right: 20,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(slide.subtitle, style: const TextStyle(color: Colors.white, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+              ),
             ),
-          ),
         ],
       );
     }
@@ -974,29 +972,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-            Positioned(
-              bottom: 12,
-              left: 16,
-              right: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(slide.title,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15),
-                      maxLines: 1,
+            if (slide.subtitle.isNotEmpty)
+              Positioned(
+                bottom: 12,
+                left: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(slide.subtitle,
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis),
-                  if (slide.subtitle.isNotEmpty)
-                    Text(slide.subtitle,
-                        style: const TextStyle(
-                            color: Colors.white70, fontSize: 11),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
-                ],
+                ),
               ),
-            ),
           ],
         ),
       );
