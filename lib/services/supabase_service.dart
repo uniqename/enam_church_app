@@ -126,6 +126,15 @@ class SupabaseService {
       {String? contentType}) async {
     if (!isConfigured) return null;
     final ct = contentType ?? _contentTypeFromPath(path);
+
+    // Ensure bucket exists (silently fails if already exists or no permission)
+    try {
+      await _client!.storage.createBucket(
+        bucket,
+        BucketOptions(public: true, fileSizeLimit: '100mb'),
+      );
+    } catch (_) {}
+
     try {
       await _client!.storage.from(bucket).upload(
             path,
@@ -136,12 +145,16 @@ class SupabaseService {
     } catch (e) {
       print('❌ uploadImage $bucket/$path failed: $e');
       final msg = e.toString().toLowerCase();
+      if (msg.contains('not found') || msg.contains('bucket')) {
+        throw Exception(
+            'Storage bucket "$bucket" not found. '
+            'Run supabase_storage_policies.sql in your Supabase SQL Editor.');
+      }
       if (msg.contains('row level security') || msg.contains('403') ||
           msg.contains('unauthorized') || msg.contains('policy')) {
         throw Exception(
-            'Upload blocked by storage policy (403). '
-            'In Supabase dashboard → Storage → Policies → church-media, '
-            'add an INSERT policy for authenticated users.');
+            'Upload blocked (403 — storage policy missing). '
+            'Run supabase_storage_policies.sql in your Supabase SQL Editor.');
       }
       rethrow;
     }

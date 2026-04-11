@@ -446,6 +446,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Default hardcoded welcome banner
       bannerContent = Container(
         height: 160,
+        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: AppColors.childGradient,
         ),
@@ -868,6 +869,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildHeroGradientCard(_BannerSlide slide) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: [slide.color1, slide.color2], begin: Alignment.topLeft, end: Alignment.bottomRight),
       ),
