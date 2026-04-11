@@ -119,56 +119,127 @@ class _LessonReaderScreenState extends State<LessonReaderScreen> {
                   : widget.lesson.content,
               style: TextStyle(fontSize: _fontSize, height: 1.6),
             ),
-            const SizedBox(height: 32),
-            // Bible passage buttons
-            if (widget.lesson.scriptureRef.isNotEmpty) ...[
-              Row(
+            const SizedBox(height: 28),
+            // ── Bible passage section ─────────────────────────────────
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.childBlue.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.childBlue.withValues(alpha: 0.25)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.menu_book, size: 18),
-                      label: Text(
-                        'Read ${widget.lesson.scriptureRef}',
-                        overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      const Icon(Icons.menu_book, color: AppColors.childBlue, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        widget.lesson.scriptureRef.isNotEmpty
+                            ? 'Bible Passage: ${widget.lesson.scriptureRef}'
+                            : 'Read & Hear God\'s Word',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.childBlue,
+                          fontSize: 14,
+                        ),
                       ),
-                      onPressed: () {
-                        final encoded = Uri.encodeComponent(widget.lesson.scriptureRef);
-                        launchUrl(
-                          Uri.parse('https://www.bible.com/search/bible?q=$encoded'),
-                          mode: LaunchMode.externalApplication,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.childBlue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.headphones, size: 18),
-                      label: const Text('Listen / Read Aloud'),
+                  const SizedBox(height: 12),
+                  // Row 1: Read in NIV + Listen (audio)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.menu_book, size: 16),
+                          label: Text(
+                            widget.lesson.scriptureRef.isNotEmpty
+                                ? widget.lesson.scriptureRef
+                                : 'Read in Bible',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          onPressed: () {
+                            final q = widget.lesson.scriptureRef.isNotEmpty
+                                ? widget.lesson.scriptureRef
+                                : widget.lesson.title;
+                            final encoded = Uri.encodeComponent(q);
+                            launchUrl(
+                              Uri.parse('https://www.bible.com/search/bible?q=$encoded'),
+                              mode: LaunchMode.externalApplication,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.childBlue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.headphones, size: 16),
+                          label: const Text('Listen / Audio',
+                              style: TextStyle(fontSize: 12)),
+                          onPressed: () {
+                            final q = widget.lesson.scriptureRef.isNotEmpty
+                                ? widget.lesson.scriptureRef
+                                : widget.lesson.title;
+                            final encoded = Uri.encodeComponent(q);
+                            launchUrl(
+                              Uri.parse('https://www.bible.com/search/bible?q=$encoded'),
+                              mode: LaunchMode.externalApplication,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.childPurple,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Row 2: Children's Bible (ICB — simpler language for kids)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.child_care, size: 16,
+                          color: AppColors.childOrange),
+                      label: Text(
+                        widget.lesson.scriptureRef.isNotEmpty
+                            ? 'Children\'s Bible (ICB) — ${widget.lesson.scriptureRef}'
+                            : 'Open in Children\'s Bible (ICB)',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.childOrange),
+                      ),
                       onPressed: () {
-                        final encoded = Uri.encodeComponent(widget.lesson.scriptureRef);
+                        final q = widget.lesson.scriptureRef.isNotEmpty
+                            ? widget.lesson.scriptureRef
+                            : widget.lesson.title;
+                        final encoded = Uri.encodeComponent(q);
+                        // version_id=1588 = International Children's Bible (ICB)
                         launchUrl(
-                          Uri.parse('https://www.bible.com/search/bible?q=$encoded'),
+                          Uri.parse(
+                              'https://www.bible.com/search/bible?q=$encoded&version_id=1588'),
                           mode: LaunchMode.externalApplication,
                         );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.childPurple,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.childOrange),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-            ],
-            const SizedBox(height: 8),
+            ),
+            const SizedBox(height: 16),
             // Complete button
             if (!_completed)
               SizedBox(

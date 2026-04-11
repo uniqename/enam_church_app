@@ -729,6 +729,7 @@ class LocalDataService {
           duration: '10 min',
           ageRange: '3–6',
           completed: false,
+          scriptureRef: 'John 3:16',
         ),
         const ChildLesson(
           id: 'lesson-2',
@@ -741,6 +742,7 @@ class LocalDataService {
           duration: '15 min',
           ageRange: '6–10',
           completed: false,
+          scriptureRef: 'Luke 10:25-37',
         ),
         const ChildLesson(
           id: 'lesson-3',
@@ -752,6 +754,7 @@ class LocalDataService {
           duration: '12 min',
           ageRange: '4–8',
           completed: false,
+          scriptureRef: 'Genesis 1:1-31',
         ),
         const ChildLesson(
           id: 'lesson-4',
@@ -764,6 +767,7 @@ class LocalDataService {
           duration: '18 min',
           ageRange: '7–12',
           completed: false,
+          scriptureRef: 'Daniel 6:1-28',
         ),
         const ChildLesson(
           id: 'lesson-5',
@@ -775,6 +779,7 @@ class LocalDataService {
           duration: '14 min',
           ageRange: '5–9',
           completed: false,
+          scriptureRef: 'Jonah 1:1-4:11',
         ),
         const ChildLesson(
           id: 'lesson-6',
@@ -787,6 +792,7 @@ class LocalDataService {
           duration: '10 min',
           ageRange: '5–10',
           completed: false,
+          scriptureRef: 'Matthew 6:9-13',
         ),
       ];
 
@@ -906,8 +912,8 @@ class LocalDataService {
     {
       'id': 'grp-6', 'name': 'Media Ministry',
       'description': 'Managing audio, video, live streaming, and digital media for all services. We ensure the Gospel reaches the world through technology.',
-      'leaders': ['Jasper D.'],
-      'members': ['Jasper D.'],
+      'leaders': ['Deacon Jasper Dafeamekpor'],
+      'members': ['Deacon Jasper Dafeamekpor'],
       'pending_members': <String>[],
       'meeting_day': 'Second Saturday', 'meeting_time': '2:00 PM', 'location': 'Media Room',
       'whatsapp_group': 'https://chat.whatsapp.com/FKMMedia',

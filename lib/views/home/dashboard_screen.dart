@@ -476,17 +476,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
         bannerContent,
         if (canEdit)
           Positioned(
-            top: 6,
-            right: 8,
+            top: 8,
+            right: 10,
             child: GestureDetector(
               onTap: () => Navigator.pushNamed(context, '/admin/banners').then((_) => _loadUserData()),
               child: Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.black38,
+                  color: Colors.black54,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(Icons.edit, size: 15, color: Colors.white),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.edit, size: 13, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text('Edit Banners',
+                        style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
             ),
           ),
@@ -724,7 +732,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ── Sliding banner ───────────────────────────────────────────────────────────
   Widget _buildSlidingBanner() {
-    final canEdit = _userRole == 'admin' || _userRole == 'pastor' || _userRole == 'media_team';
+    final canEdit = _userRole == 'admin' || _userRole == 'pastor' ||
+        _userRole == 'media_team' || _userRole == 'dept_head';
 
     // Use dedicated banners if loaded, else fall back to announcements
     final slides = <_BannerSlide>[
@@ -803,17 +812,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
         bannerContent,
         if (canEdit)
           Positioned(
-            top: 6,
-            right: 8,
+            top: 8,
+            right: 10,
             child: GestureDetector(
               onTap: () => Navigator.pushNamed(context, '/admin/banners').then((_) => _loadUserData()),
               child: Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.black38,
+                  color: Colors.black54,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(Icons.edit, size: 15, color: Colors.white),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.edit, size: 13, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text('Edit Banners',
+                        style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
             ),
           ),
