@@ -65,8 +65,8 @@ DROP POLICY IF EXISTS "users_own_write" ON public.users;
 DROP POLICY IF EXISTS "users_admin_write" ON public.users;
 
 CREATE POLICY "users_read"        ON public.users FOR SELECT USING (true);
-CREATE POLICY "users_own_write"   ON public.users FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "users_own_insert"  ON public.users FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "users_own_write"   ON public.users FOR UPDATE USING (auth.uid()::text = id::text);
+CREATE POLICY "users_own_insert"  ON public.users FOR INSERT WITH CHECK (auth.uid()::text = id::text);
 
 
 -- ================================================================
@@ -397,8 +397,8 @@ ALTER TABLE public.member_notes ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "notes_own" ON public.member_notes;
 
 CREATE POLICY "notes_own" ON public.member_notes FOR ALL TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (auth.uid()::text = user_id::text)
+  WITH CHECK (auth.uid()::text = user_id::text);
 
 
 -- ================================================================
@@ -420,8 +420,8 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "notif_own" ON public.notifications;
 
 CREATE POLICY "notif_own" ON public.notifications FOR ALL TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (auth.uid()::text = user_id::text)
+  WITH CHECK (auth.uid()::text = user_id::text);
 
 
 -- ================================================================
@@ -621,8 +621,8 @@ ALTER TABLE public.child_accounts ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "ca_own" ON public.child_accounts;
 CREATE POLICY "ca_own" ON public.child_accounts FOR ALL TO authenticated
-  USING (auth.uid() = parent_user_id)
-  WITH CHECK (auth.uid() = parent_user_id);
+  USING (auth.uid()::text = parent_user_id::text)
+  WITH CHECK (auth.uid()::text = parent_user_id::text);
 
 
 -- ================================================================
