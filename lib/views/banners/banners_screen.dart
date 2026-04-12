@@ -31,7 +31,7 @@ class _BannersScreenState extends State<BannersScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final arg = ModalRoute.of(context)?.settings.arguments;
-    if (arg is String && ['adult', 'children', 'campaign'].contains(arg)) {
+    if (arg is String && ['adult', 'children', 'campaign', 'theme'].contains(arg)) {
       _audienceFilter = arg;
     }
   }
@@ -136,11 +136,13 @@ class _BannersScreenState extends State<BannersScreen> {
                   padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
                   child: Row(
                     children: [
-                      _audienceChip('adult', 'Hero (Adult)', AppColors.purple),
-                      const SizedBox(width: 8),
-                      _audienceChip('children', "Children's", AppColors.childOrange),
-                      const SizedBox(width: 8),
+                      _audienceChip('adult', 'Hero', AppColors.purple),
+                      const SizedBox(width: 6),
+                      _audienceChip('children', "Kids", AppColors.childOrange),
+                      const SizedBox(width: 6),
                       _audienceChip('campaign', 'Campaign', Colors.teal),
+                      const SizedBox(width: 6),
+                      _audienceChip('theme', 'Year Theme', const Color(0xFF6A0DAD)),
                     ],
                   ),
                 ),
@@ -222,6 +224,7 @@ class _BannersScreenState extends State<BannersScreen> {
     switch (_audienceFilter) {
       case 'children': return "Children's";
       case 'campaign': return 'Campaign';
+      case 'theme': return 'Year Theme';
       default: return 'Hero (Adult)';
     }
   }
@@ -288,7 +291,9 @@ class _BannersScreenState extends State<BannersScreen> {
                         ? AppColors.childOrange.withValues(alpha: 0.15)
                         : b.audience == 'campaign'
                             ? Colors.teal.withValues(alpha: 0.15)
-                            : AppColors.purple.withValues(alpha: 0.12),
+                            : b.audience == 'theme'
+                                ? const Color(0xFF6A0DAD).withValues(alpha: 0.15)
+                                : AppColors.purple.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -296,14 +301,18 @@ class _BannersScreenState extends State<BannersScreen> {
                         ? 'Kids'
                         : b.audience == 'campaign'
                             ? 'Campaign'
-                            : 'Adult',
+                            : b.audience == 'theme'
+                                ? 'Theme'
+                                : 'Adult',
                     style: TextStyle(
                       fontSize: 10,
                       color: b.audience == 'children'
                           ? AppColors.childOrange
                           : b.audience == 'campaign'
                               ? Colors.teal
-                              : AppColors.purple,
+                              : b.audience == 'theme'
+                                  ? const Color(0xFF6A0DAD)
+                                  : AppColors.purple,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -552,9 +561,10 @@ class _BannersScreenState extends State<BannersScreen> {
                     prefixIcon: Icon(Icons.people),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'adult', child: Text('Adult Dashboard')),
-                    DropdownMenuItem(value: 'children', child: Text("Children's Dashboard")),
-                    DropdownMenuItem(value: 'campaign', child: Text('Campaign / Year Theme')),
+                    DropdownMenuItem(value: 'adult', child: Text('Adult Hero Banner')),
+                    DropdownMenuItem(value: 'children', child: Text("Children's Banner")),
+                    DropdownMenuItem(value: 'campaign', child: Text('Campaign Section')),
+                    DropdownMenuItem(value: 'theme', child: Text('Year Theme Dashboard')),
                   ],
                   onChanged: (v) => setS(() => audience = v ?? 'adult'),
                 ),

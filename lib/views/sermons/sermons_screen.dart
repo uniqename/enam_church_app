@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -220,18 +221,34 @@ class _SermonsScreenState extends State<SermonsScreen> {
                   icon: const Icon(Icons.attach_file),
                   label: Text(pickedPath != null
                       ? pickedPath!.split('/').last
-                      : 'Pick MP3 or MP4 file'),
+                      : 'Pick MP3 or MP4 from Files'),
                   onPressed: () async {
                     final result = await FilePicker.platform.pickFiles(
                       type: FileType.custom,
-                      allowedExtensions: ['mp3', 'mp4', 'm4a', 'wav', 'aac'],
+                      allowedExtensions: ['mp3', 'mp4', 'm4a', 'wav', 'aac', 'mov'],
                     );
                     if (result != null && result.files.single.path != null) {
                       final path = result.files.single.path!;
                       final ext = path.split('.').last.toLowerCase();
                       setS(() {
                         pickedPath = path;
-                        fileType = (ext == 'mp4') ? 'video' : 'audio';
+                        fileType = ['mp4', 'mov', 'm4v'].contains(ext) ? 'video' : 'audio';
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.video_library),
+                  label: const Text('Pick Video from Camera Roll'),
+                  onPressed: () async {
+                    final picked = await ImagePicker().pickVideo(
+                      source: ImageSource.gallery,
+                    );
+                    if (picked != null) {
+                      setS(() {
+                        pickedPath = picked.path;
+                        fileType = 'video';
                       });
                     }
                   },
@@ -286,21 +303,47 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 String finalUrl = url;
                 if (pickedPath != null) {
                   final messenger = ScaffoldMessenger.of(context);
-                  messenger.showSnackBar(const SnackBar(content: Text('Uploading media…'), duration: Duration(seconds: 60)));
-                  final ext = pickedPath!.split('.').last.toLowerCase();
-                  try {
-                    final uploaded = await SupabaseService().uploadImage(
-                      'church-media', 'sermons/${const Uuid().v4()}.$ext', File(pickedPath!),
-                    );
-                    messenger.hideCurrentSnackBar();
-                    if (uploaded != null) {
-                      finalUrl = uploaded;
-                      messenger.showSnackBar(const SnackBar(content: Text('Media uploaded — all members can access it'), backgroundColor: Colors.green));
+                  final file = File(pickedPath!);
+                  final fileSizeMb = await file.length() / (1024 * 1024);
+
+                  if (fileSizeMb > 950) {
+                    // File too large for direct upload — guide user to use a URL instead
+                    messenger.showSnackBar(SnackBar(
+                      content: Text(
+                        'File is ${fileSizeMb.toStringAsFixed(0)} MB — too large for direct upload (1 GB limit). '
+                        'Upload to YouTube or Google Drive and paste the link instead.',
+                      ),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 12),
+                    ));
+                    storedPath = pickedPath!;
+                  } else {
+                    final ext = pickedPath!.split('.').last.toLowerCase();
+                    messenger.showSnackBar(SnackBar(
+                      content: Text('Uploading ${fileSizeMb.toStringAsFixed(1)} MB — please wait…'),
+                      duration: const Duration(seconds: 120),
+                    ));
+                    try {
+                      final uploaded = await SupabaseService().uploadImage(
+                        'church-media', 'sermons/${const Uuid().v4()}.$ext', file,
+                      );
+                      messenger.hideCurrentSnackBar();
+                      if (uploaded != null) {
+                        finalUrl = uploaded;
+                        messenger.showSnackBar(const SnackBar(
+                          content: Text('Media uploaded — all members can access it'),
+                          backgroundColor: Colors.green,
+                        ));
+                      }
+                    } catch (e) {
+                      messenger.hideCurrentSnackBar();
+                      try { storedPath = await _service.copyFileToSermonStorage(pickedPath!); } catch (_) { storedPath = pickedPath!; }
+                      messenger.showSnackBar(SnackBar(
+                        content: Text('Upload failed — saved locally on this device only. Error: $e'),
+                        backgroundColor: Colors.orange,
+                        duration: const Duration(seconds: 10),
+                      ));
                     }
-                  } catch (e) {
-                    messenger.hideCurrentSnackBar();
-                    try { storedPath = await _service.copyFileToSermonStorage(pickedPath!); } catch (_) { storedPath = pickedPath!; }
-                    messenger.showSnackBar(SnackBar(content: Text('Cloud upload failed ($e) — saved locally'), backgroundColor: Colors.orange, duration: const Duration(seconds: 8)));
                   }
                 }
 

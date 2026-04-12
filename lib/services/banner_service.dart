@@ -58,6 +58,22 @@ class BannerService {
     }
   }
 
+  Future<List<BannerSlideModel>> getActiveThemeBanners() async {
+    try {
+      final data = await _supabase.query(
+        'banners',
+        column: 'is_active',
+        value: true,
+        orderBy: 'sort_order',
+        ascending: true,
+      );
+      final all = data.map((j) => BannerSlideModel.fromSupabase(j)).toList();
+      return all.where((b) => b.audience == 'theme').toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<List<BannerSlideModel>> getAllBanners() async {
     try {
       final data = await _supabase.query(

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/auth_service.dart';
@@ -56,11 +58,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _childBannerPage = 0;
   Timer? _childBannerTimer;
 
-  // Campaign / year theme section
+  // Campaign section (below hero banner)
   List<_BannerSlide> _campaignSlides = [];
   final _campaignController = PageController();
   int _campaignPage = 0;
   Timer? _campaignTimer;
+
+  // Theme Dashboard (between Quick Actions and Community) — separate from campaign
+  List<_BannerSlide> _themeSlides = [];
+  final _themeController = PageController();
+  int _themePage = 0;
+  Timer? _themeTimer;
+
+  // Year theme static values — loaded from SharedPreferences (same keys as AboutScreen)
+  String _themeDashTitle    = '2026 — Year of Maximizing our Strengths';
+  String _themeDashScripture = '"He gives strength to the weary and increases the power of the weak… those who hope in the Lord will renew their strength. They will soar like eagles…"';
+  String _themeDashRef      = 'Isaiah 40:29-31';
+  String _themeDashImg      = '';
 
   @override
   void initState() {
@@ -70,6 +84,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _loadUserData() async {
     setState(() => _isLoading = true);
+    // Load year theme from SharedPreferences (synced from AboutScreen)
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _themeDashTitle     = prefs.getString('year_theme_title')     ?? _themeDashTitle;
+        _themeDashScripture = prefs.getString('year_theme_scripture') ?? _themeDashScripture;
+        _themeDashRef       = prefs.getString('year_theme_ref')       ?? _themeDashRef;
+        _themeDashImg       = prefs.getString('year_theme_img')       ?? '';
+      });
+    } catch (_) {}
     try {
       final role = await _authService.getUserRole();
 
@@ -109,6 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color1: AppColors.purple,
               color2: AppColors.blue,
               imageUrl: b.mediaType == 'image' ? b.mediaUrl : '',
+              videoUrl: b.mediaType == 'video' ? b.mediaUrl : '',
               linkRoute: b.linkRoute,
             )).toList();
             setState(() => _dedicatedBannerSlides = slides);
@@ -120,7 +145,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
           _startBannerTimer();
         } catch (_) {}
-        // Load campaign/year-theme banners
+        // Load campaign banners (below hero)
         try {
           final campaigns = await _bannerService.getActiveCampaignBanners();
           final cSlides = campaigns.map((b) => _BannerSlide(
@@ -130,10 +155,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
             color1: const Color(0xFF4A0080),
             color2: const Color(0xFF7B1FA2),
             imageUrl: b.mediaType == 'image' ? b.mediaUrl : '',
+            videoUrl: b.mediaType == 'video' ? b.mediaUrl : '',
             linkRoute: b.linkRoute,
           )).toList();
           setState(() => _campaignSlides = cSlides);
           _startCampaignTimer();
+        } catch (_) {}
+        // Load theme dashboard slides (separate audience = 'theme')
+        try {
+          final themes = await _bannerService.getActiveThemeBanners();
+          final tSlides = themes.map((b) => _BannerSlide(
+            type: _BannerType.yearTheme,
+            title: b.title,
+            subtitle: b.subtitle,
+            color1: const Color(0xFF4A0080),
+            color2: const Color(0xFF9B2290),
+            imageUrl: b.mediaType == 'image' ? b.mediaUrl : '',
+            videoUrl: b.mediaType == 'video' ? b.mediaUrl : '',
+            linkRoute: b.linkRoute.isNotEmpty ? b.linkRoute : '/about',
+          )).toList();
+          setState(() => _themeSlides = tSlides);
+          _startThemeTimer();
         } catch (_) {}
         int pendingCount = 0;
         if (role == 'admin' || role == 'pastor') {
@@ -198,6 +240,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  void _startThemeTimer() {
+    _themeTimer?.cancel();
+    // +1 because slide 0 is always the static year-theme card
+    if (_themeSlides.length < 1) return;
+    _themeTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+      if (!mounted || !_themeController.hasClients) return;
+      final count = _themeSlides.length + 1;
+      if (count < 2) return;
+      final next = (_themePage + 1) % count;
+      _themeController.animateToPage(next,
+          duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+    });
+  }
+
   void _startChildBannerTimer() {
     _childBannerTimer?.cancel();
     if (_childBannerSlides.length < 2) return;
@@ -215,9 +271,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _bannerTimer?.cancel();
     _childBannerTimer?.cancel();
     _campaignTimer?.cancel();
+    _themeTimer?.cancel();
     _bannerController.dispose();
     _childBannerController.dispose();
     _campaignController.dispose();
+    _themeController.dispose();
     super.dispose();
   }
 
@@ -570,6 +628,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeroBanner(isAdmin: isAdmin, isDeptHead: isDeptHead, isMediaTeam: isMediaTeam, isTreasurer: isTreasurer),
+            const SizedBox(height: 16),
+            _buildCampaignSection(canEdit: isAdmin || isMediaTeam),
             const SizedBox(height: 20),
             if (isAdmin) ...[
               const Text(
@@ -661,8 +721,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 24),
             ],
-            _buildCampaignSection(),
-            const SizedBox(height: 20),
             if (isAdmin && _pendingApprovals > 0) ...[
               _buildPendingApprovalsBanner(),
               const SizedBox(height: 16),
@@ -700,6 +758,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     editRoute: '/events'),
               ],
             ),
+            const SizedBox(height: 20),
+            // ── Theme Dashboard ──────────────────────────────────────────────
+            _buildThemeDashboard(),
             const SizedBox(height: 20),
             // ── Community widget ─────────────────────────────────────────────
             _buildCommunityWidget(),
@@ -741,20 +802,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )),
     ];
 
-    // Default: welcome slide matching the old card style
+    // Default: 3 slides when no DB banners configured
     if (slides.isEmpty) {
-      slides.add(_BannerSlide(
-        type: _BannerType.announcement,
-        title: 'Welcome to Faith Klinik',
-        subtitle: roleLabel,
-        color1: const Color(0xFF4A0080),
-        color2: const Color(0xFF7B1FA2),
-      ));
+      slides.addAll([
+        _BannerSlide(
+          type: _BannerType.announcement,
+          title: 'Welcome to Faith Klinik',
+          subtitle: roleLabel,
+          color1: const Color(0xFF4A0080),
+          color2: const Color(0xFF7B1FA2),
+          linkRoute: '/about',
+        ),
+        const _BannerSlide(
+          type: _BannerType.announcement,
+          title: 'Latest Sermons',
+          subtitle: 'Catch up on messages from our pastors',
+          color1: Color(0xFF1A237E),
+          color2: Color(0xFF283593),
+          linkRoute: '/sermons',
+        ),
+        const _BannerSlide(
+          type: _BannerType.announcement,
+          title: 'Give & Support the Vision',
+          subtitle: 'Partner with us to transform lives',
+          color1: Color(0xFF1B5E20),
+          color2: Color(0xFF2E7D32),
+          linkRoute: '/giving',
+        ),
+      ]);
     }
 
     Widget heroContent;
     if (slides.length == 1) {
-      heroContent = SizedBox(height: 200, child: _buildHeroCard(slides[0]));
+      heroContent = SizedBox(
+        height: 200,
+        child: GestureDetector(
+          onTap: () {
+            final s = slides[0];
+            if (s.videoUrl.isNotEmpty) {
+              launchUrl(Uri.parse(s.videoUrl), mode: LaunchMode.externalApplication);
+            } else if (s.linkRoute.isNotEmpty) {
+              Navigator.pushNamed(context, s.linkRoute);
+            }
+          },
+          child: _buildHeroCard(slides[0]),
+        ),
+      );
     } else {
       heroContent = Column(
         children: [
@@ -765,9 +858,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               itemCount: slides.length,
               onPageChanged: (i) => setState(() => _bannerPage = i),
               itemBuilder: (_, i) => GestureDetector(
-                onTap: slides[i].linkRoute.isNotEmpty
-                    ? () => Navigator.pushNamed(context, slides[i].linkRoute)
-                    : null,
+                onTap: () {
+                  final s = slides[i];
+                  if (s.videoUrl.isNotEmpty) {
+                    launchUrl(Uri.parse(s.videoUrl), mode: LaunchMode.externalApplication);
+                  } else if (s.linkRoute.isNotEmpty) {
+                    Navigator.pushNamed(context, s.linkRoute);
+                  }
+                },
                 child: _buildHeroCard(slides[i]),
               ),
             ),
@@ -819,8 +917,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // Extract YouTube video ID from various YouTube URL formats
+  String? _ytId(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return null;
+    if (uri.host.contains('youtu.be')) return uri.pathSegments.firstOrNull;
+    if (uri.host.contains('youtube.com')) return uri.queryParameters['v'];
+    return null;
+  }
+
   Widget _buildHeroCard(_BannerSlide slide) {
+    final hasVideo = slide.videoUrl.isNotEmpty;
     final hasImage = slide.imageUrl.isNotEmpty;
+
+    if (hasVideo) {
+      // Determine background: YouTube thumbnail or gradient
+      final ytId = _ytId(slide.videoUrl);
+      final thumbUrl = ytId != null
+          ? 'https://img.youtube.com/vi/$ytId/maxresdefault.jpg'
+          : null;
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          if (thumbUrl != null)
+            Image.network(thumbUrl, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildHeroGradientCard(slide))
+          else
+            _buildHeroGradientCard(slide),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.65)],
+              ),
+            ),
+          ),
+          Center(
+            child: Container(
+              width: 56, height: 56,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.55),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 38),
+            ),
+          ),
+          if (slide.subtitle.isNotEmpty)
+            Positioned(
+              bottom: 20, left: 20, right: 20,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(slide.subtitle, style: const TextStyle(color: Colors.white, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+              ),
+            ),
+        ],
+      );
+    }
+
     if (hasImage) {
       return Stack(
         fit: StackFit.expand,
@@ -875,74 +1032,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ── Campaign / Year Theme section (compact, below stats) ──────────────────
-  Widget _buildCampaignSection() {
-    final canEdit = _userRole == 'admin' || _userRole == 'pastor' ||
-        _userRole == 'media_team' || _userRole == 'dept_head';
-
-    final slides = _campaignSlides.isNotEmpty
-        ? _campaignSlides
-        : const [_BannerSlide(
+  // ── Campaign section — non-sliding, below hero banner ───────────────────────
+  Widget _buildCampaignSection({required bool canEdit}) {
+    // Show only the first/most-recent campaign slide — no sliding
+    final slide = _campaignSlides.isNotEmpty
+        ? _campaignSlides.first
+        : const _BannerSlide(
             type: _BannerType.yearTheme,
-            title: 'Year Theme 2026',
-            subtitle: '"Possessing Our Possessions" — Obadiah 1:17',
+            title: 'Year Theme',
+            subtitle: '2026 — Year of Maximizing our Strengths',
             color1: Color(0xFF4A0080),
             color2: Color(0xFF7B1FA2),
-          )];
+            linkRoute: '/about',
+          );
 
-    Widget content;
-    if (slides.length == 1) {
-      content = SizedBox(height: 90, child: _buildBannerCard(slides[0]));
-    } else {
-      content = Column(
-        children: [
-          SizedBox(
-            height: 90,
-            child: PageView.builder(
-              controller: _campaignController,
-              itemCount: slides.length,
-              onPageChanged: (i) => setState(() => _campaignPage = i),
-              itemBuilder: (_, i) => _buildBannerCard(slides[i]),
+    return Stack(
+      children: [
+        SizedBox(
+          height: 90,
+          width: double.infinity,
+          child: GestureDetector(
+            onTap: () {
+              if (slide.videoUrl.isNotEmpty) {
+                launchUrl(Uri.parse(slide.videoUrl), mode: LaunchMode.externalApplication);
+              } else if (slide.linkRoute.isNotEmpty) {
+                Navigator.pushNamed(context, slide.linkRoute);
+              }
+            },
+            child: _buildBannerCard(slide),
+          ),
+        ),
+        if (canEdit)
+          Positioned(
+            top: 8,
+            right: 10,
+            child: GestureDetector(
+              onTap: () => Navigator.pushNamed(context, '/admin/banners',
+                  arguments: 'campaign').then((_) => _loadUserData()),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                    color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.edit, size: 13, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text('Edit Banners',
+                        style: TextStyle(
+                            color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(slides.length, (i) => AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: _campaignPage == i ? 16 : 5,
-              height: 5,
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                color: _campaignPage == i ? AppColors.purple : AppColors.purple.withValues(alpha: 0.3),
-              ),
-            )),
-          ),
-        ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.star, size: 15, color: AppColors.purple),
-            const SizedBox(width: 6),
-            const Text('Year Theme & Campaigns',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.purple)),
-            const Spacer(),
-            if (canEdit)
-              GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/admin/banners',
-                    arguments: 'campaign').then((_) => _loadUserData()),
-                child: const Text('Manage', style: TextStyle(fontSize: 12, color: AppColors.purple)),
-              ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        content,
       ],
     );
   }
@@ -1043,12 +1186,205 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // ── Theme Dashboard — slide 0 always static year-theme; extra slides from DB ─
+  Widget _buildThemeDashboard() {
+    final canEdit = _userRole == 'admin' || _userRole == 'pastor';
+
+    // Slide 0: static year-theme card (always present, always goes to /about)
+    final staticSlide = _BannerSlide(
+      type: _BannerType.yearTheme,
+      title: _themeDashTitle,
+      subtitle: '$_themeDashScripture\n$_themeDashRef',
+      color1: const Color(0xFF4A0080),
+      color2: const Color(0xFF9B2290),
+      imageUrl: _themeDashImg,
+      linkRoute: '/about',
+    );
+
+    // Extra slides from DB (audience = 'theme')
+    final allSlides = [staticSlide, ..._themeSlides];
+    final totalCount = allSlides.length;
+
+    void onSlideTap(_BannerSlide s) {
+      if (s.videoUrl.isNotEmpty) {
+        launchUrl(Uri.parse(s.videoUrl), mode: LaunchMode.externalApplication);
+      } else {
+        Navigator.pushNamed(context, s.linkRoute.isNotEmpty ? s.linkRoute : '/about');
+      }
+    }
+
+    Widget content;
+    if (totalCount == 1) {
+      content = SizedBox(
+        height: 160,
+        child: GestureDetector(
+          onTap: () => onSlideTap(staticSlide),
+          child: _buildThemeDashCard(staticSlide, isStatic: true),
+        ),
+      );
+    } else {
+      content = Column(
+        children: [
+          SizedBox(
+            height: 160,
+            child: PageView.builder(
+              controller: _themeController,
+              itemCount: totalCount,
+              onPageChanged: (i) => setState(() => _themePage = i),
+              itemBuilder: (_, i) {
+                final s = allSlides[i];
+                return GestureDetector(
+                  onTap: () => onSlideTap(s),
+                  child: _buildThemeDashCard(s, isStatic: i == 0),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(totalCount, (i) => AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: _themePage == i ? 20 : 6,
+              height: 6,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                color: _themePage == i
+                    ? Colors.white.withValues(alpha: 0.9)
+                    : Colors.white.withValues(alpha: 0.35),
+              ),
+            )),
+          ),
+        ],
+      );
+    }
+
+    return Stack(
+      children: [
+        content,
+        if (canEdit)
+          Positioned(
+            top: 10,
+            right: 10,
+            child: GestureDetector(
+              onTap: () => Navigator.pushNamed(context, '/admin/banners',
+                  arguments: 'theme').then((_) => _loadUserData()),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                    color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.edit, size: 13, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text('Edit Theme',
+                        style: TextStyle(
+                            color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildThemeDashCard(_BannerSlide slide, {bool isStatic = false}) {
+    final hasImg = slide.imageUrl.isNotEmpty;
+
+    // Extra DB slides with an image → full-bleed photo, no text overlay
+    if (!isStatic && hasImg) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Image.network(
+          slide.imageUrl,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          errorBuilder: (_, __, ___) => _buildThemeDashCard(slide, isStatic: true),
+        ),
+      );
+    }
+
+    // Extra DB slides with no image → title + subtitle text card
+    // Static slide (slide 0) → always shows title + scripture + optional bg image
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (hasImg)
+            Image.network(slide.imageUrl, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [slide.color1, slide.color2]))))
+          else
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [slide.color1, slide.color2],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+          if (hasImg)
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.72)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Row(children: [
+                  const Text('✨', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 6),
+                  const Text('Theme Dashboard',
+                      style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5)),
+                ]),
+                const SizedBox(height: 8),
+                Text(slide.title,
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold, height: 1.3)),
+                if (slide.subtitle.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(slide.subtitle,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                          height: 1.5)),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Community widget ────────────────────────────────────────────────────────
   Widget _buildCommunityWidget() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final canManage = _userRole == 'admin' || _userRole == 'pastor' ||
         _userRole == 'dept_head' || _userRole == 'media_team';
     final items = [
+      _CommunityItem('About', Icons.church, AppColors.purple, '/about'),
       _CommunityItem('Groups', Icons.groups, AppColors.blue, '/groups'),
       _CommunityItem('Members', Icons.people, AppColors.purple, '/members',
           editRoute: canManage ? '/members' : null),
@@ -1371,52 +1707,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildQuickActionCard(String title, IconData icon, Color color,
       VoidCallback onTap, {String? editRoute}) {
-    final canEdit = editRoute != null &&
+    final route = editRoute;
+    final canEdit = route != null &&
         (_userRole == 'admin' || _userRole == 'pastor' ||
             _userRole == 'dept_head' || _userRole == 'media_team');
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Stack(
-        children: [
-          InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, color: color, size: 32),
-                  const SizedBox(height: 8),
-                  Text(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 32),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(
                     title,
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-          if (canEdit)
-            Positioned(
-              top: 4,
-              right: 4,
-              child: GestureDetector(
-                onTap: () => Navigator.pushNamed(context, editRoute),
-                child: Container(
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
+            if (canEdit)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, route),
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(Icons.edit, size: 12, color: color),
                   ),
-                  child: Icon(Icons.edit, size: 12, color: color),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1497,11 +1836,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                     _buildMenuItem(
-                      'Our Team',
-                      Icons.people_alt,
+                      'About Faith Klinik',
+                      Icons.church,
                       () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/staff');
+                        Navigator.pushNamed(context, '/about');
                       },
                     ),
                     _buildMenuItem(
@@ -1762,6 +2101,7 @@ class _BannerSlide {
   final Color color1;
   final Color color2;
   final String imageUrl;
+  final String videoUrl;
   final String linkRoute;
   const _BannerSlide({
     required this.type,
@@ -1770,6 +2110,7 @@ class _BannerSlide {
     required this.color1,
     required this.color2,
     this.imageUrl = '',
+    this.videoUrl = '',
     this.linkRoute = '',
   });
 }
