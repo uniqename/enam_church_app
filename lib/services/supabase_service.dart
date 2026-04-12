@@ -42,7 +42,7 @@ class SupabaseService {
     final response = await _client!.auth.signUp(
       email: email,
       password: password,
-      data: {'name': name, 'role': role},
+      data: {'name': name, 'role': role, 'app': 'faithklinik'},
     );
     if (response.user != null) {
       await _client!.from('users').insert({
@@ -57,7 +57,16 @@ class SupabaseService {
   }
 
   Future<AuthResponse> signIn({required String email, required String password}) async {
-    return await _client!.auth.signInWithPassword(email: email, password: password);
+    final response = await _client!.auth.signInWithPassword(email: email, password: password);
+    if (response.user != null) {
+      final appTag = response.user!.appMetadata['app'] as String?;
+      // Allow: faithklinik, both, or untagged. Block: beacon-only accounts.
+      if (appTag == 'beacon') {
+        await _client!.auth.signOut();
+        throw Exception('This account is not registered for FaithKlinik.');
+      }
+    }
+    return response;
   }
 
   Future<void> signOut() async {
