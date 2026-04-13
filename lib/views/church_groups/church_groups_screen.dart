@@ -848,6 +848,118 @@ class _MembersTab extends StatelessWidget {
     required this.userName, required this.service, required this.onChanged,
   });
 
+  /// Returns the officer role title for a member, or null if they have none.
+  String? _roleOf(String member) {
+    final entry = group.officers.entries
+        .where((e) => e.value.toLowerCase() == member.toLowerCase())
+        .firstOrNull;
+    return entry?.key;
+  }
+
+  Future<void> _assignRoleDialog(BuildContext context, String member) async {
+    const defaultRoles = ['Chairperson', 'Assistant Chairperson', 'Secretary', 'Treasurer'];
+    String? picked;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSt) => AlertDialog(
+          backgroundColor: AppColors.darkSurface2,
+          title: Text('Assign Role — $member',
+              style: const TextStyle(color: Colors.white, fontSize: 15)),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            // Quick-pick chips
+            Wrap(spacing: 6, runSpacing: 6, children: [
+              ...defaultRoles.map((r) => ChoiceChip(
+                    label: Text(r, style: TextStyle(
+                        fontSize: 12,
+                        color: picked == r ? Colors.white : Colors.white70)),
+                    selected: picked == r,
+                    selectedColor: AppColors.accentPurple,
+                    backgroundColor: AppColors.darkSurface,
+                    side: BorderSide(
+                        color: picked == r ? AppColors.accentPurple : AppColors.darkBorder),
+                    onSelected: (_) => setSt(() => picked = r),
+                  )),
+              // Custom role chip
+              ActionChip(
+                label: const Text('+ Custom',
+                    style: TextStyle(fontSize: 12, color: AppColors.accentPurple)),
+                backgroundColor: AppColors.darkSurface,
+                side: const BorderSide(color: AppColors.accentPurple),
+                onPressed: () async {
+                  final ctrl = TextEditingController();
+                  final result = await showDialog<String>(
+                    context: ctx,
+                    builder: (c) => AlertDialog(
+                      backgroundColor: AppColors.darkSurface2,
+                      title: const Text('Custom Role Title',
+                          style: TextStyle(color: Colors.white)),
+                      content: TextField(
+                        controller: ctrl,
+                        autofocus: true,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          hintText: 'e.g. President, Patron…',
+                          hintStyle: TextStyle(color: Colors.white38),
+                          enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: AppColors.darkBorder)),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.pop(c),
+                            child: const Text('Cancel',
+                                style: TextStyle(color: Colors.white54))),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.accentPurple),
+                          onPressed: () => Navigator.pop(c, ctrl.text.trim()),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (result != null && result.isNotEmpty) {
+                    setSt(() => picked = result);
+                  }
+                },
+              ),
+            ]),
+            if (picked != null) ...[
+              const SizedBox(height: 12),
+              Text('Assign as: $picked',
+                  style: const TextStyle(
+                      color: AppColors.accentPurple, fontSize: 13)),
+            ],
+          ]),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel',
+                    style: TextStyle(color: Colors.white54))),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accentPurple),
+              onPressed: picked == null
+                  ? null
+                  : () async {
+                      // Remove any existing role for this member, then assign new
+                      final updated = Map<String, String>.from(group.officers)
+                        ..removeWhere((k, v) => v.toLowerCase() == member.toLowerCase())
+                        ..[picked!] = member;
+                      await service.updateGroup(group.copyWith(officers: updated));
+                      if (ctx.mounted) Navigator.pop(ctx);
+                      onChanged();
+                    },
+              child: const Text('Assign'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -885,7 +997,7 @@ class _MembersTab extends StatelessWidget {
           const Divider(color: AppColors.darkBorder, height: 24),
         ],
 
-        // Members
+        // Members header
         Row(children: [
           Expanded(
               child: Text('Members (${group.members.length})',
@@ -910,19 +1022,68 @@ class _MembersTab extends StatelessWidget {
                 style: TextStyle(color: Colors.white38),
                 textAlign: TextAlign.center),
           ),
-        ...group.members.map((m) => _MemberTile(
-          name: m,
-          trailing: isLeader
-              ? IconButton(
-                  icon: const Icon(Icons.remove_circle_outline,
-                      size: 18, color: Colors.red),
-                  onPressed: () async {
-                    await service.removeMember(group.id, m);
-                    onChanged();
-                  },
-                )
-              : null,
-        )),
+        ...group.members.map((m) {
+          final role = _roleOf(m);
+          return _MemberTile(
+            name: m,
+            role: role,
+            trailing: isLeader
+                ? PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert,
+                        color: Colors.white38, size: 20),
+                    color: AppColors.darkSurface2,
+                    onSelected: (action) async {
+                      if (action == 'assign') {
+                        await _assignRoleDialog(context, m);
+                      } else if (action == 'remove_role') {
+                        final updated = Map<String, String>.from(group.officers)
+                          ..removeWhere(
+                              (k, v) => v.toLowerCase() == m.toLowerCase());
+                        await service.updateGroup(
+                            group.copyWith(officers: updated));
+                        onChanged();
+                      } else if (action == 'remove') {
+                        await service.removeMember(group.id, m);
+                        onChanged();
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'assign',
+                        child: Row(children: [
+                          const Icon(Icons.badge_outlined,
+                              size: 16, color: AppColors.accentPurple),
+                          const SizedBox(width: 8),
+                          Text(role == null ? 'Assign Role' : 'Change Role',
+                              style: const TextStyle(color: Colors.white)),
+                        ]),
+                      ),
+                      if (role != null)
+                        PopupMenuItem(
+                          value: 'remove_role',
+                          child: Row(children: [
+                            const Icon(Icons.remove_moderator_outlined,
+                                size: 16, color: Colors.orange),
+                            const SizedBox(width: 8),
+                            const Text('Remove Role',
+                                style: TextStyle(color: Colors.white)),
+                          ]),
+                        ),
+                      PopupMenuItem(
+                        value: 'remove',
+                        child: Row(children: [
+                          const Icon(Icons.person_remove_outlined,
+                              size: 16, color: Colors.red),
+                          const SizedBox(width: 8),
+                          const Text('Remove from Group',
+                              style: TextStyle(color: Colors.white)),
+                        ]),
+                      ),
+                    ],
+                  )
+                : null,
+          );
+        }),
       ],
     );
   }
@@ -936,9 +1097,13 @@ class _MembersTab extends StatelessWidget {
         title: const Text('Add Member', style: TextStyle(color: Colors.white)),
         content: _DarkField(controller: ctrl, label: 'Member Name or ID'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel',
+                  style: TextStyle(color: Colors.white54))),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentPurple),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accentPurple),
             child: const Text('Add'),
             onPressed: () async {
               final v = ctrl.text.trim();
@@ -1568,11 +1733,12 @@ class _LinkButton extends StatelessWidget {
 
 class _MemberTile extends StatelessWidget {
   final String name;
+  final String? role;
   final String? subtitle;
   final Color? subtitleColor;
   final Widget? trailing;
 
-  const _MemberTile({required this.name, this.subtitle, this.subtitleColor, this.trailing});
+  const _MemberTile({required this.name, this.role, this.subtitle, this.subtitleColor, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -1582,12 +1748,16 @@ class _MemberTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.darkSurface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: role != null ? AppColors.accentPurple.withValues(alpha: 0.4) : AppColors.darkBorder,
+        ),
       ),
       child: Row(children: [
         CircleAvatar(
           radius: 16,
-          backgroundColor: AppColors.accentPurple.withValues(alpha: 0.15),
+          backgroundColor: role != null
+              ? AppColors.accentPurple.withValues(alpha: 0.25)
+              : AppColors.accentPurple.withValues(alpha: 0.15),
           child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
               style: const TextStyle(color: AppColors.accentPurple, fontSize: 13)),
         ),
@@ -1597,7 +1767,17 @@ class _MemberTile extends StatelessWidget {
           children: [
             Text(name,
                 style: const TextStyle(color: Colors.white, fontSize: 14)),
-            if (subtitle != null)
+            if (role != null)
+              Row(children: [
+                const Icon(Icons.badge, size: 11, color: AppColors.accentPurple),
+                const SizedBox(width: 3),
+                Text(role!,
+                    style: const TextStyle(
+                        color: AppColors.accentPurple,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600)),
+              ])
+            else if (subtitle != null)
               Text(subtitle!,
                   style: TextStyle(
                       color: subtitleColor ?? Colors.white54, fontSize: 12)),
