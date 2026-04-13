@@ -74,17 +74,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      String message = 'Registration failed. Please try again.';
-      final err = e.toString().toLowerCase();
-      if (err.contains('already registered') || err.contains('already exists')) {
-        message = 'An account with this email already exists.';
-      } else if (err.contains('weak password')) {
-        message = 'Password is too weak. Use at least 6 characters.';
-      } else if (err.contains('invalid email')) {
-        message = 'Please enter a valid email address.';
-      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Registration error: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 15),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

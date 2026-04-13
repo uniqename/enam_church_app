@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,6 +29,11 @@ class _SermonsScreenState extends State<SermonsScreen> {
   List<Sermon> _sermons = [];
   bool _loading = true;
   bool _isAdmin = false;
+
+  // ── Search & Filter ──────────────────────────────────────────────────────────
+  String _searchQuery = '';
+  String _filterTab = 'all'; // all | audio | video | favorites
+  Set<String> _favorites = {};
 
   String? _playingId;
   bool _isPlaying = false;
@@ -86,15 +92,69 @@ class _SermonsScreenState extends State<SermonsScreen> {
   }
 
   Future<void> _init() async {
-    final role = await _authService.getUserRole();
-    final sermons = await _service.getAllSermons();
+    final results = await Future.wait<dynamic>([
+      _authService.getUserRole(),
+      _service.getAllSermons(),
+      _loadFavoriteIds(),
+    ]);
     if (mounted) {
       setState(() {
-        _isAdmin = role == 'admin' || role == 'pastor';
-        _sermons = sermons;
+        _isAdmin = results[0] == 'admin' || results[0] == 'pastor';
+        _sermons = results[1] as List<Sermon>;
+        _favorites = results[2] as Set<String>;
         _loading = false;
       });
     }
+  }
+
+  Future<Set<String>> _loadFavoriteIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList('sermon_favorites')?.toSet() ?? {};
+  }
+
+  Future<void> _toggleFavorite(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      if (_favorites.contains(id)) {
+        _favorites.remove(id);
+      } else {
+        _favorites.add(id);
+      }
+    });
+    await prefs.setStringList('sermon_favorites', _favorites.toList());
+  }
+
+  List<Sermon> get _filteredSermons {
+    var list = _sermons;
+    // Filter by tab
+    if (_filterTab == 'audio') {
+      list = list.where((s) {
+        final url = s.fileUrl;
+        return s.fileType == 'audio' &&
+            _youTubeVideoId(url) == null &&
+            !_isFacebookUrl(url) &&
+            !_isInstagramUrl(url);
+      }).toList();
+    } else if (_filterTab == 'video') {
+      list = list.where((s) {
+        final url = s.fileUrl;
+        return s.fileType == 'video' ||
+            _youTubeVideoId(url) != null ||
+            _isFacebookUrl(url) ||
+            _isInstagramUrl(url);
+      }).toList();
+    } else if (_filterTab == 'favorites') {
+      list = list.where((s) => _favorites.contains(s.id)).toList();
+    }
+    // Filter by search
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      list = list.where((s) =>
+          s.title.toLowerCase().contains(q) ||
+          s.speaker.toLowerCase().contains(q) ||
+          s.description.toLowerCase().contains(q)).toList();
+    }
+    return list;
   }
 
   @override
@@ -412,6 +472,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _filteredSermons;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sermons'),
@@ -429,22 +490,93 @@ class _SermonsScreenState extends State<SermonsScreen> {
           : null,
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _sermons.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          : Column(
+              children: [
+                // ── Search bar ─────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+                  child: TextField(
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                    decoration: InputDecoration(
+                      hintText: 'Search sermons…',
+                      prefixIcon: const Icon(Icons.search, color: AppColors.purple),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: () => setState(() => _searchQuery = ''),
+                            )
+                          : null,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 14),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.purple),
+                      ),
+                    ),
+                  ),
+                ),
+                // ── Filter chips ───────────────────────────────────────────
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     children: [
-                      Icon(Icons.mic_none, size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text('No sermons yet', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                      _FilterChip(label: 'All', icon: Icons.library_music, tab: 'all', selected: _filterTab == 'all',
+                          onTap: () => setState(() => _filterTab = 'all')),
+                      const SizedBox(width: 8),
+                      _FilterChip(label: 'Audio', icon: Icons.headphones, tab: 'audio', selected: _filterTab == 'audio',
+                          onTap: () => setState(() => _filterTab = 'audio')),
+                      const SizedBox(width: 8),
+                      _FilterChip(label: 'Video', icon: Icons.play_circle_outline, tab: 'video', selected: _filterTab == 'video',
+                          onTap: () => setState(() => _filterTab = 'video')),
+                      const SizedBox(width: 8),
+                      _FilterChip(
+                          label: 'Favorites${_favorites.isNotEmpty ? ' (${_favorites.length})' : ''}',
+                          icon: Icons.favorite,
+                          tab: 'favorites',
+                          selected: _filterTab == 'favorites',
+                          onTap: () => setState(() => _filterTab = 'favorites')),
                     ],
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
-                  itemCount: _sermons.length,
-                  itemBuilder: (ctx, i) => _buildSermonCard(_sermons[i]),
                 ),
+                const SizedBox(height: 6),
+                // ── List ───────────────────────────────────────────────────
+                Expanded(
+                  child: filtered.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                _filterTab == 'favorites' ? Icons.favorite_border : Icons.mic_none,
+                                size: 64, color: Colors.grey,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _filterTab == 'favorites'
+                                    ? 'No favorites yet\nTap ♡ on a sermon to save it'
+                                    : _searchQuery.isNotEmpty
+                                        ? 'No results for "$_searchQuery"'
+                                        : 'No sermons yet',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.grey, fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 100),
+                          itemCount: filtered.length,
+                          itemBuilder: (ctx, i) => _buildSermonCard(filtered[i]),
+                        ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -510,6 +642,15 @@ class _SermonsScreenState extends State<SermonsScreen> {
                       ),
                     ],
                   ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    _favorites.contains(sermon.id) ? Icons.favorite : Icons.favorite_border,
+                    size: 20,
+                    color: _favorites.contains(sermon.id) ? Colors.red : Colors.grey,
+                  ),
+                  onPressed: () => _toggleFavorite(sermon.id),
+                  tooltip: _favorites.contains(sermon.id) ? 'Remove from favorites' : 'Add to favorites',
                 ),
                 if (_isAdmin) ...[
                   IconButton(
@@ -692,26 +833,33 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 ],
               ),
             ),
-          ] else if (url.isNotEmpty) ...[
-            // Direct video URL — open in WebView
+          ] else if (url.isNotEmpty || sermon.filePath.isNotEmpty) ...[
+            // Video — open in external player (works for Supabase URLs + local files)
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
               child: SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.play_arrow, size: 18),
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.play_arrow, size: 20),
                   label: const Text('Watch Video'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.purple,
-                    side: const BorderSide(color: AppColors.purple),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.purple,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
                   ),
                   onPressed: () async {
-                    final uri = Uri.parse(url);
+                    final target = url.isNotEmpty ? url : sermon.filePath;
+                    final uri = Uri.parse(target);
                     try {
                       await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    } catch (_) {}
+                    } catch (_) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not open video. Try copying the link.')),
+                        );
+                      }
+                    }
                   },
                 ),
               ),
@@ -720,6 +868,56 @@ class _SermonsScreenState extends State<SermonsScreen> {
             const SizedBox(height: 14),
           ],
         ],
+      ),
+    );
+  }
+}
+
+// ── Filter chip widget ─────────────────────────────────────────────────────────
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final String tab;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.icon,
+    required this.tab,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.purple : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppColors.purple : Colors.grey.shade300,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: selected ? Colors.white : Colors.grey.shade600),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                color: selected ? Colors.white : Colors.grey.shade700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/child_account.dart';
 import '../../services/auth_service.dart';
 import '../../services/child_account_service.dart';
+import '../../services/supabase_service.dart';
 import '../../utils/colors.dart';
 import 'register_screen.dart';
 
@@ -78,6 +79,33 @@ class _LoginScreenState extends State<LoginScreen>
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _forgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Enter your email above first, then tap Forgot Password.'),
+        backgroundColor: Colors.orange,
+      ));
+      return;
+    }
+    try {
+      await SupabaseService().client!.auth.resetPasswordForEmail(email);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Password reset email sent to $email'),
+        backgroundColor: AppColors.success,
+        duration: const Duration(seconds: 5),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Could not send reset email: $e'),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 6),
+      ));
     }
   }
 
@@ -479,7 +507,16 @@ class _LoginScreenState extends State<LoginScreen>
                 return null;
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _isLoading ? null : _forgotPassword,
+                child: const Text('Forgot Password?',
+                    style: TextStyle(color: AppColors.accentPurple, fontSize: 13)),
+              ),
+            ),
+            const SizedBox(height: 8),
             SizedBox(
               height: 52,
               child: ElevatedButton(

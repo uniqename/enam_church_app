@@ -65,14 +65,46 @@ class Sermon {
   factory Sermon.fromJson(Map<String, dynamic> json) => Sermon(
         id: json['id'] as String,
         title: json['title'] as String,
-        speaker: json['speaker'] as String,
-        date: DateTime.parse(json['date'] as String),
+        speaker: json['speaker'] as String? ?? json['preacher'] as String? ?? '',
+        date: DateTime.parse(json['date'] as String? ?? json['sermon_date'] as String? ?? DateTime.now().toIso8601String()),
         filePath: json['file_path'] as String? ?? '',
-        fileUrl: json['file_url'] as String? ?? '',
-        fileType: json['file_type'] as String? ?? 'audio',
+        fileUrl: json['file_url'] as String? ?? json['video_url'] as String? ?? json['audio_url'] as String? ?? '',
+        fileType: json['file_type'] as String? ?? (json['video_url'] != null && (json['video_url'] as String).isNotEmpty ? 'video' : 'audio'),
         description: json['description'] as String? ?? '',
         audience: json['audience'] as String? ?? 'all',
         createdAt: DateTime.parse(json['created_at'] as String),
+      );
+
+  // Maps to the actual Supabase sermons table schema
+  Map<String, dynamic> toSupabase() => {
+        'id': id,
+        'title': title,
+        'preacher': speaker,
+        'description': description,
+        'audio_url': fileType == 'audio' ? fileUrl : '',
+        'video_url': fileType == 'video' ? fileUrl : '',
+        'sermon_date': date.toIso8601String(),
+        'series': audience, // reuse series field for audience tag
+        'created_at': createdAt.toIso8601String(),
+      };
+
+  factory Sermon.fromSupabase(Map<String, dynamic> json) => Sermon(
+        id: json['id'] as String,
+        title: json['title'] as String? ?? '',
+        speaker: json['preacher'] as String? ?? '',
+        date: json['sermon_date'] != null
+            ? DateTime.parse(json['sermon_date'] as String)
+            : DateTime.now(),
+        filePath: '',
+        fileUrl: (json['video_url'] as String? ?? '').isNotEmpty
+            ? json['video_url'] as String
+            : json['audio_url'] as String? ?? '',
+        fileType: (json['video_url'] as String? ?? '').isNotEmpty ? 'video' : 'audio',
+        description: json['description'] as String? ?? '',
+        audience: json['series'] as String? ?? 'all',
+        createdAt: json['created_at'] != null
+            ? DateTime.parse(json['created_at'] as String)
+            : DateTime.now(),
       );
 
   Sermon copyWith({

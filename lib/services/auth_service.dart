@@ -60,15 +60,20 @@ class AuthService {
 
   // Sign in
   Future<AuthResponse> signIn(String email, String password) async {
-    // Always use demo path for .demo addresses regardless of Supabase config
-    if (!SupabaseService.isConfigured || email.trim().toLowerCase().endsWith('.demo')) {
+    if (!SupabaseService.isConfigured) {
       return _demoSignIn(email, password);
     }
+    // Try real Supabase auth first (works for both real and demo accounts
+    // that exist in Supabase — gives a valid JWT so uploads work)
     try {
       final response = await _supabase.signIn(email: email, password: password);
       if (response.user != null) await _cacheUserSession(response.user!);
       return response;
     } catch (e) {
+      // Fall back to local demo only if Supabase account doesn't exist
+      if (email.trim().toLowerCase().endsWith('.demo')) {
+        return _demoSignIn(email, password);
+      }
       print('❌ Auth service sign in failed: $e');
       rethrow;
     }

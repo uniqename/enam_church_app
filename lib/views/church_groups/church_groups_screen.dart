@@ -61,10 +61,16 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
 
   bool _isLeaderOf(OrgGroup g) {
     if (_userId == null) return false;
-    return g.leader == _userId ||
-        g.leader == _userName ||
-        (_me?.role == UserRole.dept_head &&
-            (_me?.department.toLowerCase().contains(g.name.toLowerCase()) ?? false));
+    // Primary leader match
+    if (g.leader == _userId || g.leader == _userName) return true;
+    // dept_head whose department matches group name
+    if (_me?.role == UserRole.dept_head &&
+        (_me?.department.toLowerCase().contains(g.name.toLowerCase()) ?? false)) return true;
+    // Any officer of this group (chairperson, secretary, etc.)
+    final name = _userName?.toLowerCase() ?? '';
+    final id = _userId!.toLowerCase();
+    return g.officers.values.any((v) =>
+        v.toLowerCase() == name || v.toLowerCase() == id);
   }
 
   bool _canManage(OrgGroup g) => _isAdmin || _isLeaderOf(g);
@@ -316,6 +322,7 @@ class _ChurchGroupsScreenState extends State<ChurchGroupsScreen> {
                 dues: double.tryParse(duesC.text) ?? 0,
                 duesPeriod: duesPeriod,
                 coverUrl: finalCoverUrl,
+                officers: existing?.officers ?? {},
               );
               if (existing == null) {
                 await _service.addGroup(data);
@@ -436,7 +443,7 @@ class _GroupCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.accentGold.withOpacity(0.2),
+                          color: AppColors.accentGold.withValues(alpha:0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text('$pending pending',
@@ -742,6 +749,37 @@ class _AboutTab extends StatelessWidget {
           ]),
         ],
 
+        // Officers / Executive
+        const SizedBox(height: 12),
+        _InfoCard(
+          title: 'Officers / Executive',
+          trailing: isLeader
+              ? TextButton.icon(
+                  icon: const Icon(Icons.manage_accounts, size: 15, color: AppColors.accentPurple),
+                  label: const Text('Manage', style: TextStyle(color: AppColors.accentPurple, fontSize: 12)),
+                  onPressed: () => _showOfficersDialog(context,
+                      group: group, service: service, onChanged: onChanged),
+                )
+              : null,
+          children: group.officers.isEmpty
+              ? [const Text('No officers assigned yet.',
+                  style: TextStyle(color: Colors.white38, fontSize: 13))]
+              : group.officers.entries.map((e) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(children: [
+                    const Icon(Icons.person_outline, size: 16, color: AppColors.accentPurple),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(e.key, style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                        Text(e.value, style: const TextStyle(color: Colors.white, fontSize: 13,
+                            fontWeight: FontWeight.w500)),
+                      ]),
+                    ),
+                  ]),
+                )).toList(),
+        ),
+
         const SizedBox(height: 16),
         // Join / status button
         if (!isLeader) ...[
@@ -749,9 +787,9 @@ class _AboutTab extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.15),
+                color: AppColors.success.withValues(alpha:0.15),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.success.withOpacity(0.4)),
+                border: Border.all(color: AppColors.success.withValues(alpha:0.4)),
               ),
               child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Icon(Icons.check_circle_outline, color: AppColors.success),
@@ -764,9 +802,9 @@ class _AboutTab extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.accentGold.withOpacity(0.15),
+                color: AppColors.accentGold.withValues(alpha:0.15),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.accentGold.withOpacity(0.4)),
+                border: Border.all(color: AppColors.accentGold.withValues(alpha:0.4)),
               ),
               child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Icon(Icons.hourglass_top_outlined, color: AppColors.accentGold),
@@ -942,9 +980,9 @@ class _DuesTab extends StatelessWidget {
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.accentPurple.withOpacity(0.1),
+              color: AppColors.accentPurple.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.accentPurple.withOpacity(0.3)),
+              border: Border.all(color: AppColors.accentPurple.withValues(alpha:0.3)),
             ),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               const Text('Total Collected',
@@ -1265,11 +1303,178 @@ class _FinancesTab extends StatelessWidget {
 }
 
 // ── Shared Widgets ─────────────────────────────────────────────────────────────
+// ── Officers management dialog ────────────────────────────────────────────────
+Future<void> _showOfficersDialog(
+  BuildContext context, {
+  required OrgGroup group,
+  required OrgGroupService service,
+  required VoidCallback onChanged,
+}) async {
+  // Default role suggestions
+  const defaultRoles = ['Chairperson', 'Assistant Chairperson', 'Secretary', 'Treasurer'];
+  final officers = Map<String, String>.from(group.officers);
+
+  await showDialog(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setSt) {
+        return AlertDialog(
+          backgroundColor: AppColors.darkSurface2,
+          title: Row(children: [
+            const Icon(Icons.manage_accounts, color: AppColors.accentPurple),
+            const SizedBox(width: 8),
+            Text('${group.name} Officers',
+                style: const TextStyle(color: Colors.white, fontSize: 16)),
+          ]),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                // Current officers
+                if (officers.isNotEmpty) ...[
+                  ...officers.entries.map((e) {
+                    final roleCtrl = TextEditingController(text: e.key);
+                    final personCtrl = TextEditingController(text: e.value);
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(children: [
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            TextField(
+                              controller: roleCtrl,
+                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                              decoration: const InputDecoration(
+                                labelText: 'Role Title',
+                                labelStyle: TextStyle(color: Colors.white38, fontSize: 11),
+                                enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: AppColors.darkBorder)),
+                                focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: AppColors.accentPurple)),
+                              ),
+                              onChanged: (v) {
+                                // Update key: remove old, add with new key
+                                setSt(() {
+                                  officers.remove(e.key);
+                                  officers[v] = personCtrl.text;
+                                });
+                              },
+                            ),
+                            TextField(
+                              controller: personCtrl,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                labelText: 'Person (name or ID)',
+                                labelStyle: TextStyle(color: Colors.white38, fontSize: 11),
+                                enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: AppColors.darkBorder)),
+                                focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: AppColors.accentPurple)),
+                              ),
+                              onChanged: (v) => setSt(() => officers[roleCtrl.text] = v),
+                            ),
+                          ]),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 20),
+                          onPressed: () => setSt(() => officers.remove(e.key)),
+                        ),
+                      ]),
+                    );
+                  }),
+                  const Divider(color: AppColors.darkBorder, height: 24),
+                ],
+
+                // Add from suggestions
+                const Text('Add officer role:',
+                    style: TextStyle(color: Colors.white54, fontSize: 12)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    ...defaultRoles
+                        .where((r) => !officers.containsKey(r))
+                        .map((r) => ActionChip(
+                              label: Text(r, style: const TextStyle(fontSize: 12, color: Colors.white)),
+                              backgroundColor: AppColors.darkSurface,
+                              side: const BorderSide(color: AppColors.darkBorder),
+                              onPressed: () => setSt(() => officers[r] = ''),
+                            )),
+                    // Custom role
+                    ActionChip(
+                      label: const Text('+ Custom role',
+                          style: TextStyle(fontSize: 12, color: AppColors.accentPurple)),
+                      backgroundColor: AppColors.darkSurface,
+                      side: const BorderSide(color: AppColors.accentPurple),
+                      onPressed: () async {
+                        final ctrl = TextEditingController();
+                        final result = await showDialog<String>(
+                          context: ctx,
+                          builder: (c) => AlertDialog(
+                            backgroundColor: AppColors.darkSurface2,
+                            title: const Text('Custom Role Title',
+                                style: TextStyle(color: Colors.white)),
+                            content: TextField(
+                              controller: ctrl,
+                              autofocus: true,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                hintText: 'e.g. Welfare Officer',
+                                hintStyle: TextStyle(color: Colors.white38),
+                                enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: AppColors.darkBorder)),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                  onPressed: () => Navigator.pop(c),
+                                  child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentPurple),
+                                onPressed: () => Navigator.pop(c, ctrl.text.trim()),
+                                child: const Text('Add'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (result != null && result.isNotEmpty) {
+                          setSt(() => officers[result] = '');
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ]),
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentPurple),
+              onPressed: () async {
+                // Remove entries with empty person names
+                officers.removeWhere((k, v) => k.trim().isEmpty);
+                await service.updateGroup(group.copyWith(officers: officers));
+                if (ctx.mounted) Navigator.pop(ctx);
+                onChanged();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
 class _InfoCard extends StatelessWidget {
   final String? title;
+  final Widget? trailing;
   final List<Widget> children;
 
-  const _InfoCard({this.title, required this.children});
+  const _InfoCard({this.title, this.trailing, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -1284,11 +1489,16 @@ class _InfoCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (title != null) ...[
-            Text(title!,
-                style: const TextStyle(
-                    color: AppColors.accentPurple,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13)),
+            Row(children: [
+              Expanded(
+                child: Text(title!,
+                    style: const TextStyle(
+                        color: AppColors.accentPurple,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13)),
+              ),
+              if (trailing != null) trailing!,
+            ]),
             const SizedBox(height: 8),
           ],
           ...children,
@@ -1340,16 +1550,16 @@ class _LinkButton extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
+          color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withOpacity(0.4)),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
         ),
         child: Row(children: [
           Icon(icon, color: color, size: 18),
           const SizedBox(width: 10),
           Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
           const Spacer(),
-          Icon(Icons.open_in_new, color: color.withOpacity(0.6), size: 14),
+          Icon(Icons.open_in_new, color: color.withValues(alpha: 0.6), size: 14),
         ]),
       ),
     );
@@ -1377,7 +1587,7 @@ class _MemberTile extends StatelessWidget {
       child: Row(children: [
         CircleAvatar(
           radius: 16,
-          backgroundColor: AppColors.accentPurple.withOpacity(0.15),
+          backgroundColor: AppColors.accentPurple.withValues(alpha: 0.15),
           child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
               style: const TextStyle(color: AppColors.accentPurple, fontSize: 13)),
         ),

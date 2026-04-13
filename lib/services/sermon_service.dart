@@ -3,42 +3,67 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/sermon.dart';
+import 'supabase_service.dart';
 
 class SermonService {
-  static const _kSermonsKey = 'local_sermons';
-  static const _kSeededKey = 'sermons_jasper_seeded_v1';
+  static const _kSermonsKey = 'local_sermons_cache';
+  final _supabase = SupabaseService();
 
+  // ── Read ──────────────────────────────────────────────────────────────────
   Future<List<Sermon>> getAllSermons() async {
-    await _seedJasperSermon();
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_kSermonsKey) ?? [];
-    final sermons = raw
-        .map((s) => Sermon.fromJson(jsonDecode(s)))
-        .toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
-    return sermons;
+    List<Sermon> supabaseSermons = [];
+    if (SupabaseService.isConfigured) {
+      try {
+        final data = await _supabase.query('sermons', orderBy: 'sermon_date', ascending: false);
+        supabaseSermons = data.map((j) => Sermon.fromSupabase(j)).toList();
+      } catch (e) {
+        print('⚠️ Supabase sermons fetch failed: $e');
+      }
+    }
+    // Merge with local cache — local ones not in Supabase still show
+    final cached = await _cachedSermons();
+    final supabaseIds = supabaseSermons.map((s) => s.id).toSet();
+    final localOnly = cached.where((s) => !supabaseIds.contains(s.id)).toList();
+    final merged = [...supabaseSermons, ...localOnly];
+    merged.sort((a, b) => b.date.compareTo(a.date));
+    // Update cache with latest from Supabase
+    if (supabaseSermons.isNotEmpty) _cacheSermons(merged);
+    return merged;
   }
 
+  // ── Write ─────────────────────────────────────────────────────────────────
   Future<Sermon> addSermon(Sermon sermon) async {
-    final all = await _rawList();
-    all.add(sermon);
-    await _saveAll(all);
+    if (SupabaseService.isConfigured) {
+      final data = sermon.toSupabase();
+      await _supabase.insert('sermons', data);
+    }
+    // Also update local cache
+    final cached = await _cachedSermons();
+    cached.insert(0, sermon);
+    await _cacheSermons(cached);
     return sermon;
   }
 
   Future<void> updateSermon(Sermon sermon) async {
-    final all = await _rawList();
-    final idx = all.indexWhere((s) => s.id == sermon.id);
-    if (idx != -1) all[idx] = sermon;
-    await _saveAll(all);
+    if (SupabaseService.isConfigured) {
+      await _supabase.update('sermons', sermon.id, sermon.toSupabase());
+    }
+    final cached = await _cachedSermons();
+    final idx = cached.indexWhere((s) => s.id == sermon.id);
+    if (idx != -1) cached[idx] = sermon;
+    await _cacheSermons(cached);
   }
 
   Future<void> deleteSermon(String id) async {
-    final all = await _rawList();
-    all.removeWhere((s) => s.id == id);
-    await _saveAll(all);
+    if (SupabaseService.isConfigured) {
+      await _supabase.delete('sermons', id);
+    }
+    final cached = await _cachedSermons();
+    cached.removeWhere((s) => s.id == id);
+    await _cacheSermons(cached);
   }
 
+  // ── Local file helpers (still needed for local audio playback) ────────────
   Future<String> copyFileToSermonStorage(String sourcePath) async {
     final dir = await _sermonsDirectory();
     final fileName = sourcePath.split('/').last;
@@ -57,54 +82,14 @@ class SermonService {
     return dir;
   }
 
-  Future<void> _seedJasperSermon() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool(_kSeededKey) == true) return;
-
-    // Look for the file in common locations
-    final candidates = [
-      '/Users/enamegyir/Downloads/Bro JASPER.mp3',
-    ];
-
-    String localPath = '';
-    for (final c in candidates) {
-      if (await File(c).exists()) {
-        try {
-          localPath = await copyFileToSermonStorage(c);
-        } catch (_) {
-          localPath = c; // fallback: use original path
-        }
-        break;
-      }
-    }
-
-    if (localPath.isEmpty) {
-      // File not found yet — skip seed, try next launch
-      return;
-    }
-
-    final sermon = Sermon.create(
-      title: 'Sunday Sermon',
-      speaker: 'Deacon Jasper',
-      date: DateTime(2026, 3, 1),
-      filePath: localPath,
-      fileType: 'audio',
-      description: '',
-    );
-
-    final all = await _rawList();
-    all.add(sermon);
-    await _saveAll(all);
-    await prefs.setBool(_kSeededKey, true);
-  }
-
-  Future<List<Sermon>> _rawList() async {
+  // ── Cache helpers ─────────────────────────────────────────────────────────
+  Future<List<Sermon>> _cachedSermons() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_kSermonsKey) ?? [];
     return raw.map((s) => Sermon.fromJson(jsonDecode(s))).toList();
   }
 
-  Future<void> _saveAll(List<Sermon> sermons) async {
+  Future<void> _cacheSermons(List<Sermon> sermons) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
       _kSermonsKey,

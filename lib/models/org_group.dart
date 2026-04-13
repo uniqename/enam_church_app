@@ -15,6 +15,8 @@ class OrgGroup {
   final String bylaws;
   final String imageEmoji;
   final String coverUrl; // photo uploaded to Supabase Storage
+  /// Officer roles → member name/ID. e.g. {'Chairperson': 'John Doe', 'Secretary': 'Jane Doe'}
+  final Map<String, String> officers;
 
   const OrgGroup({
     required this.id,
@@ -33,6 +35,7 @@ class OrgGroup {
     this.bylaws = '',
     this.imageEmoji = '🙏',
     this.coverUrl = '',
+    this.officers = const {},
   });
 
   /// Convenience getter — returns the primary leader name
@@ -69,6 +72,9 @@ class OrgGroup {
       bylaws: json['bylaws'] as String? ?? '',
       imageEmoji: json['image_emoji'] as String? ?? '🙏',
       coverUrl: json['cover_url'] as String? ?? '',
+      officers: (json['officers'] as Map<String, dynamic>?)
+              ?.map((k, v) => MapEntry(k, v.toString())) ??
+          {},
     );
   }
 
@@ -82,13 +88,14 @@ class OrgGroup {
         'meeting_time': meetingTime,
         'location': location,
         'whatsapp_group': whatsappGroup,
-      'pending_members': pendingMembers,
-      'google_meet_link': googleMeetLink,
-      'dues': dues,
-      'dues_period': duesPeriod,
-      'bylaws': bylaws,
-      'image_emoji': imageEmoji,
-      'cover_url': coverUrl,
+        'pending_members': pendingMembers,
+        'google_meet_link': googleMeetLink,
+        'dues': dues,
+        'dues_period': duesPeriod,
+        'bylaws': bylaws,
+        'image_emoji': imageEmoji,
+        'cover_url': coverUrl,
+        'officers': officers,
       };
 
   OrgGroup copyWith({
@@ -107,6 +114,7 @@ class OrgGroup {
     String? bylaws,
     String? imageEmoji,
     String? coverUrl,
+    Map<String, String>? officers,
   }) =>
       OrgGroup(
         id: id,
@@ -125,5 +133,6 @@ class OrgGroup {
         bylaws: bylaws ?? this.bylaws,
         imageEmoji: imageEmoji ?? this.imageEmoji,
         coverUrl: coverUrl ?? this.coverUrl,
+        officers: officers ?? this.officers,
       );
 }
